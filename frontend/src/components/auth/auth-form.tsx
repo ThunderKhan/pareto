@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { ArrowLeft, ArrowRight, GoogleLogo, LockKey, ShieldCheck } from "@phosphor-icons/react";
@@ -68,7 +69,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <main className="auth-shell">
-      <div className="auth-shell__brand"><a href="/" className="auth-shell__brand-link"><span className="auth-shell__brand-icon">p.</span> pareto<span>.</span></a><a href="/" className="auth-shell__back"><ArrowLeft size={16} /> Back to site</a></div>
+      <div className="auth-shell__brand"><Link href="/" className="auth-shell__brand-link"><span className="auth-shell__brand-icon">p.</span> pareto<span>.</span></Link><Link href="/" className="auth-shell__back"><ArrowLeft size={16} /> Back to site</Link></div>
       <div className="auth-shell__content">
         <div className="auth-shell__editorial">
           <div className="eyebrow">RECRUITMENT, WITH REASONS</div>

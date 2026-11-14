@@ -16,6 +16,11 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "db:generate": "pnpm --filter @pareto/backend db:generate",
     "db:migrate": "pnpm --filter @pareto/backend db:migrate",
-    "test:e2e": "pnpm --filter @pareto/frontend test:e2e"
+    "test:e2e": "pnpm --filter @pareto/frontend test:e2e",
+    "db:deploy": "pnpm --filter @pareto/backend db:deploy",
+    "db:seed": "pnpm --filter @pareto/backend db:seed",
+    "prebuild": "pnpm db:generate",
+    "predev": "pnpm db:generate",
+    "pretypecheck": "pnpm db:generate"
   }
 }
