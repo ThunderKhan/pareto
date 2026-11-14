@@ -29,8 +29,9 @@ export function HomepageSmoothScroll() {
         smoothWheel: true,
         syncTouch: false,
         gestureOrientation: "vertical",
-        // Hash links remain usable below the sticky 78px navigation.
-        anchors: { offset: -90 },
+        // Existing section scroll-margin-top offsets the sticky nav;
+        // adding a second Lenis offset would double the visible gap.
+        anchors: true,
       });
     };
 
