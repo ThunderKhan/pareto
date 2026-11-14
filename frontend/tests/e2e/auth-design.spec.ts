@@ -24,9 +24,14 @@ test("signup uses the Pareto split layout and keeps real, accessible form fields
 
   const notice = page.getByRole("status").filter({ hasText: "Authentication is unavailable in this environment." });
   if (await notice.count()) {
-    await expect(notice.getByText("Local setup instructions")).toBeVisible();
-    await notice.locator("summary").click();
-    await expect(notice).toContainText("frontend/.env.local");
+    if (await notice.locator("summary").count()) {
+      await expect(notice.getByText("Local setup instructions")).toBeVisible();
+      await notice.locator("summary").click();
+      await expect(notice).toContainText("frontend/.env.local");
+    } else {
+      // Production must not expose implementation details to visitors.
+      await expect(notice).not.toContainText("NEXT_PUBLIC_SUPABASE_URL");
+    }
     await expect(page.getByRole("button", { name: "Sign up with Google" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Create account" })).toBeDisabled();
   }
