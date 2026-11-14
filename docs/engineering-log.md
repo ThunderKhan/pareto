@@ -75,3 +75,12 @@
 **Security/provenance:** No Gemini/Groq/API keys added; auth disabled visibly if Supabase env absent; private dashboard guarded by session validation when configured. Sample profiles are explicitly synthetic; no OpenTag mascot, proprietary artwork or font binaries copied.
 
 **Next:** Verify build/typecheck/Playwright/screenshots in an environment with network, fix observed defects, then prioritize original PS1's database-backed candidate search.
+
+## 2026-11-14 — PostgreSQL foundation and organizer workflows
+
+- Audited baseline `bf43d65`. The initial install rejected unapproved dependency scripts. Added an explicit build allowlist and lockfile. Next 16.4.6 lint flagged four internal anchors, and strict type checking caught Supabase cookie callback types. Fixed both.
+- Added Prisma 7.10.1 with the PostgreSQL adapter. Generated the client, applied the initial migration to PostgreSQL 18.6 over TCP, and ran the idempotent 48-profile seed twice. Docker is unavailable in this workspace. Compose defines PostgreSQL 17 and a migration gate, so that topology still needs a Docker run.
+- Added an authenticated search route, typed Gemini/Groq proposals and refinements, editable confirmation, owner-scoped revisions, candidate evidence, and reference similarity. Used one versioned route handler for the MVP operations. The architecture document lists the longer resource-specific paths as the target contract.
+- `pnpm check` passed lint, both TypeScript projects, and 12 Vitest tests with the PostgreSQL integration test enabled. The DB test exercised owner isolation, real match counts, idempotency, optimistic concurrency, and reference exclusion. `pnpm build` passed. Gemini and Groq validation and fallback were tested with controlled provider responses.
+- The system Chromium run failed before navigating because the workspace denied its socket call. Live Supabase, Gemini, Groq, OAuth, the signed-in browser smoke suite, and Railway still need configured service accounts and verification. The organizer repository returned 404 for the installed GitHub connection.
+- Scope limits include a maximum of 1,000 owner-scoped profiles per search and a 20-result page. Restored search revisions use current database records. Resume ingest and the live diagnostics/simulator remain open.

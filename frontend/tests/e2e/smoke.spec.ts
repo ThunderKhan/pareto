@@ -47,3 +47,10 @@ test("mobile navigation and reduced-motion layout", async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);
 });
+
+test("signed-out visitors cannot search or read candidate data", async ({ page, request }) => {
+  await page.goto("/dashboard/search");
+  await expect(page).toHaveURL(/\/login/);
+  expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
+  expect((await request.post("/api/v1/search", { data: { action: "interpret", prompt: "Find Java developers" } })).status()).toBe(401);
+});
