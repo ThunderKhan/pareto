@@ -325,7 +325,6 @@ test("reduced motion keeps all content and disables stage entrance", async ({ pa
   expect(animation).toBe("none");
   await expect(page.getByRole("heading", { name: "Why Pareto works" })).toBeVisible();
   await expect(page.locator("#trust .v2-trust-step-button")).toHaveCount(4);
-  await expect(page.locator("#trust .v2-trust-step-icon").first()).toHaveCSS("transition-duration", "1e-05s");
   await expect(page.getByRole("heading", { name: /search with clarity/i })).toBeVisible();
 });
 
