@@ -13,7 +13,7 @@ test("signup uses the Pareto split layout and keeps real, accessible form fields
   await expect(page.getByLabel("First name")).toHaveAttribute("autocomplete", "given-name");
   await expect(page.getByLabel("Last name")).toHaveAttribute("autocomplete", "family-name");
   await expect(page.getByLabel("Email")).toHaveAttribute("autocomplete", "email");
-  await expect(page.getByLabel("Password")).toHaveAttribute("autocomplete", "new-password");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "new-password");
   await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   await expect(page.getByRole("button", { name: /apple/i })).toHaveCount(0);
@@ -33,7 +33,7 @@ test("login reuses the split layout, supports Google, and preserves account reco
   await expect(page.getByRole("heading", { level: 1, name: "Welcome back" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByLabel("Email")).toHaveAttribute("autocomplete", "email");
-  await expect(page.getByLabel("Password")).toHaveAttribute("autocomplete", "current-password");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "current-password");
   await expect(page.getByLabel("First name")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Forgot password?" })).toHaveAttribute("href", "/forgot-password");
   await expect(page.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/signup");
