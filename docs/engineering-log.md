@@ -61,3 +61,17 @@
 **Verification:** Source CSS variables extracted and GitHub Markdown files reviewed. No screenshot pixel comparison, new web UI implementation, authentication test, local build or deployment performed.
 
 **Boundary:** Original organizer PS1 P0 remains above optional visual polish; no proprietary OpenTag logos, mascot or fonts copied.
+
+## 2026-11-14 — Source-informed Scrollcraft landing and auth-shell implementation
+
+**Requirement:** Apply [nateherkai/scroll-craft](https://github.com/nateherkai/scroll-craft) as a design/scroll technique reference alongside the user's OpenTag visual system; make the recruitment landing demoable.
+
+**Inspection:** Read upstream `SKILL.md`, MIT license, CSS/JS engine headers, and references for device variation, hero depth, taste, feeling curve, uniqueness and verification. The skill is a standalone vanilla JS design workflow, **not a Framer Motion package**. Chose a small React/CSS adaptation rather than importing a competing global DOM runtime into Next.js.
+
+**Changes:** Committed warm landing, original layered hero, sticky three-step explanation, deterministic interactive three-synthetic-candidate notice simulator, mobile menu, signup/login pages with conditional Supabase client integration, OAuth callback handler, guarded dashboard shell and honest search placeholder. Updated Playwright test source for the new routes and what-if scenario.
+
+**Observed constraint/failure:** Local validation container failed to clone `https://github.com/ThunderKhan/pareto.git` because it could not resolve `github.com`. No pnpm install, TypeScript compile, browser screenshots, Playwright run, Google OAuth setup, or deployment was performed. **Code is implemented/unverified**, not “verified” or “released”.
+
+**Security/provenance:** No Gemini/Groq/API keys added; auth disabled visibly if Supabase env absent; private dashboard guarded by session validation when configured. Sample profiles are explicitly synthetic; no OpenTag mascot, proprietary artwork or font binaries copied.
+
+**Next:** Verify build/typecheck/Playwright/screenshots in an environment with network, fix observed defects, then prioritize original PS1's database-backed candidate search.

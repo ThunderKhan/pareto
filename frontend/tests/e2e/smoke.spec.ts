@@ -12,7 +12,6 @@ test("public landing, navigation and health", async ({ page, request }) => {
 
 test("synthetic what-if preview computes from stated records", async ({ page }) => {
   await page.goto("/#preview");
-  const preview = page.getByRole("region", { name: "Interactive synthetic candidate matching example" });
   // The region is labelled on a div; locate it by its explicit accessible label.
   const panel = page.locator('[aria-label="Interactive synthetic candidate matching example"]');
   await expect(panel).toBeVisible();

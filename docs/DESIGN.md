@@ -1,7 +1,7 @@
 # Pareto — Product Experience & Design System
 
 > **Document:** `docs/DESIGN.md` · **Version:** 1.0 · **Date:** 14 November 2026 (IST)  
-> **Status:** Approved design direction and implementation specification; **not** a claim that the Pareto UI is implemented.  
+> **Status:** Approved design direction and implementation specification; The marketing landing and entry screens now have an **unverified implementation**; real search/backend and screenshot-fidelity validation remain pending.  
 > **Design source:** Private [ThunderKhan/opentag-clone](https://github.com/ThunderKhan/opentag-clone), branch `main`, inspected source tree `adb6ba9ad135386e2800bd3ac0ef4999e6ac240d`.  
 > **Product references:** [MVP.md](MVP.md), [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), [IMPLEMENTATION.md](IMPLEMENTATION.md).  
 > **Governing principle:** The **visual language** is based on the inspected OpenTag public-site clone. The **product content, logo, wording, user journeys, and private dashboard** belong to Pareto and must be designed for its recruitment problem.
@@ -431,7 +431,7 @@ This order balances a coherent product entry route against the organizer's highe
 - **STK Earl licensing** has not been confirmed. Do not copy its WOFF2 files. Select a licensed equivalent if necessary.
 - **OpenTag private dashboard/auth design** is unavailable in the clone; the app layout is a **Pareto adaptation**, not a claimed exact copy.
 - Source screenshot binaries are present in the private reference repo, but a new Pareto side-by-side visual run has **not** occurred. “Pixel perfect” cannot yet be claimed.
-- Pareto currently has a **dark placeholder landing page**; adopting this document requires replacing that style with the warm, source-derived visual language.
+- Pareto now has a committed warm landing and conditional authentication/dashboard route shells. **Browser rendering, exact font fidelity, Supabase credentials and real search services are not verified.**
 - The private source repository must stay private. Do not copy branding, mascot, proprietary customer logos or unlicensed illustrations.
 - **Conversational and voice UI** are not frozen in this document. If added later, evaluate dedicated components against the same tokens and keyboard/motion conventions; **voice is not required by PS1**.
 
@@ -455,3 +455,15 @@ This order balances a coherent product entry route against the organizer's highe
 - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) — accessibility review target.
 
 **DESIGN.md maintenance rule:** Source measurements and Pareto proposals stay labeled separately. When actual screenshots/tests establish new values, update the token table with evidence and explain the divergence. The reference governs the *visual system*; the [PRD](PRD.md) governs the *recruitment functionality*.
+
+## 15. Scrollcraft motion reference — new implementation supplement
+
+**Motion and visitor-story reference:** [Scrollcraft by Nate Herk](https://github.com/nateherkai/scroll-craft), specifically its [skill instructions](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/SKILL.md), [hero-depth guide](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/references/hero-depth.md) and [verification checklist](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/references/verify.md).
+
+**Separation of concerns:** OpenTag remains the source of visual design values. Scrollcraft informs the **scroll-driven narrative**, layered hero, variation between sections, one meaningful “peak” interaction, mobile composition, and reduced-motion acceptance. Do not adopt an unrelated Scrollcraft default theme or import its full standalone vanilla-JS runtime into the React app. The skill's engine is MIT, but **was not installed** in this React-native adaptation.
+
+**New committed homepage surfaces:** dimensional candidate-search hero, editorial value section, sticky step story, three-profile deterministic what-if demo, principles ledger and final CTA. The live miniature explicitly identifies invented/synthetic candidate data and cannot be confused with real Gemini/Groq search.
+
+See [SCROLLCRAFT.md](SCROLLCRAFT.md) for the creative brief, authored decisions, feeling curve, layer contract, score, source attribution, code mapping and **unexecuted verification plan**. Dashboard search screens remain utility-first and do not need a cinematic treatment.
+
+**Status:** source files committed, but actual browser rendering / image comparison / test commands **not yet executed**. Do not mark UX-505 verified.

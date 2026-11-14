@@ -999,4 +999,21 @@ The next actual code task is **F-001**, followed rapidly by the candidate schema
 
 **Requirements links:** [PRD.md §21](PRD.md) (`UX-FR-01..08`), [ARCHITECTURE.md §25](ARCHITECTURE.md), [MVP.md §17](MVP.md), [DESIGN.md](DESIGN.md).
 
-**Known current state:** no route/code changes in this documentation task; existing landing remains a dark foundation placeholder until implementation.
+**Updated current state (14 Nov):** a warm, scroll-directed public landing, synthetic what-if preview, signup/login UI, Supabase-ready auth route code and a guarded dashboard shell are **implemented but unverified**. Provider credentials and real search services are absent. Browser tests were committed but have **not run** because the testing container could not resolve GitHub; record F-001/UX-505 as pending until verified. See [SCROLLCRAFT.md](SCROLLCRAFT.md).
+
+## 18. Scrollcraft integration — motion-focused implementation milestone
+
+**Source:** [nateherkai/scroll-craft](https://github.com/nateherkai/scroll-craft); creative brief and verification: [SCROLLCRAFT.md](SCROLLCRAFT.md). It is a vanilla-JS/CSS engine plus a design workflow, **not Framer Motion**. Pareto used the skill's creative sequence and techniques to create a custom React/CSS implementation; **no Scrollcraft engine dependency was added**.
+
+**Commit status:** Source code for layered marketing hero, editorial flow, sticky three-step explanation, deterministic synthetic what-if example, final CTA, auth route shells and protected dashboard was committed to GitHub. **No local build or actual Playwright run is verified**. Do not mark UX-501 through UX-505 complete until their gates pass.
+
+### Verification to perform
+
+- [ ] Run root dependency install and ensure the marketing/client source compiles and lint passes.
+- [ ] Run authored Playwright tests for landing links, what-if notice 30→60→30, unknown-data behavior and mobile menu.
+- [ ] Run actual visual scroll contact sheets (top/intermediate/exit, 390px/1440px and reduced-motion).
+- [ ] Confirm the hero has distinguishable planes and no copy/button overlap at 390px.
+- [ ] Configure Supabase project + Google OAuth and test real auth; disable production claims until successful.
+- [ ] Replace dashboard search placeholder with P0 organizer functionality **before** increasing motion complexity.
+
+**Priority:** This is an early demo-quality public UI milestone; the official PS1 search remains the hard functional deliverable for November 15.
