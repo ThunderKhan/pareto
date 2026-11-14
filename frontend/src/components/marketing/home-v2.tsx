@@ -214,7 +214,6 @@ function HowItWorks() {
           aria-labelledby={"v2-story-title-" + (index + 1)}
         >
           <div className="v2-story-copy">
-            <span className="v2-story-step">0{index + 1} / {item.tab}</span>
             <h3 id={"v2-story-title-" + (index + 1)}>{item.title}</h3>
             <p>{item.body}</p>
           </div>
