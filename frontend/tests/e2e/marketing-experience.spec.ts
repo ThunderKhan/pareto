@@ -41,16 +41,16 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
       mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\\.woff2?(?:\\?|$)/.test(url)),
     };
   });
-  expect(metrics.hero.fontFamily).toMatch(/__Bitter_/);
-  expect(metrics.section.fontFamily).toMatch(/__Bitter_/);
-  expect(metrics.body.fontFamily).toMatch(/__Inter_/);
-  expect(metrics.nav.fontFamily).toMatch(/__Inter_/);
-  expect(metrics.action.fontFamily).toMatch(/__Inter_/);
-  expect(metrics.candidate.fontFamily).toMatch(/__Inter_/);
+  expect(metrics.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
+  expect(metrics.section.fontFamily).toMatch(/^Bitter(?:,|$)/);
+  expect(metrics.body.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.nav.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.action.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.candidate.fontFamily).toMatch(/^Inter(?:,|$)/);
   expect(metrics.italicEmphasis.fontStyle).toBe("normal");
   expect(metrics.hero.fontSynthesis).toBe("none");
-  expect(metrics.faces.some((face) => face.family.includes("__Bitter_") && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
-  expect(metrics.faces.some((face) => face.family.includes("__Inter_") && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.faces.some((face) => face.family === "Bitter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.faces.some((face) => face.family === "Inter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
   expect(metrics.mediaFonts.length).toBeGreaterThanOrEqual(2);
   expect(fontResponses.length).toBeGreaterThanOrEqual(2);
   expect(failedFonts).toEqual([]);
@@ -225,8 +225,8 @@ for (const size of [
         fonts: [...document.fonts].filter((font) => font.status === "loaded").map((font) => ({family: font.family, weight: font.weight, style: font.style})),
       };
     });
-    expect(typography.hero.fontFamily).toMatch(/__Bitter_/);
-    expect(typography.lead.fontFamily).toMatch(/__Inter_/);
+    expect(typography.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
+    expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
     await testInfo.attach(size.name + "-computed-typography.json", {body: JSON.stringify(typography, null, 2), contentType: "application/json"});
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
