@@ -159,6 +159,54 @@ test("removed interactive evidence section leaves no dead links or duplicated re
 });
 
 
+test("OpenTag-inspired trust timeline changes its sticky demo with accessible controls", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#trust");
+  const section = page.locator("#trust");
+  const steps = section.locator(".v2-trust-step-button");
+  await expect(section.getByRole("heading", { name: "Why Pareto works" })).toBeVisible();
+  await expect(steps).toHaveCount(4);
+  await expect(section.locator(".v2-trust-grid, .v2-trust-item")).toHaveCount(0);
+  await expect(section.locator(".v2-trust-step-icon")).toHaveCount(4);
+  await expect(section.locator(".v2-trust-demo-sticky")).toHaveCSS("position", "sticky");
+  await expect(steps.nth(0)).toHaveAttribute("aria-current", "step");
+  await expect(section.locator("#v2-trust-demo")).toContainText("Describe your ideal candidate.");
+  await steps.nth(1).click();
+  await expect(steps.nth(1)).toHaveAttribute("aria-current", "step");
+  await expect(section.locator("#v2-trust-demo")).toContainText("Review the interpretation.");
+  await steps.nth(2).click();
+  await expect(steps.nth(2)).toHaveAttribute("aria-current", "step");
+  await expect(section.locator("#v2-trust-demo")).toContainText("A shortlist with reasons.");
+  await steps.nth(3).click();
+  await expect(steps.nth(3)).toHaveAttribute("aria-current", "step");
+  await expect(section.locator("#v2-trust-demo")).toContainText("Search in your workspace.");
+  await expect(section.locator(".v2-trust-access-link")).toHaveAttribute("href", "/login");
+  await section.locator(".v2-trust-timeline").screenshot({ path: testInfo.outputPath("trust-timeline-desktop.png") });
+});
+
+test("timeline icon assets load and mobile carousel works without viewport overflow", async ({ page }, testInfo) => {
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 844 });
+    const missing: string[] = [];
+    page.on("response", (response) => {
+      if (response.url().includes("/icons/") && !response.ok()) missing.push(response.url());
+    });
+    await page.goto("/#trust");
+    const section = page.locator("#trust");
+    await expect(section.locator(".v2-trust-timeline")).toBeHidden();
+    await expect(section.locator(".v2-trust-mobile-card")).toHaveCount(4);
+    await expect(section.locator(".v2-trust-mobile-card img")).toHaveCount(4);
+    await expect(section.getByRole("heading", { name: "Why Pareto works" })).toBeVisible();
+    await expect(section.getByRole("button", { name: "Show Review before searching" })).toBeVisible();
+    await section.getByRole("button", { name: "Show Review before searching" }).click();
+    await expect(section.getByRole("button", { name: "Show Review before searching" })).toHaveAttribute("aria-current", "true");
+    await expect.poll(() => section.locator(".v2-trust-mobile-track").evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+    expect(missing).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    if (width === 390) await section.screenshot({ path: testInfo.outputPath("trust-timeline-mobile.png") });
+  }
+});
+
 test("reference cards and FAQ explain matching with fictional profiles", async ({ page }, testInfo) => {
   await page.goto("/#similar");
   const section = page.locator("#similar");
