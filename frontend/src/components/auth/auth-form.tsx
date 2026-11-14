@@ -70,20 +70,6 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       } else {
         const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
-        // Names are optional on sign-in: they are profile details, not credentials.
-        // Never overwrite an existing name with an empty input.
-        const nameUpdates = {
-          ...(firstName.trim() ? { first_name: firstName.trim() } : {}),
-          ...(lastName.trim() ? { last_name: lastName.trim() } : {}),
-        };
-        if (Object.keys(nameUpdates).length > 0) {
-          const { error: profileError } = await client.auth.updateUser({ data: nameUpdates });
-          if (profileError) {
-            // Do not strand a successfully authenticated user on the sign-in page
-            // because an optional profile update failed.
-            console.warn("Optional profile name update failed:", profileError.message);
-          }
-        }
         window.location.assign(safeNext());
       }
     } catch (error) {
@@ -139,16 +125,16 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           <div className="auth-divider"><span>or continue with email</span></div>
 
           <form className="auth-form" onSubmit={onSubmit}>
-            <div className="auth-form__names">
+            {signup && <div className="auth-form__names">
               <label className="auth-field" htmlFor="auth-first-name">
-                <input id="auth-first-name" type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="e.g. Alex" maxLength={80} required={signup} disabled={!client || busy} />
-                <span>First name{!signup && <small> (optional)</small>}</span>
+                <input id="auth-first-name" type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="e.g. Alex" maxLength={80} required disabled={!client || busy} />
+                <span>First name</span>
               </label>
               <label className="auth-field" htmlFor="auth-last-name">
-                <input id="auth-last-name" type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} placeholder="e.g. Morgan" maxLength={80} required={signup} disabled={!client || busy} />
-                <span>Last name{!signup && <small> (optional)</small>}</span>
+                <input id="auth-last-name" type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} placeholder="e.g. Morgan" maxLength={80} required disabled={!client || busy} />
+                <span>Last name</span>
               </label>
-            </div>
+            </div>}
 
             <label className="auth-field" htmlFor="auth-email">
               <input id="auth-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@company.com" required disabled={!client || busy} />

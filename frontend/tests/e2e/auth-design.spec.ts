@@ -36,10 +36,9 @@ test("login reuses the split layout, supports Google, and preserves account reco
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByLabel("Email")).toHaveAttribute("autocomplete", "email");
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "current-password");
-  await expect(page.getByLabel(/First name/)).toHaveAttribute("autocomplete", "given-name");
-  await expect(page.getByLabel(/Last name/)).toHaveAttribute("autocomplete", "family-name");
-  await expect(page.getByLabel(/First name/)).not.toHaveAttribute("required", "");
-  await expect(page.getByLabel(/Last name/)).not.toHaveAttribute("required", "");
+  await expect(page.getByLabel(/First name/)).toHaveCount(0);
+  await expect(page.getByLabel(/Last name/)).toHaveCount(0);
+  await expect(page.locator(".auth-form__names")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Forgot password?" })).toHaveAttribute("href", "/forgot-password");
   await expect(page.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/signup");
 });

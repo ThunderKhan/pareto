@@ -12,7 +12,7 @@ Adaptation is original code. The requested animated `GrainGradient` is from [Pap
 ## Functionality
 - Email/password sign-in retains `supabase.auth.signInWithPassword`.
 - Signup uses `supabase.auth.signUp`, requires first and last name as user metadata `first_name`, `last_name`, and preserves email confirmation and the `next` redirect.
-- Login also displays first and last name, but these are **optional profile fields**, never authentication credentials. If filled, they update the user's metadata after a successful password sign-in. Failed optional profile updates do not alter the password authentication result.
+- Login uses only email and password (or Google). First and last names are collected on signup, not requested or updated during login.
 - Google OAuth is wired into both screens through `signInWithOAuth({provider:'google'})`, preserving the existing callback route. The Google provider **must be enabled** in the actual Supabase project for a completed OAuth flow; visual implementation alone cannot configure the provider.
 - The functional `/forgot-password` link remains on the login page. Note that the underlying password-recovery page currently states the reset feature is not active.
 - No Apple button is shown because the project has no configured Apple OAuth integration. No fake Windows download, dead legal URLs or unsupported consent controls are added.
