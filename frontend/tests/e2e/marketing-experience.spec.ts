@@ -267,6 +267,7 @@ test("OpenTag-style FAQ has exact typography, no divider lines and animated inde
       gap: getComputedStyle(root.querySelector(".v2-faq-list")!).gap,
     };
   });
+  expect(visuals.height).toBeLessThan(90); // Desktop headline stays on one line.
   expect(visuals.questionBorder).toBe("0px");
   expect(visuals.itemBorder).toBe("0px");
   expect(visuals.columns).toBe("block");
