@@ -887,26 +887,26 @@ The status column records the current evidence. See the engineering log for test
 
 | ID | Work package | Priority | Depends on | Current status |
 | --- | --- | --- | --- | --- |
-| F-001 | Install, lockfile, build and baseline test verification | P0-FOUNDATION | — | Local check and production build passed |
-| F-002 | Prisma v7 adapter, local PostgreSQL and migration | P0-FOUNDATION | F-001 | PostgreSQL 18.6 migration and retrieval passed |
-| F-003 | Docker reproducibility and runtime check | P0-FOUNDATION | F-001, F-002 | Configured; Docker runtime pending |
+| F-001 | Install, lockfile, build and baseline test verification | P0-FOUNDATION | — | Frozen install, check and production build passed on GitHub CI |
+| F-002 | Prisma v7 adapter, local PostgreSQL and migration | P0-FOUNDATION | F-001 | Prior local PostgreSQL 18.6 and CI PostgreSQL 17 migration/seed passed |
+| F-003 | Docker reproducibility and runtime check | P0-FOUNDATION | F-001, F-002 | Docker image build passed in CI; Compose runtime unverified |
 | F-004 | Zod HTTP contracts, request IDs and logging | P0-FOUNDATION | F-001 | Implemented with bounded JSON input and request IDs |
 | D-101 | Typed search and delta contracts | P0-FOUNDATION | F-001 | Verified with unit tests |
 | D-102 | Candidate schema, seeded corpus and repo adapters | P0-FOUNDATION | F-002, D-101 | 48-profile seed and DB integration passed |
 | D-103 | Deterministic matcher and relevance ranking | P0-ORG support | D-101, D-102 | Verified with unit and DB tests |
-| D-104 | Per-criterion explanation mapper | **P0-ORG** | D-103 | Verified in evaluator tests |
+| D-104 | Per-criterion explanation mapper | **P0-ORG** | D-103 | CI tests passed, including documented mismatch versus unknown evidence |
 | S-201 | Gemini/Groq interpretation and editable draft | **P0-ORG** | F-004, D-101 | Implemented; live provider test pending |
-| S-202 | Confirmed query and persistent revisions | **P0-ORG** | S-201, D-102/103/104 | DB confirmation, retry and conflict tests passed |
+| S-202 | Confirmed query and persistent revisions | **P0-ORG** | S-201, D-102/103/104 | CI PostgreSQL confirmation, retry, conflict and multi-revision integration passed |
 | S-203 | Explainable result cards/detail | **P0-ORG** | S-202, D-104 | Implemented; signed-in browser verification pending |
-| S-204 | Multi-turn typed refinement | **P0-ORG** | S-202 | Delta tests passed; live provider/browser verification pending |
-| S-205 | Reference candidate search and similarity | **P0-ORG** | D-102/103/104, S-202 | Reference exclusion and ranking tests passed; browser verification pending |
+| S-204 | Multi-turn typed refinement | **P0-ORG** | S-202 | Two real PostgreSQL-backed refinements passed with a controlled model; live provider/browser pending |
+| S-205 | Reference candidate search and similarity | **P0-ORG** | D-102/103/104, S-202 | CI passed reference exclusion, alias deduplication and persisted reference refinement; signed-in browser pending |
 | P-301 | Diagnostics / zero-result rescue | P1-DIFFERENTIATION | P0 green | NOT STARTED |
 | P-302 | What-if comparison without mutation | P1-DIFFERENTIATION | P-301 | NOT STARTED |
 | P-303 | Near-match counterfactual explanation | P1-DIFFERENTIATION | D-104, P-301 | NOT STARTED |
 | P-401 | Google OAuth, session security and ownership | P1-PRODUCTIZATION | F-004 + DB | Existing Auth paths wired; hosted Auth and OAuth pending |
 | P-402 | Private PDF/DOCX/TXT ingestion | P1-PRODUCTIZATION | P-401 | NOT STARTED |
 | P-403 | UX hardening and failure states | P1-PRODUCTIZATION | P0 green | NOT STARTED |
-| R-501 | Integrated tests, Docker/deployment verification | Release | Core slices | Local build and DB tests passed; Docker and Railway pending |
+| R-501 | Integrated tests, Docker/deployment verification | Release | Core slices | CI 15/15 Vitest, 5/5 executed Playwright, production build and Docker image passed; authenticated browser test skipped, runtime/Railway pending |
 | R-502 | Official repo integration, README, slides | Release | Verified release | Personal feature branch available; official repository access blocked |
 
 **Status transitions:** change a row only after the corresponding evidence is logged. A task can be `IMPLEMENTED / UNVERIFIED` even when code has been merged; it is not `VERIFIED` until its gate actually passes.
