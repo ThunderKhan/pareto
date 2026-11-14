@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/recruiter-search
+      - feat/homepage-v2
   pull_request:
     branches:
       - main
@@ -56,6 +57,16 @@ jobs:
         run: pnpm --filter @pareto/frontend exec playwright install --with-deps chromium
       - name: Playwright browser tests
         run: pnpm test:e2e
+      - name: Upload synthetic homepage screenshots and Playwright diagnostics
+        if: always() && github.ref_name == 'feat/homepage-v2'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pareto-homepage-v2-browser-evidence
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Production Docker image build
         run: docker build -t pareto:ci .
       - name: Boot production container and verify liveness + signed-out access denial
