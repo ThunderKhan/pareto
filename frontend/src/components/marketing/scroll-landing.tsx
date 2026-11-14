@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { assessPreview, summarizePreview, type CandidateAssessment } from "./preview-data";
+import "./marketing.css";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -18,12 +20,6 @@ import {
   WarningCircle,
   X,
 } from "@phosphor-icons/react";
-
-const candidates = [
-  { id: "A", name: "Candidate A", title: "Senior backend engineer", city: "Hyderabad", years: 7, notice: 15, skills: ["Java", "Spring Boot", "AWS"] },
-  { id: "B", name: "Candidate B", title: "Platform engineer", city: "Hyderabad", years: 8, notice: 60, skills: ["Java", "Spring Boot", "AWS"] },
-  { id: "C", name: "Candidate C", title: "Backend engineer", city: "Hyderabad", years: 7, notice: null, skills: ["Java", "Spring Boot", "AWS"] },
-] as const;
 
 const story = [
   {
@@ -159,9 +155,9 @@ function Header() {
 function EvidenceCard() {
   return (
     <div className="hero-scene__evidence" aria-hidden="true">
-      <div className="hero-scene__tiny-head"><span className="status-dot status-dot--green" /> EVIDENCE EXTRACT</div>
-      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Java · Spring Boot · AWS <b>Verified</b></div>
-      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Hyderabad · 7 years <b>Verified</b></div>
+      <div className="hero-scene__tiny-head"><span className="status-dot status-dot--green" /> SYNTHETIC EVIDENCE</div>
+      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Java · Spring Boot · AWS <b>In sample</b></div>
+      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Hyderabad · 7 years <b>In sample</b></div>
       <div className="evidence-lines evidence-lines--review"><Question size={15} weight="fill" /> Joining availability <b>Unknown</b></div>
       <div className="evidence-trace">Nothing missing is treated as a match.</div>
     </div>
@@ -206,20 +202,38 @@ function HeroScene() {
   );
 }
 
-function ResultRow({ profile, notice }: { profile: typeof candidates[number]; notice: number }) {
-  const status = profile.notice === null ? "unknown" : profile.notice <= notice ? "match" : "fail";
+function ResultRow({ assessment }: { assessment: CandidateAssessment }) {
+  const { candidate: profile, status, reason, checks } = assessment;
   const Icon = status === "match" ? CheckCircle : status === "fail" ? WarningCircle : Question;
   return (
-    <article className={"demo-result demo-result--" + status}>
+    <article className={"demo-result demo-result--" + status} data-status={status}>
       <div className="demo-result__avatar" aria-hidden="true">{profile.id}</div>
-      <div className="demo-result__identity">
-        <strong>{profile.name}</strong>
-        <span>{profile.title} · {profile.city}</span>
-        <small>{profile.years} years · Java, Spring Boot, AWS</small>
-      </div>
-      <div className={"demo-result__state demo-result__state--" + status}>
-        <span><Icon size={15} weight="fill" />{status === "match" ? "Eligible" : status === "fail" ? "Does not match" : "Needs review"}</span>
-        <small>{profile.notice === null ? "Notice period unknown" : profile.notice + "-day notice"}</small>
+      <div className="demo-result__body">
+        <div className="demo-result__topline">
+          <div className="demo-result__identity">
+            <strong>{profile.name}</strong>
+            <span>{profile.title} · {profile.city ?? "Location not supplied"}</span>
+            <small>{profile.years === null ? "Experience not supplied" : `${profile.years} years`} · {profile.skills.join(", ")}</small>
+          </div>
+          <div className={"demo-result__state demo-result__state--" + status}>
+            <span><Icon size={15} weight="fill" aria-hidden="true" />{status === "match" ? "Eligible" : status === "fail" ? "Does not match" : "Needs review"}</span>
+            <small>{profile.notice === null ? "Notice period unknown" : profile.notice + "-day notice"}</small>
+          </div>
+        </div>
+        <p className="demo-result__reason">{reason}</p>
+        <details className="demo-result__details">
+          <summary>View criterion breakdown</summary>
+          <ul>
+            {checks.map((check) => (
+              <li key={check.label}>
+                <span>{check.label}<small>{check.expected}</small></span>
+                <span className={"criterion-state criterion-state--" + check.state}>
+                  {check.state === "match" ? "Meets" : check.state === "fail" ? "Misses" : "Unknown"} · {check.actual}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
       </div>
     </article>
   );
@@ -227,9 +241,10 @@ function ResultRow({ profile, notice }: { profile: typeof candidates[number]; no
 
 function InteractivePreview() {
   const [notice, setNotice] = useState<30 | 60>(30);
-  const exact = useMemo(() => candidates.filter((c) => c.notice !== null && c.notice <= notice).length, [notice]);
+  const assessments = useMemo(() => assessPreview(notice), [notice]);
+  const summary = useMemo(() => summarizePreview(assessments), [assessments]);
   return (
-    <div className="preview-panel" aria-label="Interactive synthetic candidate matching example">
+    <div className="preview-panel" role="region" aria-label="Interactive synthetic candidate matching example">
       <div className="preview-panel__toolbar">
         <div><span className="preview-panel__status-dot" /> PARETO / SEARCH EXPLORER</div>
         <span>INTERACTIVE PREVIEW · SYNTHETIC DATA</span>
@@ -238,26 +253,31 @@ function InteractivePreview() {
         <div className="preview-panel__aside">
           <div className="preview-panel__aside-title">Active search</div>
           <p>Backend engineers in Hyderabad</p>
-          <div className="preview-panel__filter"><Code size={17} /> Java · Spring Boot · AWS</div>
-          <div className="preview-panel__filter"><SlidersHorizontal size={17} /> 6–10 years experience</div>
+          <div className="preview-panel__filter"><Code size={17} aria-hidden="true" /> Java · Spring Boot · AWS</div>
+          <div className="preview-panel__filter"><SlidersHorizontal size={17} aria-hidden="true" /> 6–10 years experience</div>
           <div className="preview-panel__control">
-            <label id="notice-label">Maximum joining notice</label>
+            <div className="preview-panel__control-label" id="notice-label">Maximum joining notice</div>
             <div className="preview-panel__switch" role="group" aria-labelledby="notice-label">
               <button type="button" aria-pressed={notice === 30} onClick={() => setNotice(30)}>30 days</button>
               <button type="button" aria-pressed={notice === 60} onClick={() => setNotice(60)}>60 days</button>
             </div>
-            <small>Try relaxing one constraint. Counts are calculated from the three example profiles.</small>
+            <small>Change one requirement to inspect the difference. All values come from the three records below.</small>
+          </div>
+          <div className="preview-panel__legend">
+            <span><span className="legend-dot legend-dot--match" />Eligible</span>
+            <span><span className="legend-dot legend-dot--fail" />Excluded</span>
+            <span><span className="legend-dot legend-dot--unknown" />Needs review</span>
           </div>
         </div>
-        <div className="preview-panel__results" aria-live="polite">
-          <div className="preview-panel__summary">
-            <div><span>ELIGIBLE PROFILES</span><strong>{exact}<span> / 3</span></strong></div>
-            <p>{notice === 30 ? "One meets every known required condition." : "A longer joining window admits one additional profile."}</p>
+        <div className="preview-panel__results">
+          <div className="preview-panel__summary" role="status" aria-live="polite" aria-atomic="true">
+            <div><span>ELIGIBLE PROFILES</span><strong data-testid="eligible-count">{summary.eligible}<span> / {summary.total}</span></strong></div>
+            <p>{summary.excluded} excluded · {summary.needsReview} need{summary.needsReview === 1 ? "s" : ""} review. Joining window: {notice} days.</p>
           </div>
           <div className="preview-panel__result-list">
-            {candidates.map((c) => <ResultRow key={c.id} profile={c} notice={notice} />)}
+            {assessments.map((assessment) => <ResultRow key={assessment.candidate.id} assessment={assessment} />)}
           </div>
-          <p className="preview-panel__caution"><ShieldCheck size={15} /> A missing notice period is unknown—not an automatic match. This preview uses invented candidate records.</p>
+          <p className="preview-panel__caution"><ShieldCheck size={15} aria-hidden="true" /> Unknown evidence never becomes an automatic match. This is a local demonstration, not a live candidate search.</p>
         </div>
       </div>
     </div>
@@ -342,7 +362,7 @@ export default function ScrollLanding() {
           <div className="preview-section__inner container-wide">
             <div className="preview-section__head" data-reveal>
               <div><p className="eyebrow">THE DIFFERENCE IS IN THE DETAILS</p><h2>When constraints change,<br /><em>the answer changes.</em></h2></div>
-              <p>Explore a small, fully transparent example. A 30-day notice requirement excludes one qualified person; extending it to 60 days changes the result—without inventing any candidate data.</p>
+              <p>Explore a small, fully transparent example. A 30-day notice requirement excludes one otherwise qualified sample profile; see exactly what changes when the window grows to 60 days.</p>
             </div>
             <div data-reveal><InteractivePreview /></div>
             <p className="preview-section__disclaimer">This is a locally calculated illustration using three synthetic records; it is not connected to live recruitment data or the production matching service.</p>
