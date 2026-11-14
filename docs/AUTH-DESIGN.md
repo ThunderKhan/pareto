@@ -11,11 +11,13 @@ Adaptation is original code. The requested animated `GrainGradient` is from [Pap
 
 ## Functionality
 - Email/password sign-in retains `supabase.auth.signInWithPassword`.
-- Signup uses `supabase.auth.signUp`, adds first and last name as user metadata `first_name`, `last_name`, and preserves email confirmation and the `next` redirect.
+- Signup uses `supabase.auth.signUp`, requires first and last name as user metadata `first_name`, `last_name`, and preserves email confirmation and the `next` redirect.
+- Login also displays first and last name, but these are **optional profile fields**, never authentication credentials. If filled, they update the user's metadata after a successful password sign-in. Failed optional profile updates do not alter the password authentication result.
 - Google OAuth is wired into both screens through `signInWithOAuth({provider:'google'})`, preserving the existing callback route. The Google provider **must be enabled** in the actual Supabase project for a completed OAuth flow; visual implementation alone cannot configure the provider.
 - The functional `/forgot-password` link remains on the login page. Note that the underlying password-recovery page currently states the reset feature is not active.
 - No Apple button is shown because the project has no configured Apple OAuth integration. No fake Windows download, dead legal URLs or unsupported consent controls are added.
-- The large right-side canvas renders Paper's GrainGradient at `speed=1.2`, recolored blue/navy. The original Pareto mascot appears as a supporting visual.
+- The large right-side canvas renders Paper's GrainGradient at `speed=1.2`, recolored blue/navy. The original Pareto mascot appears as a supporting visual. The unnecessary top tagline, supporting paragraph, auth footer, back link, and privacy reassurance are removed.
+- At ordinary desktop viewport sizes the two panels fit the screen without page scrolling. Short and narrow viewports may scroll to keep inputs accessible; neither controls nor errors are clipped.
 - Below 960px or with reduced motion, the shader is not mounted; CSS provides a static gradient. This keeps mobile layouts responsive and honors accessibility preferences.
 
 ## Configuration

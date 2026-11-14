@@ -23,9 +23,7 @@ export default function AuthArtwork({ mode }: { mode: "login" | "signup" }) {
     {animate && <div className="auth-art__shader-wrap" aria-hidden="true"><AuthGrain /></div>}
     <div className="auth-art__scrim" aria-hidden="true" />
     <div className="auth-art__content">
-      <div className="auth-art__topline"><span className="auth-art__spark" aria-hidden="true" /> A clearer way to hire</div>
       <h2>{mode === "signup" ? <>Look beyond<br/><em>the résumé.</em></> : <>Find clarity<br/><em>in every match.</em></>}</h2>
-      <p>Describe a role naturally. Review the criteria. See the evidence behind each candidate.</p>
       <div className="auth-art__bottom">
         <Image
           src="/mascot/pareto-mascot.svg"

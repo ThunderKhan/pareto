@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { ArrowLeft, ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
+import { ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
 import AuthArtwork from "./auth-artwork";
 
 type Mode = "login" | "signup";
@@ -70,6 +70,19 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       } else {
         const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
+        // Names are optional on sign-in: they are profile details, not credentials.
+        // Never overwrite an existing name with an empty input.
+        const nameUpdates = {
+          ...(firstName.trim() ? { first_name: firstName.trim() } : {}),
+          ...(lastName.trim() ? { last_name: lastName.trim() } : {}),
+        };
+        if (Object.keys(nameUpdates).length > 0) {
+          const { error: profileError } = await client.auth.updateUser({ data: nameUpdates });
+          if (profileError) {
+            setMessage({ text: "Signed in, but the optional profile names could not be saved. Please try again later.", error: true });
+            return;
+          }
+        }
         window.location.assign(safeNext());
       }
     } catch (error) {
@@ -106,7 +119,6 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             <Image src="/brand/pareto-mark.svg" width={37} height={37} alt="" aria-hidden="true" unoptimized />
             <span>pareto<span className="auth-brand__dot">.</span></span>
           </Link>
-          <Link className="auth-back" href="/"><ArrowLeft size={16} aria-hidden="true"/> Back to site</Link>
         </header>
 
         <div className="auth-sheet__center">
@@ -126,16 +138,16 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           <div className="auth-divider"><span>or continue with email</span></div>
 
           <form className="auth-form" onSubmit={onSubmit}>
-            {signup && <div className="auth-form__names">
+            <div className="auth-form__names">
               <label className="auth-field" htmlFor="auth-first-name">
-                <input id="auth-first-name" type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="e.g. Alex" maxLength={80} required disabled={!client || busy} />
-                <span>First name</span>
+                <input id="auth-first-name" type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="e.g. Alex" maxLength={80} required={signup} disabled={!client || busy} />
+                <span>First name{!signup && <small> (optional)</small>}</span>
               </label>
               <label className="auth-field" htmlFor="auth-last-name">
-                <input id="auth-last-name" type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} placeholder="e.g. Morgan" maxLength={80} required disabled={!client || busy} />
-                <span>Last name</span>
+                <input id="auth-last-name" type="text" autoComplete="family-name" value={lastName} onChange={event => setLastName(event.target.value)} placeholder="e.g. Morgan" maxLength={80} required={signup} disabled={!client || busy} />
+                <span>Last name{!signup && <small> (optional)</small>}</span>
               </label>
-            </div>}
+            </div>
 
             <label className="auth-field" htmlFor="auth-email">
               <input id="auth-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@company.com" required disabled={!client || busy} />
@@ -162,13 +174,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           <p className="auth-switch">{signup ? "Already have an account?" : "New to Pareto?"}{" "}
             <Link href={signup ? "/login" : "/signup"}>{signup ? "Log in" : "Create an account"}</Link>
           </p>
-          <p className="auth-assurance">Your recruitment workspace is private to your account.</p>
         </div>
 
-        <footer className="auth-sheet__footer">
-          <span>© 2026 Pareto · std::zero</span>
-          <Link href="/">Explore Pareto</Link>
-        </footer>
       </section>
       <AuthArtwork mode={mode}/>
     </div>
