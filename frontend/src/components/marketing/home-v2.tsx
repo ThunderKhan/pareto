@@ -110,7 +110,7 @@ function Header() {
 }
 
 function Label({ children }: { children: ReactNode }) {
-  return <span className="v2-eyebrow"><span className="v2-eyebrow-line" aria-hidden="true"/>{children}</span>;
+  return <span className="v2-eyebrow">{children}</span>;
 }
 
 function Chip({ children, strong = false }: { children: React.ReactNode; strong?: boolean }) {
