@@ -4,7 +4,7 @@
 > **Version:** 1.0 · 14 November 2026 (IST)  
 > **Product:** Pareto — explainable AI recruitment intelligence  
 > **Challenge:** Trustume AI Hackathon 2026 — Problem Statement 1: *AI-Powered Natural Language Candidate Search & “Find Candidates Like Me”*  
-> **Related:** [MVP.md](MVP.md) · [Architecture notes](architecture/README.md) · [Engineering log](engineering-log.md)  
+> **Related:** [MVP.md](MVP.md) · [System architecture](ARCHITECTURE.md) · [Engineering log](engineering-log.md)  
 > **Scope authority:** The official PS1 requirements take precedence over any extra feature described here.  
 > **Submission deadline:** 15 November 2026, 5:00 PM IST (official assigned GitHub repository).
 
@@ -23,7 +23,7 @@ The [MVP](MVP.md) defines **what Pareto is**, the product philosophy, release sc
 
 **Important distinction:** Authentication, resume upload, constraint simulations, and a deployed hosted URL are **our product/engineering choices**, not original PS1 functional requirements. A correctly seeded mock candidate database **does meet** the organizer's data expectation; parsing individual PDF/DOCX files is an enhancement.
 
-**Source grounding:** The P0-ORG requirements in `5 are derived from the supplied **`problem_statement_1_ai_powered_natural_language_candidate_search.md`**. The submission and evaluation requirements in `15 are from the supplied official hackathon guidelines. Other requirements are decisions for Pareto, not claims about what the organizers mandated.
+**Source grounding:** The P0-ORG requirements in **Section 5** are derived from the supplied **`problem_statement_1_ai_powered_natural_language_candidate_search.md`**. The submission and evaluation requirements in **Section 15** are from the supplied official hackathon guidelines. Other requirements are decisions for Pareto, not claims about what the organizers mandated.
 
 ## 2. Product vision and problem
 
