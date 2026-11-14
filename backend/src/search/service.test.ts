@@ -96,6 +96,23 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
       .toMatchObject({ mode: "required" });
   });
 
+  it("returns an actionable error for undocumented reference profiles without exposing other owners", async () => {
+    const id = randomUUID();
+    const db = database();
+    await db.candidate.create({
+      data: { id, ownerId: owner, displayName: "Undocumented Test Candidate", skillsKnown: false },
+    });
+    try {
+      await expect(referenceDraft(owner, id)).rejects.toMatchObject({
+        status: 422,
+        message: expect.stringContaining("no documented comparison attributes"),
+      });
+      await expect(referenceDraft(stranger, id)).rejects.toMatchObject({ status: 404 });
+    } finally {
+      await db.candidate.delete({ where: { id } });
+    }
+  });
+
   it("retrieves actual candidates and isolates candidate and session access", async () => {
     const lookup = await candidateList(owner, "Asha Nair");
     expect(lookup).toHaveLength(1);

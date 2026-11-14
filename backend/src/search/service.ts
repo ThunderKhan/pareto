@@ -31,7 +31,13 @@ export async function candidateList(ownerId: string, query: string) {
 
 export async function referenceDraft(ownerId: string, id: string) {
   const candidate = await candidateFor(ownerId, id);
-  return { candidate, criteria: criteriaSchema.parse(referenceCriteria(candidate)) };
+  const rules = referenceCriteria(candidate);
+  // An entirely undocumented profile cannot produce a meaningful similarity search.
+  // Return an actionable client error rather than an opaque schema validation failure.
+  if (!rules.length) {
+    throw new SearchError(422, "This reference profile has no documented comparison attributes. Choose another candidate or enter criteria manually.");
+  }
+  return { candidate, criteria: criteriaSchema.parse(rules) };
 }
 
 export async function activeSearch(ownerId: string, id: string) {

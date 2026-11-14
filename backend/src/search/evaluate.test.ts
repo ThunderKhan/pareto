@@ -53,6 +53,22 @@ describe("candidate evaluation", () => {
     ]));
     expect(missingSkill.eligibility).toBe("INELIGIBLE");
   });
+  it("distinguishes exclusion, missing skill evidence, and preferred unknowns", () => {
+    const excludes = criteriaSchema.parse([{ field: "skill", mode: "required", value: "Java", exclude: true }]);
+    expect(evaluate({ ...profile, skills: ["JavaScript", "AWS"] }, excludes).eligibility).toBe("ELIGIBLE");
+    expect(evaluate({ ...profile, skills: ["JS", "Java"] }, excludes).details[0].outcome).toBe("FAIL");
+    expect(evaluate({ ...profile, skills: null }, excludes).details[0].outcome).toBe("UNKNOWN");
+    expect(evaluate({ ...profile, skills: [] }, excludes).details[0].outcome).toBe("MATCH");
+
+    const preferred = criteriaSchema.parse([
+      { field: "skill", mode: "required", value: "Java" },
+      { field: "notice", mode: "preferred", maxDays: 30 },
+    ]);
+    const unknownNotice = evaluate({ ...profile, noticePeriodDays: null }, preferred);
+    expect(unknownNotice.eligibility).toBe("ELIGIBLE");
+    expect(unknownNotice.preferenceMet).toBe(0);
+    expect(unknownNotice.details[1].outcome).toBe("UNKNOWN");
+  });
   it("rejects inverted ranges and conflicting aliases", () => {
     expect(criteriaSchema.safeParse([{ field: "experience", mode: "required", minMonths: 120, maxMonths: 72 }]).success).toBe(false);
     expect(criteriaSchema.safeParse([...rules, { field: "skill", value: "AWS", mode: "required", exclude: true }]).success).toBe(false);
