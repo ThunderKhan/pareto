@@ -46,7 +46,7 @@ Next.js, TypeScript, Tailwind v4, shadcn/ui configuration, Phosphor Icons, Postg
 
 Only the foundation is initialized. Configuring OAuth, external providers, uploads, application database models, and full E2E tests requires the next implementation milestones.
 
-See `docs/README.md`. **Never commit API keys, actual resumes, or private applicant data.**
+See [`docs/MVP.md`](docs/MVP.md) for the full product scope and [`docs/README.md`](docs/README.md) for the documentation index. **Never commit API keys, actual resumes, or private applicant data.**
 
 ## Hackathon submission
 
