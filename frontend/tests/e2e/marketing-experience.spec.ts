@@ -1,5 +1,63 @@
 import { expect, test } from "@playwright/test";
 
+test("homepage uses loaded, self-hosted typography rather than CSS-only font names", async ({ page }, testInfo) => {
+  const failedFonts: string[] = [];
+  const fontResponses: string[] = [];
+  page.on("requestfailed", (request) => {
+    if (/\\.woff2?(?:\\?|$)/.test(request.url())) failedFonts.push(request.url());
+  });
+  page.on("response", (response) => {
+    if (/\\.woff2?(?:\\?|$)/.test(response.url())) {
+      if (response.ok()) fontResponses.push(response.url());
+      else failedFonts.push(response.url() + " status=" + response.status());
+    }
+  });
+  await page.goto("/");
+  const metrics = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const get = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!node) throw new Error("Missing typography target " + selector);
+      const computed = getComputedStyle(node);
+      return {
+        fontFamily: computed.fontFamily,
+        fontSize: computed.fontSize,
+        fontWeight: computed.fontWeight,
+        fontStyle: computed.fontStyle,
+        lineHeight: computed.lineHeight,
+        letterSpacing: computed.letterSpacing,
+        fontSynthesis: computed.fontSynthesis,
+      };
+    };
+    return {
+      hero: get(".v2-hero h1"),
+      italicEmphasis: get(".v2-hero h1 em"),
+      section: get(".v2-problem .v2-section-intro h2"),
+      body: get(".v2-hero-copy > p"),
+      nav: get(".v2-desktop-nav"),
+      action: get(".v2-hero-actions .v2-btn"),
+      candidate: get(".v2-window-heading h3"),
+      faces: [...document.fonts].map(({family, style, weight, status}) => ({family, style, weight, status})),
+      mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\\.woff2?(?:\\?|$)/.test(url)),
+    };
+  });
+  expect(metrics.hero.fontFamily).toMatch(/__Bitter_/);
+  expect(metrics.section.fontFamily).toMatch(/__Bitter_/);
+  expect(metrics.body.fontFamily).toMatch(/__Inter_/);
+  expect(metrics.nav.fontFamily).toMatch(/__Inter_/);
+  expect(metrics.action.fontFamily).toMatch(/__Inter_/);
+  expect(metrics.candidate.fontFamily).toMatch(/__Inter_/);
+  expect(metrics.italicEmphasis.fontStyle).toBe("normal");
+  expect(metrics.hero.fontSynthesis).toBe("none");
+  expect(metrics.faces.some((face) => face.family.includes("__Bitter_") && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.faces.some((face) => face.family.includes("__Inter_") && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.mediaFonts.length).toBeGreaterThanOrEqual(2);
+  expect(fontResponses.length).toBeGreaterThanOrEqual(2);
+  expect(failedFonts).toEqual([]);
+  expect(metrics.mediaFonts.some((url) => /stkearl/i.test(url))).toBe(false);
+  await testInfo.attach("computed-typography.json", { body: JSON.stringify(metrics, null, 2), contentType: "application/json" });
+});
+
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
