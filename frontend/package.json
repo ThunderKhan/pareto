@@ -1,0 +1,32 @@
+{
+  "name": "@pareto/frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pareto/backend": "workspace:*",
+    "next": "16.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@supabase/supabase-js": "^2.57.0",
+    "@supabase/ssr": "^0.6.1",
+    "@phosphor-icons/react": "^2.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "tailwindcss": "^4.1.13",
+    "postcss": "^8.5.6",
+    "typescript": "^5.9.2",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "16.4.6"
+  }
+}

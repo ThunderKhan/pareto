@@ -1,0 +1,25 @@
+# Manual-only until GitHub Actions credits are available.
+name: CI (manual)
+on:
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Lint, typecheck, and unit tests
+        run: pnpm check
+      - name: Next.js build
+        run: pnpm build
+      - name: Docker build
+        run: docker build -t pareto:ci .

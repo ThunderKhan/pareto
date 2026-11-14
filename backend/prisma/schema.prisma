@@ -1,0 +1,15 @@
+// Initial database scaffold. Full candidate/search models follow the approved specifications.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Candidate {
+  id          String   @id @default(cuid())
+  displayName String
+  createdAt   DateTime @default(now())
+}

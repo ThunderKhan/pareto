@@ -1,0 +1,20 @@
+{
+  "name": "pareto",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @pareto/frontend dev",
+    "build": "pnpm --filter @pareto/frontend build",
+    "start": "pnpm --filter @pareto/frontend start",
+    "lint": "pnpm --filter @pareto/frontend lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "db:generate": "pnpm --filter @pareto/backend db:generate",
+    "db:migrate": "pnpm --filter @pareto/backend db:migrate"
+  }
+}
