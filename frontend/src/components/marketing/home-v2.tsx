@@ -264,7 +264,7 @@ function Similarity() {
 
 const faqs = [
   ["Does an unknown notice period count as a match?", "No. Unknown values are marked Needs review unless another known required criterion already fails. Missing evidence must never be treated as eligibility."],
-  ["Does the public preview search a real candidate database?", "No. This preview uses fictional candidate profiles to explain the matching approach. Live candidate search requires a signed-in account."],
+  ["Are the candidate profiles shown on this page real?", "No. The walkthrough and reference-based discovery examples use fictional profiles. Live candidate search requires a signed-in recruiter account."],
   ["Can recruiters change the criteria before searching?", "Yes. Recruiters review and confirm the interpreted requirements before searching. The walkthrough shows the steps."],
   ["How does reference-based discovery work?", "It compares skills, experience, location and other meaningful attributes to highlight similarities and differences."],
 ];
