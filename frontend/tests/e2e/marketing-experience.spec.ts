@@ -184,6 +184,20 @@ test("OpenTag-inspired trust timeline changes its sticky demo with accessible co
   await section.locator(".v2-trust-timeline").screenshot({ path: testInfo.outputPath("trust-timeline-desktop.png") });
 });
 
+test("timeline advances its active content when the page is scrolled", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#trust");
+  const steps = page.locator("#trust .v2-trust-step-button");
+  await expect(steps).toHaveCount(4);
+  await steps.nth(2).evaluate((node) => node.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect(steps.nth(2)).toHaveAttribute("aria-current", "step");
+  await expect(steps.nth(2)).toHaveCSS("opacity", "1");
+  await expect(page.locator("#v2-trust-demo")).toContainText("A shortlist with reasons.");
+  await steps.nth(3).evaluate((node) => node.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect(steps.nth(3)).toHaveAttribute("aria-current", "step");
+  await expect(page.locator("#v2-trust-demo")).toContainText("Search in your workspace.");
+});
+
 test("timeline icon assets load and mobile carousel works without viewport overflow", async ({ page }, testInfo) => {
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
