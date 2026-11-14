@@ -1,17 +1,9 @@
-import Link from "next/link";
+import SearchWorkspace from "@/components/search/workspace";
 
 export default function DashboardSearchPage() {
-  return (
-    <main className="dashboard-main">
-      <p className="eyebrow">CANDIDATE SEARCH</p>
-      <h1>Search with evidence.</h1>
-      <p>The next development slice will connect natural-language criteria extraction, recruiter confirmation, and stored candidate matching.</p>
-      <div className="dashboard-start">
-        <p className="eyebrow">IMPLEMENTATION STATUS</p>
-        <h2>Search is not connected yet.</h2>
-        <p>To explore a transparent synthetic demonstration now, use the interactive product preview on the public landing page.</p>
-        <Link href="/#preview" className="button button--dark">View synthetic example →</Link>
-      </div>
-    </main>
-  );
+  return <main className="dashboard-main">
+    <h1>Candidate search</h1>
+    <p>Describe the role or select a reference profile. Review the criteria before searching your workspace.</p>
+    <SearchWorkspace />
+  </main>;
 }

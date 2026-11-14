@@ -1,469 +1,658 @@
-# Pareto — Product Experience & Design System
-
-> **Document:** `docs/DESIGN.md` · **Version:** 1.0 · **Date:** 14 November 2026 (IST)  
-> **Status:** Approved design direction and implementation specification; The marketing landing and entry screens now have an **unverified implementation**; real search/backend and screenshot-fidelity validation remain pending.  
-> **Design source:** Private [ThunderKhan/opentag-clone](https://github.com/ThunderKhan/opentag-clone), branch `main`, inspected source tree `adb6ba9ad135386e2800bd3ac0ef4999e6ac240d`.  
-> **Product references:** [MVP.md](MVP.md), [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), [IMPLEMENTATION.md](IMPLEMENTATION.md).  
-> **Governing principle:** The **visual language** is based on the inspected OpenTag public-site clone. The **product content, logo, wording, user journeys, and private dashboard** belong to Pareto and must be designed for its recruitment problem.
-
-## 1. Overview — design intent, provenance, and guardrails
-
-### 1.1 Desired experience
-
-Pareto should look and feel like a restrained, precise, editorial software product: **warm off-white surfaces, deep navy typography, generous layout breathing room, elegant serif display headings, exceptionally clear sans-serif working text, subtle borders, low-noise motion, and deliberate dark CTA buttons**. This is **not** the earlier dark navy placeholder aesthetic.
-
-The user has selected the OpenTag public-site clone as the **primary UI reference**. Aim for high fidelity in page spacing, navigation proportions, typography hierarchy, button shape, responsive behavior, visual rhythm, and understated micro-interactions. Carry this visual grammar into new product surfaces rather than transplant unrelated OpenTag content or features.
-
-**Confidence/source labels used throughout:**
-- **[VERIFIED FROM CLONE]**: literal CSS or page-source value, or a statement in the clone's inspection documentation.
-- **[PARETO ADAPTATION]**: a deliberate new design decision not evidenced by the clone—especially auth and dashboard.
-- **[VALIDATE IN BROWSER]**: must be checked visually before claiming pixel-level fidelity. No live browser screenshot comparison of the new Pareto app has yet been performed.
-
-### 1.2 What the reference actually includes
-
-The clone recreates **175 public OpenTag website routes** and contains editable static HTML, source-preserved presentation CSS, independently implemented interaction JS, local assets, research notes and desktop/mobile comparison screenshots. It is **not** a clone of the private SaaS product. Sign-up and sign-in buttons in the reference link to external OpenTag account services; there are **no private application dashboard or authenticated account screens to study**.
-
-| Reference area | Grounded source file | What we reuse conceptually |
-| --- | --- | --- |
-| Brand/navigation proportions, CTA design | `src/components/header.html` | Header structure, high-contrast actions, responsiveness |
-| Homepage hero, section sequencing, rich demo | `src/pages/home.html` | Editorial hero, visual storytelling, progressive sections |
-| Color variables, type scales, radii, breakpoints, motion | `src/styles/reference.css` | Normative reference tokens, not a stylesheet to paste wholesale |
-| Hover/menu/dialog and reduced-motion treatment | `src/styles/app.css` | Accessible interaction conventions |
-| Documentation sidebar + search layout | `src/pages/docs.html` | Inspiration for a compact **Pareto-specific** dashboard shell |
-| Interaction conventions | `src/app.js` | Keyboard handling, tabs, search and menu behaviors |
-| Research screenshots and testing evidence | `docs/research/INSPECTION.md` and `docs/research/screenshots/` | Reference viewports and fidelity checklist |
-| Public routes / limitations | `README.md` and `docs/research/ROUTES.md` | Confirm what is and is not included in source |
-
-**Important IP and security boundary:** OpenTag's trademarks, mascot, illustration files, photography, customer logos, copy and any proprietary fonts remain their owners' materials. **Do not copy them into Pareto or publish the private clone.** Create original Pareto graphics/copy and only use a font if its license permits reuse in this project. Use legally licensed/open-source lookalikes where necessary. Fidelity is to the **layout system and interaction language**, not impersonation of OpenTag.
-
-## 2. Colors
-
-### 2.1 Primary palette — extracted from reference CSS
-
-These values are literal variables from `src/styles/reference.css` and are the **reference baseline**.
-
-| Reference token | Verified value | Function in Pareto |
-| --- | --- | --- |
-| `--ot-page` | `#FFFDF9` | Primary marketing/page canvas |
-| `--ot-ink` | `#020E24` | Headings, strongest text, primary CTA background |
-| `--ot-body` | `#4E4E4E` | Supporting body text |
-| `--ot-muted` | `#7A7A7A` (desktop override `#6B6B6B`) | Secondary hints and metadata; check contrast |
-| `--ot-fill` | `#10101014` | Soft control fill over page/background |
-| `--ot-fill-hover` | `#10101021` | Hover fill |
-| `--ot-hairline` | `#020E240F` | Subtle strokes |
-| `--ot-rule` | `#020E2414` | Dividers |
-| `--ot-divider` | `#020E2426` | Stronger separators |
-| `--ot-star` | `#429DFC` | Small blue accents, diagrams and focus accents where accessible |
-| `--ot-navy` | `#052169` | Supporting navy accent |
-
-**Additional observed surfaces:** `#F7F4ED` appears on a documentation subnav; `#F4EFE6` appears in active/pressed local controls; white `#FFFFFF` appears in dialogs and cards. These are contextual, not substitutes for the primary canvas.
-
-### 2.2 Pareto semantic tokens — implementation-facing
-
-Use **semantic names**, so shadcn/ui and Tailwind share one source of truth rather than hard-coded color values across pages.
-
-```css
-/* [PARETO ADAPTATION] Map reference colors into app semantics. */
-:root {
-  --pareto-canvas: #fffdf9;
-  --pareto-surface: #ffffff;
-  --pareto-surface-subtle: #f7f4ed;
-  --pareto-ink: #020e24;
-  --pareto-body: #4e4e4e;
-  --pareto-muted: #6b6b6b;
-  --pareto-border-subtle: #020e240f;
-  --pareto-border: #020e2414;
-  --pareto-border-strong: #020e2426;
-  --pareto-accent: #429dfc;
-  --pareto-navy: #052169;
-  --pareto-control-fill: #10101014;
-  --pareto-control-hover: #10101021;
-  --pareto-focus: #052169;
-}
-```
-
-### 2.3 Status colors — Pareto-specific, not OpenTag values
-
-Search results require **semantic evidence states**, not decorative score coloring. These are **proposed** and must pass contrast checks in actual components:
-
-| Status | Proposed ink / surface | Label requirement |
-| --- | --- | --- |
-| Matched / Eligible | `#166534` / `#F0FDF4` | Always spell out “Matched” / “Eligible” |
-| Failed / Ineligible | `#991B1B` / `#FEF2F2` | Always spell out reason and failing criterion |
-| Unknown / Needs review | `#92400E` / `#FFFBEB` | Never imply absence is a pass or failure |
-| Informational / Preferred | `#052169` / `#EFF6FF` | Clearly distinguish preference from hard eligibility |
-
-Color alone must **never** encode eligibility, evidence status or confirmation.
-
-## 3. Typography
-
-### 3.1 Families
-
-- **[VERIFIED FROM CLONE]** STK Earl (regular/medium) is used for expressive display headings; **Inter** is the dominant interface and body family. **Lato** appears within Slack demonstration content in the original clone, not general layout. JetBrains Mono/Geist Mono also appear among available font variables.
-- **[PARETO ADAPTATION]** Use STK Earl **only if a valid redistribution/web license is confirmed**. Otherwise choose a licensed/open-source serif with comparably elegant editorial rhythm (for example, **Instrument Serif** or another approved alternative), then match size, tracking and line-height visually. Use properly licensed **Inter** for UI/body.
-- The typography contrast is intentional: **serif for marketing/storytelling; Inter sans-serif for application controls, explanations, tables and form text**. Do not typeset candidate result tables in decorative serif.
-
-### 3.2 Reference scale (verified CSS)
-
-| Role | CSS evidence | Use in Pareto |
-| --- | --- | --- |
-| Homepage `v2 display` | `clamp(2.5rem, (100vw - 2*inset)/16, 4.5rem)`, line-height `1` | Hero heading |
-| Editorial `v2 H2` | `clamp(2.125rem, 1.4rem + 2.6vw, 3.75rem)`, line-height `1.02` | Landing section headings |
-| `ot-display` | `clamp(2.5rem, 1.95rem + 2.2vw, 4rem)`, weight `500`, line-height `1.2` | Other editorial headers |
-| `ot-h1` | `clamp(2.375rem, 1.957rem + 1.7143vw, 3.5rem)`, line-height `1.1` | Large page titles |
-| `ot-h2` | `clamp(2rem, 1.814rem + .7619vw, 2.5rem)`, line-height `1.1` | Section headers |
-| `ot-h3` | `clamp(1.5rem, 1.407rem + .381vw, 1.75rem)`, line-height `1.2` | Feature/callout headers |
-| `ot-h4` | `1.375rem`, line-height `1.32` | Small editorial headings |
-| `ot-body-lg` | `1.125rem/1.75rem` | Lead description |
-| `ot-body` | `1rem/1.5rem` | Normal body text |
-| `ot-body-sm` | `0.875rem/1.25rem` | Detail copy |
-| `ot-label` | `0.875rem/1.25rem`, weight 500 | Labels |
-| `ot-label-button` | `1rem/1.375rem`, weight 500 | Button labels |
-
-Reference letter spacing: editorial `-0.03em`; Inter utility/body commonly `-0.04em`. Preserve carefully, but **[PARETO ADAPTATION]** for dense data tables prefer normal or slightly reduced negative tracking to protect legibility. The clone defines reduced mobile sizes for some editorial classes.
-
-### 3.3 Dashboard typography extension
-
-- Dashboard page title: Inter or restrained serif, **24–32px** depending on density.
-- Section headings: Inter 18–20px semibold.
-- Form/candidate body: Inter 14–16px; minimum 16px for mobile inputs to avoid unwanted zoom.
-- Metadata: Inter 12–14px with contrast check.
-- Numeric counters: Inter tabular numerals; do not use decorative large-number marketing type inside evidence rows.
-- Code, IDs, logs: monospace only where technically meaningful.
-
-These dashboard sizes are **new Pareto decisions**, because OpenTag's private app screens are not included in the clone.
-
-## 4. Layout, grid and spacing
-
-### 4.1 Reference canvas and responsive grid
-
-**[VERIFIED FROM CLONE]** The CSS uses:
-
-```css
-:root {
-  --ot-inset: 24px;
-  --site-header-height: 66px;
-}
-@media (min-width: 640px) {
-  :root { --ot-inset: 32px; --site-header-height: 65px; }
-}
-@media (min-width: 1024px) {
-  :root {
-    --ot-inset: clamp(48px, 8.6111vw, 124px);
-    --site-header-height: 91px;
-  }
-}
-```
-
-The outer `max-w-ot-page` is **90rem (1440px)**, but the 1440px viewport has **124px gutters per side**, leaving **1192px usable content width** (as also recorded in the clone's inspection notes). Do **not** confuse outer container width with interior text width.
-
-- **Desktop ≥1024px:** 91px main header, fluid gutters up to 124px.
-- **Tablet 640–1023px:** 65px header, 32px gutters.
-- **Mobile <640px:** 66px header, 24px gutters.
-- Homepage hero top padding in source: **76px mobile**, **96px small**, **128px medium+**.
-- Public-site body composition: centered, generous vertical sections and carefully controlled text measure.
-- Document layout provides a **232px** left-hand navigation column at desktop with a wider right content region; this is useful precedent for Pareto's dashboard extension.
-
-### 4.2 Working spacing scale
-
-**[PARETO ADAPTATION]** Use the clone's Tailwind-like **4px base rhythm**; express production design as tokens rather than copying arbitrary bracketed class values everywhere.
-
-| Token | Pixels | Usage |
-| --- | ---: | --- |
-| `space-1` | 4 | Tiny icon/text corrections |
-| `space-2` | 8 | Icon labels, compact controls |
-| `space-3` | 12 | List rows, small control gaps |
-| `space-4` | 16 | Basic row/card gaps |
-| `space-5` | 20 | Compact card padding |
-| `space-6` | 24 | Default page gutters/mobile and panel padding |
-| `space-8` | 32 | Section gaps and tablet gutters |
-| `space-10` | 40 | Feature-group spacing |
-| `space-12` | 48 | Page-section spacing |
-| `space-16` | 64 | Large interior sections |
-| `space-20` | 80 | Prominent editorial spacing |
-| `space-24` | 96 | Marketing section spacing |
-| `space-32` | 128 | Large hero breathing room |
-
-### 4.3 Dashboard grid — Pareto adaptation
-
-The source public website **does not specify an authenticated app shell**. Derive a pragmatic and consistent working layout:
-
-- Large desktop: **220–240px sidebar** (232px as initial target), flexible main pane with 24–32px inner padding, optional 320–380px details drawer for candidate evidence.
-- Compact desktop/tablet: sidebar collapses; main content remains readable; details become full-screen sheet/overlay if necessary.
-- Mobile: single-column search/results flow, no permanent sidebar, touch-sized controls, horizontal filters only when accessible.
-- Keep the landing page's large editorial gutters **on public pages**; the app dashboard intentionally has denser information architecture.
-- No sideways scroll for entire page at **390px**, **768px**, **1440px**, and **1920px**. Constrained comparison tables may scroll inside labeled containers.
-
-## 5. Elevation, depth, borders and surfaces
-
-### 5.1 From the reference
-
-- Subtle hairlines (nav dividers and card outlines), warm/off-white canvas, minimal opaque shadows.
-- Reference homepage declares a `--ui-shadow` stack approximately **0 0 0 .5px rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.05), 0 12px 28px -14px rgba(0,0,0,.22)** and a lighter `--card-lift` for selected cards.
-- The clone's local dialog styles use a softer elevated white surface and darkened/blurred backdrop. Avoid applying high-elevation shadows indiscriminately.
-
-### 5.2 Pareto surface hierarchy
-
-1. Page canvas: `#FFFDF9`.
-2. Working panel/card: white or very slightly warm, 1px subtle border.
-3. Nested/recessed information: `#F7F4ED` with low-contrast separators.
-4. Active overlay/dialog: white, moderate shadow, dim backdrop.
-5. Primary CTA: solid navy with white text.
-
-Use shadows for **floating** objects (menus/sheets), not for every content card. Evidence tables should favor hairlines and spacing over faux depth.
-
-## 6. Shapes, controls and iconography
-
-### 6.1 Verified reference shapes
-
-- `.rounded-ot`: **12px**.
-- Header primary and secondary buttons: about **42px high** from source classes (mobile variant 38–40px); desktop text roughly 16px, horizontal padding 20px.
-- Other observed radii include 8px menu button, 10px search field, 20px local consent card and dialogs. This is a *small scale of intentional variants*, not one global radius for every surface.
-
-### 6.2 Pareto component decisions
-
-- Primary button: dark ink / white label, 42–44px height, 12px radius, consistent keyboard focus outline.
-- Secondary button: soft-fill / ink label, same dimensions; avoid flat low-contrast disabled text.
-- Input/search prompt: high legibility, 44–48px minimum tap height, 10–12px radius, visible label and validation/error state.
-- Chips: compact required/preferred/editable filters, avoid using color only to convey priority.
-- Candidate card: simple white surface, 1px rule, 12–16px radius; structured fact rows and evidence preview.
-- Dialog/sheet: accessible keyboard focus management; explicit confirmation/cancel.
-- Navigation: responsive; `aria-current` on active route and obvious sign-in CTA.
-
-**Icons:** **Phosphor Icons** (`@phosphor-icons/react`) for Pareto. The clone contains inline SVG/Remix-style icons in some public pages; the selected icon library is a conscious consistency adaptation. **Do not use Lucide as the default.** Match icon weight, size (typically 16/20px), optical alignment and subdued treatment.
-
-## 7. Motion and interaction guidelines
-
-### 7.1 Observed reference motion
-
-- The homepage includes an entrance `settle` animation: **900ms**, easing **`cubic-bezier(0.22,1,0.36,1)`**, starting approximately **14px lower**, **4px blur** and zero opacity. It respects `prefers-reduced-motion`.
-- Common button hover/color changes use about **150–200ms** transitions.
-- The public clone includes sophisticated mascot/collage and staged demo animations, automatically rotating tabs, and step changes tied to scroll. Those specific branded animations are **not** portable recruitment functionality.
-- The independent interaction code includes accessible FAQ toggles, tabs, menu dismissal, documentation search keyboard shortcuts and mobile navigation.
-
-### 7.2 Pareto motion scale
-
-**[PARETO ADAPTATION]** Restrained motion, with performance and reduced-motion safeguards:
-
-| Interaction | Duration | Treatment |
-| --- | --- | --- |
-| Button hover/focus | 150–200ms | Color/border, no layout jump |
-| Menu/popover/sheet | 180–240ms | Small fade/translate, no jarring overshoot |
-| Confirmation/diff appearance | 200–280ms | Gentle emphasis; preserve text visibility |
-| Landing editorial sections | ≤900ms when intentional | Source-like settle, not on every scroll/element |
-| Result loading | As long as operation takes | Accessible status/skeleton, no misleading perpetual animation |
-| Diagnostic graph changes | 250–350ms | Restrained fade/size transition; values stay legible |
-
-Respect `prefers-reduced-motion: reduce` by disabling nonessential entrance/parallax/autoplay and minimizing transitions. Avoid autoplaying a candidate-results carousel or animating match percentages as if measured evidence is changing.
-
-## 8. Navigation, route map and end-to-end product experience
-
-The route system below is **new Pareto product scope**. The clone only defines public-marketing routes.
-
-### 8.1 Primary route architecture
-
-| Route | Visibility | Purpose | Priority |
-| --- | --- | --- | --- |
-| `/` | Public | OpenTag-style, Pareto-branded landing page and conversion |
-| `/login` | Public / redirect if signed in | Email/password + Google sign-in |
-| `/signup` | Public / redirect if signed in | New account registration + Google signup |
-| `/auth/callback` | Auth flow only | Supabase OAuth code/PKCE exchange; safe redirect |
-| `/forgot-password`, `/reset-password` | Public token flows | Recover sign-in access |
-| `/dashboard` | Protected | Orientation/home of recruitment workspace |
-| `/dashboard/search` | Protected | **P0-ORG:** prompt, draft criteria, confirm, results and refinement |
-| `/dashboard/search/[id]` | Protected | Saved active search and revisions |
-| `/dashboard/candidates` | Protected | Candidate list and reference candidate selection |
-| `/dashboard/candidates/[id]` | Protected | Candidate evidence detail and “Find Similar” |
-| `/dashboard/imports` | Protected P1 | Private resume uploads and status |
-| `/dashboard/settings` | Protected P1 | Profile and account settings |
-
-**Public landing CTA → `/signup`**; secondary **Log in → `/login`**. Successful auth → `/dashboard`, or a validated return-to route if the recruiter was redirected from a protected page. Signed-in users who visit `/signup` or `/login` should proceed to the dashboard. A new user may go from dashboard to Search with one clear action.
-
-**Authorization requirement:** Route guarding is only the outer layer. Every private API resource is authorized server-side, including via Prisma, and every resume object remains private.
-
-### 8.2 Landing page: verified visual pattern, Pareto content
-
-Proposed sequence (borrow structural rhythm, not OpenTag text/images):
-
-1. **Header:** original Pareto wordmark; concise product links (How it works, Features, Privacy); **Log in** secondary and **Get started** dark CTA.
-2. **Hero:** large editorial serif headline about *finding candidates with evidence*, clear Inter lead text and signup CTA; optional static/interactive original product illustration.
-3. **Product preview:** **actual Pareto UI** search prompt → criteria confirmation → explainable results, not a fake OpenTag chat demo.
-4. **How it works:** Describe → Review → Confirm → Explain → Refine.
-5. **Capability sections:** conversational refinement, reference-based search, diagnostics/what-if (only label as available if implemented).
-6. **Trust/clarity section:** recruiter control, unknown evidence, clear constraints and private document handling.
-7. **Final signup CTA and concise footer.**
-
-The reference homepage contains customer logo strips, use-case tabs, Slack demo, four-step work panels, FAQ and illustrated footer. **[PARETO ADAPTATION]** Reuse the visual *pattern* only where corresponding Pareto content is real. Do not invent testimonials, statistics, security certifications or customer logos.
-
-### 8.3 Authentication screens: new Pareto design in reference style
-
-- Warm `#FFFDF9` background, clean Pareto wordmark, editorial short statement, a high-clarity form/panel and 12px dark CTA.
-- Google sign-in first or prominent; email/password below with visible labels, validation and accessible error summary.
-- Sign-up: email, password, confirmation/verification handling per Supabase configuration; link back to login.
-- Login: email/password, Google, forgot password, sign-up link.
-- Real pending/error/success states, rate-limit feedback, password reset.
-- No unauthorized dashboard content flashing during redirects. Handle OAuth cancellation or errors with safe copy.
-- **No actual reference sign-in forms exist in opentag-clone**; this is a coherent, original extrapolation.
-
-### 8.4 Dashboard: new Pareto working UI
-
-**Shell:** compact navy-on-cream header + 232px-inspired left sidebar and flexible working pane. Provide persistent navigation, user menu/sign out, responsive collapse.
-
-**Dashboard homepage** should orient the recruiter without fabricating analytics. Prefer **“Start a candidate search”** as the dominant CTA, recent searches only when stored, candidate-dataset count only when computed, and simple guidance/empty state.
-
-**Search workspace** should be the most polished app surface:
-- Left/top: prompt or selected reference candidate, conversation context and search revision.
-- Center: editable criteria with explicit required/preferred filters and **Confirm Search**.
-- Results: exact/needs-review/near-match group separation and evidence-backed cards.
-- Candidate detail: per-criterion match, fail, unknown and source field/excerpt.
-- P1 diagnostics and what-if appear as progressive disclosure **after** real results; not preempting the organizer-required flow.
-
-**Candidates:** searchable list with role, experience, location, skill chips; open detail; **Find Candidates Like Me** action.  
-**Imports P1:** private file status with extraction errors, not a decorative drag-and-drop.  
-**Mobile:** single-column progression; results and detail in accessible page/sheet; no hidden confirm action.
-
-## 9. Component inventory and state contracts
-
-| Component | Source styling cue | Required product behavior |
-| --- | --- | --- |
-| `PublicHeader` | OpenTag header, desktop 91px, restrained CTA | Responsive nav; routes to real Pareto pages |
-| `PublicHero` | Serif editorial display, wide gutters | Signup CTA and truthful product preview |
-| `AuthCard` | Warm canvas, rounded white surface | Google/email states and validation |
-| `AppShell` | Docs-style sidebar and hairlines | Protected navigation and user menu |
-| `SearchComposer` | Clean textual input, minimal ornament | Typed prompt or reference search |
-| `CriteriaEditor` | Restrained form controls/chips | Edit draft; explicit **Confirm Search** |
-| `CriteriaDiff` | Clear changed-field emphasis | Review conversational refinements |
-| `CandidateResultCard` | Quiet white bordered cards | Exact/needs-review/near state and evidence |
-| `EvidenceBreakdown` | Dense Inter working text | Each criterion's value, state and reason |
-| `SearchDiagnostics` | Original clean panels | Actual measured bottleneck counts |
-| `WhatIfComparison` | Bordered two-column comparison | No mutation until recruiter confirms |
-| `ImportStatus` | Stepper/status list | Real upload/progress/failure; private docs |
-| `EmptyState` | Editorial spacing + crisp copy | Helpful next action without fake counts |
-| `Modal/Popover/Toast` | Reference subtle depth/animation | Keyboard accessible, safe dismissal |
-
-Each component **MUST** specify default, hover, focus, disabled, loading, error and empty states as relevant. A success badge never hides missing or failed requirements.
-
-## 10. Accessibility and responsive behavior
-
-- Semantic landmarks, heading hierarchy, explicit accessible names and **Skip to content**.
-- Keyboard navigation for menus, tabs, dialogs, candidate result links and criteria editing; restore focus after dialogs.
-- Visible `:focus-visible` style with enough contrast; do not rely on a faint blue border alone.
-- WCAG **2.2 AA target** for core flows: text ≥4.5:1 contrast (except permitted large-text cases), non-text UI ≥3:1 where applicable, sensible tap targets, labels and meaningful errors.
-- Color + text + icon/shape together distinguish matched, failed and unknown.
-- Reduced-motion compliance; no essential state communicated exclusively by animation.
-- Test at **390×844 mobile**, **768px tablet**, **1440×1000 desktop** and **1920px wide** as used by the clone's inspection process; also verify ~320px and zoomed/text-enlarged states.
-- Be mindful of focus order when changing from desktop sidebar to mobile menu.
-- Use `next/font` or licensed local font assets; do not publish third-party font binaries with unknown rights.
-
-## 11. Implementation mapping — Next.js + Tailwind + shadcn/ui
-
-- The clone is a **static HTML/CSS/JS** recreation. It is **not** a React component library; do not import it wholesale into Next.js or copy its 1.7 MB reference stylesheet.
-- Implement in `frontend/src/app/globals.css` (semantic vars) and a small shared `frontend/src/components/ui/` design layer; use Tailwind utilities and shadcn primitives for behavior, while overriding default shadcn visual tokens to this palette.
-- Create `frontend/src/app/(marketing)/`, `(auth)/`, `(dashboard)/` route groups and corresponding shared layouts. Next.js route groups do not change URL segments; map URLs exactly as §8.
-- Keep domain/services in `backend/`; no CSS or UI logic in the backend.
-- Shared components are owned by `frontend/src/components/`; Phosphor icons only by default.
-- Keep **one live source of truth** for colors/type/spacing; this Markdown defines the design contract, CSS implements the tokens. No needless duplication of raw hex across dozens of components.
-- Use progressive enhancement; ensure meaningful content without waiting for decorative motion or client-side JS.
-- **Do not block P0 search correctness** while perfecting landing animations, signup illustration, or dashboard metrics.
-
-### 11.1 Example token implementation
-
-```css
-/* Proposed CSS mapping; must be tested against the actual Next.js app. */
-:root {
-  --background: #fffdf9;
-  --foreground: #020e24;
-  --card: #ffffff;
-  --card-foreground: #020e24;
-  --primary: #020e24;
-  --primary-foreground: #ffffff;
-  --secondary: #10101014;
-  --secondary-foreground: #020e24;
-  --muted: #f7f4ed;
-  --muted-foreground: #6b6b6b;
-  --border: #020e2414;
-  --ring: #052169;
-  --radius: 0.75rem;
-}
-```
-
-The color values above come from the inspected reference; the **semantic mapping to shadcn** is Pareto-specific.
-
-## 12. Design fidelity, review, and acceptance
-
-### 12.1 Visual comparison protocol
-
-The clone already has reference images and browser tests. For Pareto:
-1. Implement baseline tokens and **marketing header/hero** first.
-2. Capture Pareto screenshots at 390×844 and 1440×1000.
-3. Compare typography family/size/line-height, gutters/header heights, button shape, page warmth, navigation density and section spacing against the **clone's** local/source screenshots.
-4. Record measurable deviations and their reasons (e.g. licensed replacement serif; different brand content).
-5. Repeat for the new auth and dashboard routes using **this document**, not nonexistent OpenTag private-app screenshots.
-6. Use Playwright to check no horizontal overflow, keyboard path, selected tab states, reduced motion and auth redirects.
-
-### 12.2 Minimum deliverable surfaces
-
-| Gate | Requirement | Evidence |
-| --- | --- | --- |
-| UX-01 | Public landing has OpenTag-like design rhythm and original Pareto identity | Screenshot across two widths; header/hero compare |
-| UX-02 | **Get started → Signup** and **Login → Login** | Working navigation |
-| UX-03 | Google OAuth and email/password actually work when auth enabled | Tested success/error/callback |
-| UX-04 | Signed-in route → protected dashboard, unauthorized redirect | E2E and authorization negatives |
-| UX-05 | Dashboard → original PS1 search flow in ≤1 navigation step | Playwright browse-to-search |
-| UX-06 | Criteria editor/revision/confirmation accessible and explicit | End-to-end original PS1 gate |
-| UX-07 | Result evidence and unknown states visually unambiguous | Fixture screenshots + tests |
-| UX-08 | Mobile navigation and primary action accessible; no overflow | Responsive browser audit |
-| UX-09 | Prefers-reduced-motion and keyboard operation supported | Browser test/manual audit |
-
-### 12.3 Release order
-
-1. Apply base palette/typography/header components and public landing **skeleton**.
-2. Create login/signup and protected dashboard **route structure** as the user-requested app journey.
-3. Complete **organizer P0** search, confirmation, explanation, refinement and “Find Candidates Like Me” inside the dashboard.
-4. Fully integrate Google OAuth/access control for real/private workflows; if blocked, retain only a limited synthetic demo—never expose private resumes.
-5. Add actual dashboard supporting pages, diagnostics, and what-if after P0.
-6. Refine illustration, footer, FAQ, and optional animation **last**.
-
-This order balances a coherent product entry route against the organizer's higher-priority functional evaluation.
-
-## 13. Open decisions and known limitations
-
-- **STK Earl licensing** has not been confirmed. Do not copy its WOFF2 files. Select a licensed equivalent if necessary.
-- **OpenTag private dashboard/auth design** is unavailable in the clone; the app layout is a **Pareto adaptation**, not a claimed exact copy.
-- Source screenshot binaries are present in the private reference repo, but a new Pareto side-by-side visual run has **not** occurred. “Pixel perfect” cannot yet be claimed.
-- Pareto now has a committed warm landing and conditional authentication/dashboard route shells. **Browser rendering, exact font fidelity, Supabase credentials and real search services are not verified.**
-- The private source repository must stay private. Do not copy branding, mascot, proprietary customer logos or unlicensed illustrations.
-- **Conversational and voice UI** are not frozen in this document. If added later, evaluate dedicated components against the same tokens and keyboard/motion conventions; **voice is not required by PS1**.
-
-## 14. Reference literature and provenance
-
-### Repository-specific evidence
-
-- [Clone README](https://github.com/ThunderKhan/opentag-clone/blob/main/README.md) — public-site-only scope, features and exclusions.
-- [Inspection notes](https://github.com/ThunderKhan/opentag-clone/blob/main/docs/research/INSPECTION.md) — inspected viewport, typography, layout and behaviors.
-- [Reference CSS](https://github.com/ThunderKhan/opentag-clone/blob/main/src/styles/reference.css) — exact CSS custom properties and type/motion definitions.
-- [Local interaction CSS](https://github.com/ThunderKhan/opentag-clone/blob/main/src/styles/app.css) — menu/search/dialog and reduced-motion examples.
-- [Shared header](https://github.com/ThunderKhan/opentag-clone/blob/main/src/components/header.html) — navigation geometry and CTA.
-- [Homepage](https://github.com/ThunderKhan/opentag-clone/blob/main/src/pages/home.html) and [docs page](https://github.com/ThunderKhan/opentag-clone/blob/main/src/pages/docs.html) — editorial composition and sidebar precedent.
-- [Reference screenshots folder](https://github.com/ThunderKhan/opentag-clone/tree/main/docs/research/screenshots) — captures for future screenshot comparison, not reused as published Pareto assets.
-
-### Design-system research used to structure this document
-
-- [Google Labs — DESIGN.md format](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md) — human-readable rationale plus structured tokens; overview, colors, typography, layout, elevation, shapes, components and do/don't guidance.
-- [Design Tokens Community Group — 2025.10 format](https://www.w3.org/community/reports/design-tokens/CG-FINAL-format-20251028/) — typed, named tokens and alias/reference concepts (community-group format; not a W3C Recommendation).
-- [MDN — reduced-motion accessibility](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries/Using_for_accessibility) — honor platform motion preferences.
-- [WCAG 2.2](https://www.w3.org/TR/WCAG22/) — accessibility review target.
-
-**DESIGN.md maintenance rule:** Source measurements and Pareto proposals stay labeled separately. When actual screenshots/tests establish new values, update the token table with evidence and explain the divergence. The reference governs the *visual system*; the [PRD](PRD.md) governs the *recruitment functionality*.
-
-## 15. Scrollcraft motion reference — new implementation supplement
-
-**Motion and visitor-story reference:** [Scrollcraft by Nate Herk](https://github.com/nateherkai/scroll-craft), specifically its [skill instructions](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/SKILL.md), [hero-depth guide](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/references/hero-depth.md) and [verification checklist](https://github.com/nateherkai/scroll-craft/blob/main/plugins/nateherk-design/skills/scroll-craft/references/verify.md).
-
-**Separation of concerns:** OpenTag remains the source of visual design values. Scrollcraft informs the **scroll-driven narrative**, layered hero, variation between sections, one meaningful “peak” interaction, mobile composition, and reduced-motion acceptance. Do not adopt an unrelated Scrollcraft default theme or import its full standalone vanilla-JS runtime into the React app. The skill's engine is MIT, but **was not installed** in this React-native adaptation.
-
-**New committed homepage surfaces:** dimensional candidate-search hero, editorial value section, sticky step story, three-profile deterministic what-if demo, principles ledger and final CTA. The live miniature explicitly identifies invented/synthetic candidate data and cannot be confused with real Gemini/Groq search.
-
-See [SCROLLCRAFT.md](SCROLLCRAFT.md) for the creative brief, authored decisions, feeling curve, layer contract, score, source attribution, code mapping and **unexecuted verification plan**. Dashboard search screens remain utility-first and do not need a cinematic treatment.
-
-**Status:** source files committed, but actual browser rendering / image comparison / test commands **not yet executed**. Do not mark UX-505 verified.
+---
+version: alpha
+name: Tryopentag
+description: |
+  OpenTag's design system projects a modern, approachable, and professional
+  aesthetic built on clarity and accessibility. The palette centers on a deep
+  navy (#020E24) paired with warm, cream-toned canvases (#FFFDF9), creating a
+  sophisticated yet inviting atmosphere. Generous whitespace, restrained use of
+  color, and a strong typographic hierarchy—anchored by the distinctive serif
+  display font—communicate confidence and expertise. The system embraces
+  micro-interactions and subtle depth through layered shadows rather than bold
+  visual drama, positioning the interface as a trustworthy, intelligent agent
+  that works seamlessly within existing team workflows.
+source:
+  url: "https://www.tryopentag.com/"
+  pagesAnalyzed: 1
+  extractedAt: 2026-11-14
+  tokensMeasured: true
+colors:
+  primary: "#020E24"
+  canvas: "#FFFDF9"
+  ink: "#020E24"
+  body: "#141414"
+  muted: "#1D1C1D"
+  faint: "#4E4E4E"
+  hairline: "#3C3C3C"
+  accent-1: "#4A154B"
+  neutral-1: "#454245"
+  neutral-2: "#616061"
+  neutral-3: "#000000"
+typography:
+  display-xl:
+    fontFamily: stkEarlRegular
+    fontSize: 72px
+    fontWeight: 400
+    lineHeight: 1
+    letterSpacing: -2.16px
+  display-lg:
+    fontFamily: stkEarlRegular
+    fontSize: 59.84px
+    fontWeight: 400
+    lineHeight: 1.02
+    letterSpacing: -1.8px
+  display-md:
+    fontFamily: stkEarlRegular
+    fontSize: 43.84px
+    fontWeight: 400
+    lineHeight: 1.05
+    letterSpacing: -1.32px
+  body-xl:
+    fontFamily: Inter
+    fontSize: 20px
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: -0.8px
+  body-lg:
+    fontFamily: Inter
+    fontSize: 17px
+    fontWeight: 500
+    lineHeight: 1.5
+    letterSpacing: -0.68px
+  body-md:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: -0.64px
+  body-md-strong:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: 500
+    lineHeight: 1.38
+    letterSpacing: -0.64px
+  body-sm:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: 400
+    lineHeight: 1.43
+    letterSpacing: -0.56px
+  body-xs:
+    fontFamily: Lato
+    fontSize: 13.1923px
+    fontWeight: 400
+    lineHeight: 1.47
+    letterSpacing: 0px
+  nav:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: 500
+    lineHeight: 1.43
+    letterSpacing: -0.56px
+  button-xl:
+    fontFamily: stkEarlRegular
+    fontSize: 23.36px
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: -0.7px
+  button-lg:
+    fontFamily: Inter
+    fontSize: 20px
+    fontWeight: 500
+    lineHeight: 1.5
+    letterSpacing: -0.8px
+  button-md:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: 500
+    lineHeight: 1.5
+    letterSpacing: -0.56px
+  caption-xl:
+    fontFamily: Lato
+    fontSize: 12px
+    fontWeight: 900
+    lineHeight: 1.33
+    letterSpacing: 0px
+  caption-lg:
+    fontFamily: Lato
+    fontSize: 11.9296px
+    fontWeight: 400
+    letterSpacing: 0px
+  caption-md:
+    fontFamily: Lato
+    fontSize: 11.8198px
+    fontWeight: 400
+    letterSpacing: 0px
+  caption-sm:
+    fontFamily: Lato
+    fontSize: 11.4708px
+    fontWeight: 400
+    lineHeight: 1.28
+    letterSpacing: 0px
+  caption-xs:
+    fontFamily: Lato
+    fontSize: 10px
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: 0px
+  caption-xs-strong:
+    fontFamily: Lato
+    fontSize: 10px
+    fontWeight: 700
+    lineHeight: 1.5
+    letterSpacing: 0px
+rounded:
+  none: 0px
+  xs: 4.39745px
+  sm: 7.03592px
+  md: 12px
+  lg: 14px
+  full: 9999px
+spacing:
+  xxs: 4px
+  xs: 8px
+  sm: 12px
+  md: 16px
+  lg: 20px
+  xl: 24px
+  xxl: 28px
+  xxxl: 32px
+  section: 36px
+  band: 40px
+shadows:
+  sm: "rgba(82, 72, 70, 0.04) 0px 1px 2px 0px, rgba(82, 72, 70, 0.12) 0px 8px 24px -10px"
+  md: "rgba(0, 0, 0, 0.18) 0px 0px 0px 0.5px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px, rgba(0, 0, 0, 0.22) 0px 12px 28px -14px"
+  lg: "rgba(2, 14, 36, 0.2) 0px 1px 2px 0px"
+  xl: "rgba(2, 14, 36, 0.1) 0px 0px 0px 1px"
+elevationStrategy: layered-micro
+themes:
+  derived: dark   # the other theme is the site's measured palette
+  light:
+    bg: "#FFFDF9"
+    surface: "#F7F5F2"
+    surfaceRaised: "#EDECEA"
+    text: "#020E24"
+    textMuted: "#141414"
+    border: "#3C3C3C"
+    accent: "#020E24"
+    accentFg: "#FFFFFF"
+    focusRing: "#020E24"
+    elevation: shadow
+  dark:
+    bg: "#0D0F11"
+    surface: "#1C1D1F"
+    surfaceRaised: "#28292B"
+    text: "#F5F5F6"
+    textMuted: "#9D9E9F"
+    border: "#343537"
+    accent: "#3B7CF4"
+    accentFg: "#0B0B0C"
+    focusRing: "#0D59E5"
+    elevation: "border+surface"
+gradients:
+  - context: hero
+    kind: linear
+    value: "linear-gradient(45deg, rgb(74, 21, 75), rgb(74, 21, 75) 50%, rgb(74, 21, 75))"
+components:
+  button-primary:
+    typography: "{typography.body-md-strong}"
+    textColor: "rgb(255, 255, 255)"
+    height: 42px
+    padding: "0px 20px 0px 20px"
+    rounded: "{rounded.md}"
+    backgroundColor: "{colors.primary}"
+  button-filled:
+    typography: "{typography.body-md-strong}"
+    textColor: "{colors.ink}"
+    height: 42px
+    padding: "0px 20px 0px 20px"
+    rounded: "{rounded.md}"
+    backgroundColor: "rgba(16, 16, 16, 0.08)"
+  button-primary-sm:
+    typography: "{typography.button-md}"
+    textColor: "rgb(255, 255, 255)"
+    height: 36px
+    padding: "0px 12px 0px 12px"
+    boxShadow: "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(2, 14, 36, 0.2) 0px 1px 2px 0px"
+    rounded: "3.35544e+07px"
+    backgroundColor: "{colors.primary}"
+  button-text:
+    typography: "{typography.button-md}"
+    textColor: "{colors.ink}"
+    height: 36px
+    padding: "0px 12px 0px 12px"
+    boxShadow: "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(2, 14, 36, 0.1) 0px 0px 0px 1px"
+    rounded: "3.35544e+07px"
+    backgroundColor: "rgb(255, 255, 255)"
+  card:
+    typography: "{typography.body-md}"
+    textColor: "{colors.body}"
+    backgroundColor: "{colors.canvas}"
+  card-sm:
+    typography: "{typography.body-md}"
+    textColor: "{colors.body}"
+  navigation:
+    typography: "{typography.nav}"
+    textColor: "{colors.faint}"
+    height: 20px
+  link:
+    typography: "{typography.nav}"
+    textColor: "{colors.faint}"
+    rounded: 4px
+  link-2:
+    typography: "{typography.nav}"
+    textColor: "{colors.ink}"
+    rounded: 4px
+states:
+  link-hover:
+    target: link
+    state: hover
+    opacity: 1
+  button-hover:
+    target: button
+    state: hover
+    opacity: 0.9
+  other-hover:
+    target: other
+    state: hover
+    opacity: 1
+  other-focus-visible:
+    target: other
+    state: focus-visible
+    opacity: 0.9
+breakpoints:
+  - width: 375
+    containerWidth: 327
+    gridColumns: 2
+    navLinksVisible: 0
+    menuToggleVisible: true
+    headingPx: 40
+    bodyPx: 16
+    sectionPaddingX: 24
+  - width: 768
+    containerWidth: 704
+    gridColumns: 4
+    navLinksVisible: 0
+    menuToggleVisible: true
+    headingPx: 44
+    bodyPx: 16
+    sectionPaddingX: 32
+  - width: 1024
+    containerWidth: 758
+    gridColumns: 4
+    navLinksVisible: 7
+    menuToggleVisible: true
+    headingPx: 53
+    bodyPx: 16
+    sectionPaddingX: 88
+  - width: 1280
+    containerWidth: 1078
+    gridColumns: 5
+    navLinksVisible: 7
+    menuToggleVisible: true
+    headingPx: 66
+    bodyPx: 16
+    sectionPaddingX: 110
+  - width: 1440
+    containerWidth: 1078
+    gridColumns: 5
+    navLinksVisible: 7
+    menuToggleVisible: true
+    headingPx: 72
+    bodyPx: 16
+    sectionPaddingX: 124
+coverage:
+  statesFound: 62
+  gradientsFound: 1
+  rolesUnassigned: 4
+  archetypesUnnamed: 0
+  archetypesDetected: 0
+  responsiveMeasured: true
+  stylesheetsBlocked: false
+  semanticRampDeclared: false
+---
+
+# Design System Inspired by OpenTag
+
+## 1. Visual Theme & Atmosphere
+
+OpenTag's design system projects a modern, approachable, and professional aesthetic built on clarity and accessibility. The palette centers on a deep navy (`{colors.primary}` — `#020E24`) paired with warm, cream-toned canvases (`{colors.canvas}` — `#FFFDF9`), creating a sophisticated yet inviting atmosphere. Generous whitespace, restrained use of color, and a strong typographic hierarchy—anchored by the distinctive serif display font—communicate confidence and expertise. The system embraces micro-interactions and subtle depth through layered shadows rather than bold visual drama, positioning the interface as a trustworthy, intelligent agent that works seamlessly within existing team workflows.
+
+**Key Characteristics**
+- Premium serif headlines (`stkEarlRegular`) paired with clean geometric sans-serif body text (`Inter`)
+- Deep navy and cream foundation with minimal decorative accent colors
+- Subtle, multi-layer shadow system for barely-perceptible elevation
+- Pill-shaped button radii (`{rounded.full}` — `9999px`) for secondary actions; sharp and medium-rounded for primary interactions
+- Responsive typography that scales elegantly across viewport sizes
+- Color-blocking strategy for depth; surfaces rely on background color shifts rather than heavy shadows
+- Consistent spacing scale from `{spacing.xxs}` (`4px`) to `{spacing.band}` (`40px`)
+
+## 2. Color Palette & Roles
+
+### Primary
+- **Primary / Brand / Ink** (`{colors.primary}` — `#020E24`): Deep navy serving as the brand anchor, primary text color, primary CTA fills, active states, and headings. The dominant voice in the system.
+
+### Neutral Scale
+- **Canvas** (`{colors.canvas}` — `#FFFDF9`): Warm off-white page background, establishing the default surface and framing all content.
+- **Body** (`{colors.body}` — `#141414`): Near-black, used for body copy and primary body text where maximum contrast is needed.
+- **Muted** (`{colors.muted}` — `#1D1C1D`): Dark gray secondary text for captions and supporting information.
+- **Faint** (`{colors.faint}` — `#4E4E4E`): Medium gray for tertiary text, placeholder text, and disabled states.
+- **Hairline** (`{colors.hairline}` — `#3C3C3C`): Dark gray stroke color for 1px borders and dividers.
+
+### Decorative
+- **Accent Decorative** (`{colors.accent-1}` — `#4A154B`): Deep purple; no measured product role. Used as a decorative element in hero gradient and optional accent overlays.
+- **Neutral (unassigned)** — Three additional neutral grays measured in the extraction (`{colors.neutral-1}` `#454245`, `{colors.neutral-2}` `#616061`, `{colors.neutral-3}` `#000000`) with no explicit role. Treat as fallback grays for edge cases or legacy code.
+
+### Semantic / Status
+No error, success, warning, or info colors are declared or measured in the site's stylesheet. Status communication, if required, should be implemented as text labels with icon support rather than color alone.
+
+## 3. Typography Rules
+
+### Font Family
+**Primary Display:** `stkEarlRegular`, fallback: `Georgia, serif`
+**Body & UI:** `Inter`, fallback: `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
+**Captions:** `Lato`, fallback: `sans-serif`
+
+### Hierarchy
+
+| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
+|---|---|---|---|---|---|---|
+| Display XL | stkEarlRegular | 72px | 400 | 1 | -2.16px | Hero headline; measured on h1 |
+| Display LG | stkEarlRegular | 59.84px | 400 | 1.02 | -1.8px | Section headline; measured on h2 |
+| Display MD | stkEarlRegular | 43.84px | 400 | 1.05 | -1.32px | Subsection headline; measured on h3 |
+| Body XL | Inter | 20px | 400 | 1.5 | -0.8px | Large body text, intro paragraphs |
+| Body LG | Inter | 17px | 500 | 1.5 | -0.68px | Semi-bold body, emphasis |
+| Body MD | Inter | 16px | 400 | 1.5 | -0.64px | Standard paragraph text |
+| Body MD Strong | Inter | 16px | 500 | 1.38 | -0.64px | Highlighted body, labels |
+| Body SM | Inter | 14px | 400 | 1.43 | -0.56px | Secondary text, navigation |
+| Body XS | Lato | 13.1923px | 400 | 1.47 | 0px | Tiny body text |
+| Button XL | stkEarlRegular | 23.36px | 400 | 1.2 | -0.7px | Large display button text |
+| Button LG | Inter | 20px | 500 | 1.5 | -0.8px | Large interactive button |
+| Button MD | Inter | 14px | 500 | 1.5 | -0.56px | Standard button, tab labels |
+| Navigation | Inter | 14px | 500 | 1.43 | -0.56px | Navigation links, menu items |
+| Caption XL | Lato | 12px | 900 | 1.33 | 0px | Bold caption, badge text |
+| Caption LG | Lato | 11.9296px | 400 | not measured | 0px | Large caption |
+| Caption MD | Lato | 11.8198px | 400 | not measured | 0px | Standard caption |
+| Caption SM | Lato | 11.4708px | 400 | 1.28 | 0px | Small caption |
+| Caption XS | Lato | 10px | 400 | 1.5 | 0px | Tiny caption |
+| Caption XS Strong | Lato | 10px | 700 | 1.5 | 0px | Bold tiny caption |
+
+### Principles
+- **Display sizes (`stkEarlRegular`)** use aggressive negative letter-spacing (-1.32px to -2.16px) to tighten the serif letterforms and command visual hierarchy. Line height set to 1 or near-1 for compact, impactful headlines.
+- **Body and interactive text (`Inter`)** employ moderate negative tracking (-0.56px to -0.8px) for optical balance and professional finish; line height 1.5 ensures readability at smaller sizes.
+- **Captions (`Lato`)** generally omit letter-spacing (0px) except where weight increases (bold captions) for emphasis.
+- **Responsive scaling:** Largest heading shifts from 72px at 1440px to 40px at 375px; body copy remains 16px across all breakpoints for consistency.
+
+## 4. Component Stylings
+
+### Buttons
+
+**Primary Button**
+- Background: `{colors.primary}` (`#020E24`)
+- Text color: white (`rgb(255, 255, 255)`)
+- Padding: `0px 20px` (height 42px)
+- Font: `{typography.button-md}` (14px, weight 500, Inter)
+- Border radius: `{rounded.md}` (12px)
+- Border: none
+- Box shadow: none
+- Hover state: `filter: brightness(1.06)`, `opacity: 1`, `box-shadow: rgba(6, 14, 30, 0.32) 0px 0px 0px 1px inset`, `background-color: rgba(16, 16, 16, 0.06)`
+- Focus-visible: `outline: 2px solid #171717`
+
+**Secondary Button (Filled)**
+- Background: `rgba(16, 16, 16, 0.08)`
+- Text color: `{colors.primary}` (`#020E24`)
+- Padding: `0px 20px` (height 42px)
+- Font: `{typography.button-md}` (14px, weight 500, Inter)
+- Border radius: `{rounded.md}` (12px)
+- Border: none
+- Box shadow: none
+- Hover state: `background-color: rgba(16, 16, 16, 0.06)`, `opacity: 0.9`
+
+**Primary Button Small (Pill)**
+- Background: `{colors.primary}` (`#020E24`)
+- Text color: white (`rgb(255, 255, 255)`)
+- Padding: `0px 12px` (height 36px)
+- Font: `{typography.button-md}` (14px, weight 500, Inter)
+- Border radius: `{rounded.full}` (9999px)
+- Border: none
+- Box shadow: `rgba(2, 14, 36, 0.2) 0px 1px 2px 0px`
+- Hover state: `opacity: 0.9`
+
+**Text Button (Pill, Ghost)**
+- Background: white (`rgb(255, 255, 255)`)
+- Text color: `{colors.primary}` (`#020E24`)
+- Padding: `0px 12px` (height 36px)
+- Font: `{typography.button-md}` (14px, weight 500, Inter)
+- Border radius: `{rounded.full}` (9999px)
+- Border: `rgba(2, 14, 36, 0.1) 0px 0px 0px 1px` (1px outline)
+- Box shadow: none
+- Hover state: `border-color: rgba(2, 14, 36, 0.28)`, `opacity: 1`
+
+### Cards & Containers
+
+**Card Default (Full-width page)**
+- Background: `{colors.canvas}` (`#FFFDF9`)
+- Text color: `{colors.body}` (`#141414`)
+- Font: `{typography.body-md}` (16px, weight 400, Inter)
+- Border radius: `{rounded.none}` (0px)
+- Border: none
+- Box shadow: none
+- Padding: 0px
+
+**Card Small (Contained section)**
+- Background: transparent (`rgba(0, 0, 0, 0)`)
+- Text color: `{colors.body}` (`#141414`)
+- Font: `{typography.body-md}` (16px, weight 400, Inter)
+- Border radius: `{rounded.lg}` (14px)
+- Border: none
+- Box shadow: none
+- Hover state (on containers): `background-color: rgba(16, 16, 16, 0.04)` or `rgba(16, 16, 16, 0.13)`
+
+### Inputs & Forms
+
+**Message Input / Textarea**
+- Background: white or `{colors.canvas}` (`#FFFDF9`)
+- Text color: `{colors.body}` (`#141414`)
+- Placeholder color: `{colors.faint}` (`#4E4E4E`)
+- Font: `{typography.body-md}` (16px, weight 400, Inter)
+- Border: 1px solid `{colors.hairline}` (`#3C3C3C`)
+- Border radius: `{rounded.md}` (12px) or `{rounded.lg}` (14px)
+- Padding: `{spacing.md}` (`16px`) internal
+- Hover state: `border-color: rgba(2, 14, 36, 0.28)`
+- Focus-visible: `outline: 2px solid #171717`
+
+### Navigation
+
+**Navigation Link (Header)**
+- Text color: `{colors.faint}` (`#4E4E4E`)
+- Font: `{typography.nav}` (14px, weight 500, Inter)
+- Padding: `{spacing.xs}` to `{spacing.md}` (8px to 16px horizontal)
+- Border radius: `{rounded.none}` (0px)
+- Background: transparent
+- Hover state: `color: var(--brand)` (navy), `opacity: 1`
+- Active state: `color: {colors.primary}` (`#020E24`)
+
+**Link (inline body)**
+- Text color: `{colors.faint}` (`#4E4E4E`)
+- Font: `{typography.body-sm}` (14px, weight 500, Inter)
+- Border radius: `{rounded.xs}` (4.39745px)
+- Background: transparent
+- Hover state: `opacity: 1`, `color: {colors.primary}` (`#020E24`), `border-color: rgba(2, 14, 36, 0.28)`
+
+### Footer
+
+**Footer Container**
+- Background: `{colors.canvas}` (`#FFFDF9`)
+- Text color: `{colors.body}` (`#141414`)
+- Font: `{typography.body-md}` (16px, weight 400, Inter)
+- Border radius: `{rounded.none}` (0px)
+- Padding: `{spacing.band}` to `{spacing.section}` (40px–36px vertical), `{spacing.lg}` to `{spacing.xxl}` (20px–28px) horizontal at mobile, scales to `{spacing.xxxl}` (`32px`) at desktop
+
+## 5. Layout Principles
+
+### Spacing System
+The system uses an 8-base modular scale:
+- `{spacing.xxs}` = 4px (micro gaps, tight component internals)
+- `{spacing.xs}` = 8px (close pairing, button borders)
+- `{spacing.sm}` = 12px (snug internal padding)
+- `{spacing.md}` = 16px (standard padding, body line height unit)
+- `{spacing.lg}` = 20px (breathing room, section margins)
+- `{spacing.xl}` = 24px (loose grouping, component separation)
+- `{spacing.xxl}` = 28px (major section breaks)
+- `{spacing.xxxl}` = 32px (large-scale content blocks)
+- `{spacing.section}` = 36px (section padding-bottom)
+- `{spacing.band}` = 40px (hero and footer vertical rhythm)
+
+**Usage context:**
+- **Component internals:** `{spacing.xxs}` to `{spacing.sm}` (4–12px)
+- **Button padding:** `{spacing.md}` to `{spacing.lg}` (16–20px horizontal)
+- **Card/container margins:** `{spacing.lg}` to `{spacing.xl}` (20–24px)
+- **Section margins:** `{spacing.section}` to `{spacing.band}` (36–40px)
+
+### Grid & Container
+- **Mobile (375px):** Content column 327px; section padding-x `{spacing.xl}` (`24px`); 2-column grid
+- **Tablet (768px):** Content column 704px; section padding-x `{spacing.xxxl}` (`32px`); 4-column grid
+- **Desktop (1024px):** Content column 758px; section padding-x 88px; 4-column grid; navigation links visible (7 items)
+- **Large (1280px–1440px):** Content column 1078px (fixed max); section padding-x 110–124px; 5-column grid; all navigation visible
+
+**Max-width strategy:** Content column pinned at 1078px for viewports ≥1280px; below that, column width grows with viewport. Horizontal section padding increases to maintain visual margins.
+
+### Whitespace Philosophy
+OpenTag employs aggressive whitespace to emphasize clarity and allow the display typography to command attention. Vertical rhythm scales with viewport: mobile sections are tightly packed (`{spacing.section}` / 36px), while desktop sections breathe at `{spacing.band}` / `40px` and beyond. Horizontal padding grows on desktop to keep line lengths readable and create visual breathing room. Never collapse whitespace to fill space—use it to create hierarchy and focus.
+
+### Border Radius Scale
+- `{rounded.none}` = 0px: Page-level containers, hero sections, full-bleed cards
+- `{rounded.xs}` = 4.39745px: Inline elements, subtle decorative borders
+- `{rounded.sm}` = 7.03592px: Small components, secondary cards
+- `{rounded.md}` = 12px: Primary buttons, input fields, standard cards
+- `{rounded.lg}` = 14px: Larger cards, containers, secondary containers
+- `{rounded.full}` = 9999px: Pill-shaped buttons (secondary and text variants), icon buttons, badges with text
+
+**Component-specific mapping:**
+- Image: `{rounded.none}` (0px)
+- Primary button: `{rounded.md}` (12px)
+- Secondary/text button: `{rounded.full}` (9999px)
+- Badge: `{rounded.none}` (0px) or `{rounded.full}` (9999px) for pill badges
+- Card: `{rounded.lg}` (14px) or `{rounded.none}` (0px) for full-bleed containers
+
+## 6. Depth & Elevation
+
+| Level | Treatment | Use |
+|---|---|---|
+| Flat | No shadow, background color only | Default surfaces, nested text layers |
+| Micro SM | `rgba(82, 72, 70, 0.04) 0px 1px 2px 0px, rgba(82, 72, 70, 0.12) 0px 8px 24px -10px` | Cards with minimal lift |
+| Micro MD | `rgba(0, 0, 0, 0.18) 0px 0px 0px 0.5px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px, rgba(0, 0, 0, 0.22) 0px 12px 28px -14px` | Elevated cards, floating panels |
+| Micro LG | `rgba(2, 14, 36, 0.2) 0px 1px 2px 0px` | Button lift on hover or focus |
+| Micro XL | `rgba(2, 14, 36, 0.1) 0px 0px 0px 1px` | Subtle outline, button focus ring |
+
+The system employs a **layered-micro** elevation strategy: depth is achieved through stacked, near-transparent shadow layers rather than a single bold drop shadow. Each shadow layer contains a micro-opacity shift plus blur radius (1–28px), creating a barely-perceptible 3D lift. This approach maintains visual lightness while signaling interactive and structural depth. Surface color also contributes to hierarchy: slightly darker or warmer backgrounds read as "lifted" even without shadow augmentation.
+
+### Opacity Levels
+- **39%** (0.39): Heavy hover tint on secondary elements
+- **40%** (0.40): Disabled or muted interactive state
+- **50%** (0.50): Semi-transparent overlays, inactive badges
+- **62%** (0.62): Medium emphasis on secondary content
+- **82%** (0.82): Slightly faded text or background layers
+- **95%** (0.95): Near-opaque hover or active states
+
+### Z-index / Layering
+- **base: 3** — Default component z-index
+- **dropdown: 10** — First-level menu or popover layer
+- **dropdown: 40** — Nested or secondary dropdown menu
+- **dropdown: 50** — Modal, toast, or top-most interactive layer
+
+Apply z-index conservatively; most interactive layers stay within the 10–50 range. Modals and critical overlays occupy the 50 tier; tooltips and popovers the 10–40 range.
+
+## 7. Do's and Don'ts
+
+### Do
+- **Use the `stkEarlRegular` serif font** for display sizes (headings, hero copy). Its distinctive letterforms and tight negative tracking create instant brand recognition.
+- **Pair serif headlines with `Inter` body text.** The sans-serif body ensures readability and modern contrast.
+- **Employ negative letter-spacing on displays** (e.g., -2.16px for 72px headlines). This is a core visual trait and should not be rounded to zero.
+- **Layer shadows carefully.** Use multi-layer shadow definitions exactly as provided; do not flatten or simplify them.
+- **Respect the spacing scale.** Always reach for a defined spacing value (`{spacing.xxs}` through `{spacing.band}`); never invent intermediate gaps.
+- **Build pill-shaped buttons** (`{rounded.full}` — 9999px) only for secondary or text-variant CTAs. Primary buttons use `{rounded.md}` (12px).
+- **Maintain 1.5 line height on body text** at 16px or larger. Smaller sizes (14px and below) compress slightly to 1.38–1.43.
+- **Color-block for depth.** Use background-color shifts (e.g., from `{colors.canvas}` to `rgba(16, 16, 16, 0.04)`) to signal interactivity or elevation, not shadow alone.
+- **Keep navigation links a muted gray** (`{colors.faint}` — `#4E4E4E`) until hover, then elevate to navy (`{colors.primary}`).
+- **Scale typography responsively.** Headings shrink from 72px (1440px) to 40px (375px). Body copy holds at 16px across all breakpoints.
+
+### Don't
+- **Do not use script or display fonts for body text.** `stkEarlRegular` is reserved for headlines and hero copy only.
+- **Do not remove or soften negative letter-spacing on display sizes.** It is integral to the brand voice.
+- **Do not flatten or simplify multi-layer shadows.** Each shadow layer contributes optical depth; omit them and surfaces become flat.
+- **Do not create radius values outside the published scale** (`0px`, 4.39745px, 7.03592px, 12px, 14px, 9999px). Use the nearest scale value.
+- **Do not mix primary and secondary button radius logic.** Primary buttons round to 12px; pill buttons round to 9999px. Do not create intermediate values.
+- **Do not reduce line-height below 1 on body text,** except on headlines where 1.0 is standard. Body copy must remain 1.38 or higher for legibility.
+- **Do not invent new colors or semantic status ramps.** The site declares no error/warning/success palette. Use text + icon for status messaging.
+- **Do not change button text color on hover or state shift** unless explicitly provided (e.g., opacity or background color changes). Text color remains stable.
+- **Do not force rounded corners on full-bleed containers or hero sections.** They render as flat (0px) to frame the layout clearly.
+- **Do not break the spacing scale for visual "tweaks."** Always choose a defined unit; spacing exists to maintain vertical rhythm and predictability.
+- **Do not assume dark mode exists.** The extraction captured one theme only. Do not ship a derived or calculated dark palette as a brand feature.
+
+## 8. Responsive Behavior
+
+### Breakpoints
+| Breakpoint | Viewport | Content Column | Grid Columns | Nav Links Visible | Largest Heading | Body Size | Section Padding-X |
+|---|---|---|---|---|---|---|---|
+| Mobile | 375px | 327px | 2 | 0 (menu toggle visible) | 40px | 16px | 24px |
+| Tablet | 768px | 704px | 4 | 0 (menu toggle visible) | 44px | 16px | 32px |
+| Desktop | 1024px | 758px | 4 | 7 | 53px | 16px | 88px |
+| Large | 1280px | 1078px | 5 | 7 | 66px | 16px | 110px |
+| XL | 1440px | 1078px | 5 | 7 | 72px | 16px | 124px |
+
+**Breakpoint rationale:**
+- **375px → 768px (Mobile → Tablet):** Content column nearly doubles; grid expands to 4 columns; section padding grows; largest heading scales from 40px to 44px.
+- **768px → 1024px (Tablet → Desktop):** Navigation collapses to toggle at ≤768px and expands to 7 visible links at ≥1024px. Content column marginally increases; heading reaches 53px.
+- **1024px → 1280px (Desktop → Large):** Content column jumps from 758px to 1078px (capped); heading scales to 66px; grid expands to 5 columns; section padding-x increases to 110px.
+- **1280px → 1440px:** Content column stays capped at 1078px; heading reaches full size (72px); section padding-x maxes at 124px. Viewport growth absorbs into outer margins.
+
+### Touch Targets
+- **Minimum interactive height:** 36px (small buttons, links)
+- **Recommended interactive height:** 42–44px (standard buttons, nav items)
+- **Minimum interactive width:** 44px (icon buttons, small toggles)
+- **Recommended interactive width:** 80–120px (text buttons, CTAs)
+- **Padding around touch target:** Ensure `{spacing.md}` (`16px`) of clear space between adjacent interactive elements to prevent accidental taps.
+
+### Collapsing Strategy
+- **2 → 4 → 4 → 5 columns:** Grid reflows intelligently; single-column layouts at mobile (375px) become two-column, then four-column on tablet (768px), holding steady until desktop (1024px) where a fifth column appears at ≥1280px breakpoints.
+- **Navigation hamburger trigger:** Menu collapses to a toggle at ≤768px (tablet). At 1024px and above, primary navigation links display inline (7 items visible).
+- **Content padding expansion:** Horizontal section padding grows from 24px (mobile) → 32px (tablet) → 88px (desktop) → 110–124px (large/XL) to maintain comfortable margins and prevent text width from becoming unwieldy on ultra-wide viewports.
+- **Heading size scaling:** Hero and display headings compress from 72px (1440px) through 40px (375px) in responsive jumps; body text stays at 16px to preserve reading comfort. This ensures headlines remain impactful while content remains accessible on all screens.
+- **Floating/fixed UI (modals, popovers):** Constrain to viewport minus `{spacing.xl}` (`24px`) padding on mobile; on desktop, use fixed positioning with calculated margins. Z-index remains stable (10–50 tier) across all breakpoints.
+
+## 9. Agent Prompt Guide
+
+### Quick Color Reference
+- **Primary CTA / Brand:** Primary (`#020E24`) — navy; use for all primary action buttons, brand mark, and active navigation
+- **Background / Canvas:** Canvas (`#FFFDF9`) — warm off-white; page background and primary surface
+- **Body Text / Heading:** Primary (`#020E24`) — navy; headings, large body, and contrast-heavy copy
+- **Secondary Text / Muted:** Muted (`#1D1C1D`) — dark gray; captions, labels, and supporting information
+- **Tertiary Text / Faint:** Faint (`#4E4E4E`) — medium gray; placeholder, disabled, and low-emphasis text
+- **Borders / Hairline:** Hairline (`#3C3C3C`) — dark gray; 1px dividers, input borders, outline strokes
+- **Decorative / Accent:** Accent Decorative (`#4A154B`) — deep purple; no active role; optional gradient overlays only
+
+### Iteration Guide
+1. **Typography hierarchy is non-negotiable.** Display text uses `stkEarlRegular` serif; body and UI use `Inter` sans-serif. Do not swap or consolidate.
+2. **Negative letter-spacing on displays** (e.g., -2.16px, -1.8px, -1.32px) must be preserved exactly. This tracking is a core brand trait.
+3. **Spacing always comes from the scale** (`4px`, `8px`, `12px`, `16px`, `20px`, `24px`, `28px`, `32px`, `36px`, `40px`). Never invent intermediate values.
+4. **Button radii depend on variant:** Primary buttons = 12px (`{rounded.md}`); secondary and text buttons = 9999px (`{rounded.full}`). Do not mix.
+5. **Shadows are multi-layered.** Always apply the full shadow stack (e.g., `rgba(82, 72, 70, 0.04) 0px 1px 2px 0px, rgba(82, 72, 70, 0.12) 0px 8px 24px -10px`). Do not flatten or simplify.
+6. **Color-blocking creates depth.** Use background-color transitions (e.g., hover: `rgba(16, 16, 16, 0.04)`) instead of relying solely on shadow.
+7. **Navigation links are muted gray** (`#4E4E4E`) by default; hover turns them navy (`#020E24`). Never use a different color ramp.
+8. **Responsive breakpoints:** Mobile 375px, Tablet 768px, Desktop 1024px, Large 1280px, XL 1440px. Viewport-triggered changes (grid columns, padding, heading size) must occur at these exact boundaries.
+9. **Z-index layering:** Base = 3, dropdown = 10–40, modal = 50. Keep interactions within this range; do not invent new stacking contexts.
+10. **Line height discipline:** Body text (all sizes) = 1.5 line height; headlines = 1.0–1.05; captions = 1.28–1.5 (size-dependent). Do not deviate.
+
+## 10. Known Gaps
+
+- **Interaction states:** Only explicit state data extracted (`:hover`, `:focus-visible` opacity and border/background changes). Missing: `:active`, `:disabled`, `:read-only`, `:invalid` states. Implement disabled buttons with reduced opacity (0.40–0.50) and cursor-not-allowed; implement active states as a darker or saturated version of the default color.
+- **Semantic color ramp:** The site declares no error, success, warning, or info colors. Status messaging should be implemented via text labels and icon support (e.g., red text + ⚠ icon for error) rather than a dedicated color palette.
+- **Dark mode / theme variants:** The extraction captured one light theme only. No dark-mode stylesheet or theme toggle was observed. Do not assume or derive a dark palette; if dark mode is required, it must be captured from a separate live measurement.
+- **Unassigned colors:** Four colors measured but not bound to a specific product role (`{colors.accent-1}` `#4A154B`, `{colors.neutral-1}` `#454245`, `{colors.neutral-2}` `#616061`, `{colors.neutral-3}` `#000000`). These are treated as decorative or fallback; the first serves in an optional gradient, the latter three have no measured use and should not be relied upon in new components.
+- **Animation / transition timing:** No `transition` or `animation` properties were extracted. Assume all state changes (hover, focus) occur instantly or with a brief 0.15–0.2s ease default unless CSS explicitly specifies otherwise.
+- **Authenticated surfaces / protected routes:** The extraction captured the public landing page only. Logged-in dashboard, account settings, and internal tools were not analyzed. Their design patterns may differ.
+- **Form validation states:** No explicit input validation styling (e.g., error outline, success checkmark) was measured. Implement via text messaging + border-color override or rely on native browser validation.
+- **Accessibility (WCAG):** Color contrast ratios, focus indicators, and ARIA labels were not formally measured. Ensure all interactive elements meet WCAG AA contrast (≥4.5:1 for normal text, ≥3:1 for large text) and have visible focus rings (2px outline with sufficient contrast).
+- **Print styles:** No print-specific CSS was observed. Assume responsive layout adapts to print media; if print design is critical, capture it separately.
+- **Right-to-left (RTL) support:** No RTL text or logical property overrides were detected. Implement RTL explicitly if required for international audiences.

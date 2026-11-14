@@ -17,7 +17,7 @@ export default function SignOutButton() {
       setError(result.error.message);
       setBusy(false);
     } else {
-      window.location.assign("/");
+      window.location.assign(window.location.origin);
     }
   }
   return <div className="dashboard-signout"><button type="button" onClick={signOut} disabled={busy}><SignOut size={17} /> {busy ? "Signing out…" : "Sign out"}</button>{error && <p role="alert">{error}</p>}</div>;
