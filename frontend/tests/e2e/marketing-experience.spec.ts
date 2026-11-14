@@ -67,6 +67,12 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
   await expect(page.locator(".v2-hero-stage .v2-criteria-item")).toHaveCount(5);
   await expect(page.locator(".v2-hero-stage .v2-criteria-item svg")).toHaveCount(5);
+  // No redundant marketing chrome around the product illustration.
+  await expect(page.locator(".v2-stage-top, .v2-stage-bottom, .v2-panel-caption")).toHaveCount(0);
+  await expect(page.getByText("An illustrative opaque score without the underlying requirements.")).toHaveCount(0);
+  await expect(page.getByText("Illustrative interface")).toHaveCount(0);
+  await expect(page.getByText("Synthetic demonstration")).toHaveCount(0);
+  await expect(page.locator(".v2-example-tag")).toHaveText("EXAMPLE PROFILES");
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works" }).click();
   await expect(page).toHaveURL(/#how-it-works$/);
   await expect(page.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
@@ -87,24 +93,24 @@ test("a single workflow product window changes with accessible tabs", async ({ p
   await expect(review).toHaveAttribute("aria-selected", "true");
   await expect(page.locator(".v2-process-window")).toContainText("Proposed criteria");
   await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-review.png") });
-  await page.locator(".v2-process-window").getByRole("button", { name: "View illustrated results" }).click();
+  await page.locator(".v2-process-window").getByRole("button", { name: "View results" }).click();
   await expect(tabs.getByRole("tab", { name: /discover & explain/i })).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".v2-process-window")).toContainText("Illustrative shortlist");
+  await expect(page.locator(".v2-process-window")).toContainText("Shortlist");
   await review.click();
   await review.focus();
   await page.keyboard.press("ArrowRight");
   const explain = tabs.getByRole("tab", { name: /discover & explain/i });
   await expect(explain).toBeFocused();
   await expect(explain).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".v2-process-window")).toContainText("Illustrative shortlist");
+  await expect(page.locator(".v2-process-window")).toContainText("Shortlist");
   await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-results.png") });
   await page.keyboard.press("Home");
   await expect(tabs.getByRole("tab", { name: /describe/i })).toHaveAttribute("aria-selected", "true");
 });
 
-test("synthetic preview recalculates and discloses exact criteria", async ({ page }, testInfo) => {
+test("candidate matching preview recalculates and discloses exact criteria", async ({ page }, testInfo) => {
   await page.goto("/#preview");
-  const panel = page.getByRole("region", { name: "Interactive synthetic candidate matching example" });
+  const panel = page.getByRole("region", { name: "Interactive candidate matching example" });
   const one = panel.locator(".v2-candidate").filter({ hasText: "Candidate A" });
   const two = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
   const three = panel.locator(".v2-candidate").filter({ hasText: "Candidate C" });
@@ -125,7 +131,7 @@ test("synthetic preview recalculates and discloses exact criteria", async ({ pag
   await expect(panel.getByTestId("eligible-count")).toHaveText("1");
 });
 
-test("reference cards and FAQ tell the truth about the synthetic illustration", async ({ page }, testInfo) => {
+test("reference cards and FAQ explain matching with fictional profiles", async ({ page }, testInfo) => {
   await page.goto("/#similar");
   const section = page.locator("#similar");
   await expect(section.getByRole("heading", { name: /found someone promising.*find others like them/i })).toBeVisible();
