@@ -28,7 +28,7 @@ The original Trustume problem statement requires: natural-language requirement e
 
 ## 3. Target users and permissions
 
-**Primary user:** recruiter or hiring team member sourcing and reviewing candidates.
+**Primary user:** recruiter or hiring team member sourcing and reviewing candidates. Detailed primary and secondary personas, user stories and feature-specific acceptance criteria are maintained in [PRD.md](PRD.md), §3.
 
 **MVP role model:** one authenticated recruiter role; no multi-tenant enterprise administrator, automated rejection workflow, applicant self-service portal, or complex organizational permissions.
 
