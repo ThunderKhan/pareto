@@ -17,21 +17,21 @@ test("public landing, navigation and health", async ({ page, request }) => {
   expect(await health.json()).toMatchObject({ status: "ok", phase: "scaffold" });
 });
 
-test("synthetic what-if preview computes from stated records", async ({ page }) => {
-  await page.goto("/#preview");
-  // The region is labelled on a div; locate it by its explicit accessible label.
-  const panel = page.locator('[aria-label="Interactive candidate matching example"]');
-  await expect(panel).toBeVisible();
-  await expect(panel.getByTestId("eligible-count")).toContainText("1");
-  const candidateB = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
-  await expect(candidateB).toContainText("Excluded");
-  await panel.getByRole("button", { name: "60 days" }).click();
-  await expect(panel.getByTestId("eligible-count")).toContainText("2");
-  await expect(candidateB).toContainText("Eligible");
-  await expect(panel.locator(".v2-candidate").filter({ hasText: "Candidate C" })).toContainText("Needs review");
-  await panel.getByRole("button", { name: "30 days" }).click();
-  await expect(candidateB).toContainText("Excluded");
+test("public workflow shortlist and similarity remain after evidence panel removal", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#preview")).toHaveCount(0);
+  await expect(page.locator(".v2-steps, .v2-candidates")).toHaveCount(0);
+  const results = page.locator("#how-it-works-step-3");
+  await expect(results.locator(".v2-mini-result")).toHaveCount(3);
+  await expect(results).toContainText("Eligible");
+  await expect(results).toContainText("Excluded");
+  await expect(results).toContainText("Needs review");
+  await page.getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Explore matching" }).click();
+  await expect(page).toHaveURL(/#similar$/);
+  await expect(page.locator("#similar")).toContainText("COMPARABLE PROFILES");
 });
+
 
 test("signup and login pages exist and explain unconfigured auth", async ({ page }) => {
   await page.goto("/signup");
