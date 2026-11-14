@@ -44,10 +44,11 @@ jobs:
           corepack prepare pnpm@10.15.1 --activate
       - name: Install from lockfile
         run: pnpm install --frozen-lockfile
-      - name: Generate Prisma client and migrate test database
+      - name: Generate Prisma client, migrate and verify repeatable test seed
         run: |
           pnpm db:generate
           pnpm db:deploy
+          pnpm db:seed
           pnpm db:seed
       - name: Lint, typecheck, and unit and PostgreSQL tests
         run: pnpm check

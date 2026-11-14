@@ -211,3 +211,10 @@
 - No application provider credentials were used, no unrelated Supabase projects accessed and no Railway resources consumed. New migration must be verified by CI before claiming its validity.
 
 - Added a consolidated SQL Editor fallback containing exact core+security migrations, plus explicit instructions to baseline Prisma migration history and harden the history table after a later `migrate resolve` creates it. No secrets or cloud actions.
+
+## 2026-11-14 — Fix remote Supabase seed transaction timeout (P2028)
+
+- User reported `pnpm db:seed` failing with Prisma P2028: a 30,000 ms interactive transaction expired after 30,209 ms, at `candidateSkill.deleteMany()`, over a remote Supabase database from Windows Node 24.14.1. The migration had already completed; do not recreate the schema or recruiter.
+- Replaced hundreds of sequential per-candidate upsert/delete/skill writes with four batched statements in a single atomic transaction: insert unique shared skills with `createMany(skipDuplicates)`, remove **only** the specified owner's `demo-v1-<UUID>-` fixtures (FK cascade clears their links), bulk-insert the same 48 candidate IDs, then bulk-insert all 129 skill associations. Retains all previous deterministic data, NULL skill semantics, unrelated owners, and stable reference IDs. Transaction timeout is 60 seconds as a network safety margin, not the primary fix.
+- The ordinary PostgreSQL CI job now calls the seed twice to verify idempotency; a targeted integration assertion checks 48 unique seeded IDs and 129 skill associations after repeated seeding.
+- No database connections/credentials were used by the assistant; user must pull the integration branch and rerun only `pnpm db:seed` locally. Since the old seed failed inside one transaction, the old writes should have rolled back. CI verification pending.
