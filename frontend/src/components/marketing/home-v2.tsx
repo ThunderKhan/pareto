@@ -508,7 +508,55 @@ function Footer() {
         </div>
       </div>
     </section>
-    <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#similar">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
+    <footer className="v2-footer" id="site-footer" aria-label="Site footer">
+      <div className="v2-footer-container">
+        <div className="v2-footer-top">
+          <div className="v2-footer-brand">
+            <Logo/>
+            <p>Recruitment intelligence,<br/>with reasons.</p>
+            <span>Built by std::zero for the Trustume AI Hackathon 2026.</span>
+          </div>
+          <nav className="v2-footer-navigation" aria-label="Footer navigation">
+            <div className="v2-footer-group">
+              <h3>Product</h3>
+              <ul>
+                <li><a href="#how-it-works">How it works</a></li>
+                <li><a href="#similar">Candidate similarity</a></li>
+                <li><a href="#trust">Why Pareto</a></li>
+              </ul>
+            </div>
+            <div className="v2-footer-group">
+              <h3>Explore</h3>
+              <ul>
+                <li><a href="#problem">The problem</a></li>
+                <li><a href="#faq">FAQs</a></li>
+              </ul>
+            </div>
+            <div className="v2-footer-group">
+              <h3>Workspace</h3>
+              <ul>
+                <li><Link href="/signup">Create account</Link></li>
+                <li><Link href="/login">Log in</Link></li>
+                <li><Link href="/dashboard/search">Recruiter search</Link></li>
+              </ul>
+            </div>
+            <div className="v2-footer-group">
+              <h3>Resources</h3>
+              <ul>
+                <li><a href="https://github.com/ThunderKhan/pareto" target="_blank" rel="noopener noreferrer">Source code</a></li>
+                <li><a href="https://github.com/ThunderKhan/pareto/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noopener noreferrer">Architecture</a></li>
+                <li><a href="https://github.com/ThunderKhan/pareto/blob/main/docs/DEMO-SCRIPT.md" target="_blank" rel="noopener noreferrer">Demo guide</a></li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+        <div className="v2-footer-meta">
+          <span>© 2026 Pareto · std::zero</span>
+          <span>Made for more transparent hiring.</span>
+        </div>
+        <div className="v2-footer-wordmark" aria-hidden="true">pareto<span>.</span></div>
+      </div>
+    </footer>
   </>;
 }
 

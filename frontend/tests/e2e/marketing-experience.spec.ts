@@ -252,6 +252,35 @@ test("final CTA shows the original Pareto mascot and two working destinations", 
   await expect(actions.nth(1)).toHaveAttribute("href", "/signup");
 });
 
+test("OpenTag-inspired Pareto footer has real grouped links and no invented pages", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("#site-footer");
+  const nav = footer.getByRole("navigation", { name: "Footer navigation" });
+  await expect(footer.getByRole("link", { name: "Pareto home" })).toHaveAttribute("href", "/");
+  await expect(footer.locator(".v2-footer-group h3")).toHaveText(["Product", "Explore", "Workspace", "Resources"]);
+  await expect(nav.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "#how-it-works");
+  await expect(nav.getByRole("link", { name: "Candidate similarity" })).toHaveAttribute("href", "#similar");
+  await expect(nav.getByRole("link", { name: "FAQs" })).toHaveAttribute("href", "#faq");
+  await expect(nav.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/signup");
+  await expect(nav.getByRole("link", { name: "Recruiter search" })).toHaveAttribute("href", "/dashboard/search");
+  await expect(nav.getByRole("link", { name: "Architecture" })).toHaveAttribute("href", "https://github.com/ThunderKhan/pareto/blob/main/docs/ARCHITECTURE.md");
+  await expect(nav.getByRole("link", { name: "Demo guide" })).toHaveAttribute("href", "https://github.com/ThunderKhan/pareto/blob/main/docs/DEMO-SCRIPT.md");
+  await expect(footer.locator(".v2-footer-wordmark")).toHaveText("pareto.");
+  const hrefs = await nav.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
+  expect(hrefs).toHaveLength(11);
+  expect(hrefs.every((href) => href?.startsWith("#") || href?.startsWith("/") || href?.startsWith("https://github.com/ThunderKhan/pareto"))).toBe(true);
+  await nav.getByRole("link", { name: "FAQs" }).click();
+  await expect(page).toHaveURL(/#faq$/);
+  for (const width of [320, 390, 768, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const dimensions = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }));
+    expect(dimensions.scrollWidth, `footer overflow at ${width}px`).toBeLessThanOrEqual(dimensions.viewport + 1);
+  }
+});
+
 test("OpenTag-style FAQ has exact typography, no divider lines and animated independently accessible answers", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/#faq");
@@ -477,7 +506,7 @@ for (const size of [
     expect(typography.hero.fontFamily).toContain("Pareto STK Earl");
     expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
     await writeFile(testInfo.outputPath(size.name + "-computed-typography.json"), JSON.stringify(typography, null, 2));
-    const anchors = ["hero", "problem", "how-it-works", "similar", "trust", "get-started"];
+    const anchors = ["hero", "problem", "how-it-works", "similar", "trust", "get-started", "site-footer"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
       const top = anchor === "hero" ? 0 : await node.evaluate((el) => window.scrollY + el.getBoundingClientRect().top - 85);
