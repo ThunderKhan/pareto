@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
 
 test("homepage uses loaded, self-hosted typography rather than CSS-only font names", async ({ page }, testInfo) => {
   const failedFonts: string[] = [];
@@ -55,7 +56,7 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
   expect(fontResponses.length).toBeGreaterThanOrEqual(2);
   expect(failedFonts).toEqual([]);
   expect(metrics.mediaFonts.some((url) => /stkearl/i.test(url))).toBe(false);
-  await testInfo.attach("computed-typography.json", { body: JSON.stringify(metrics, null, 2), contentType: "application/json" });
+  await writeFile(testInfo.outputPath("computed-typography.json"), JSON.stringify({ ...metrics, fontResponses, failedFonts }, null, 2));
 });
 
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
@@ -227,7 +228,7 @@ for (const size of [
     });
     expect(typography.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
     expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
-    await testInfo.attach(size.name + "-computed-typography.json", {body: JSON.stringify(typography, null, 2), contentType: "application/json"});
+    await writeFile(testInfo.outputPath(size.name + "-computed-typography.json"), JSON.stringify(typography, null, 2));
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
