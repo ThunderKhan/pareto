@@ -303,7 +303,8 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
     });
     expect(dimensions.scrollWidth, `footer overflow at ${width}px`).toBeLessThanOrEqual(dimensions.viewport + 1);
     expect(dimensions.copyrightTop).toBeLessThan(dimensions.brandBottom);
-    expect(dimensions.wordmarkBottom).toBeLessThanOrEqual(dimensions.footerBottom + 2);
+    // The oversized wordmark is intentionally cropped by the footer edge.
+    expect(dimensions.wordmarkBottom).toBeGreaterThan(dimensions.footerBottom - 4);
     if (width >= 1440) {
       expect(dimensions.linksLeft).toBeGreaterThan(dimensions.brandLeft + 200);
       expect(dimensions.wordmarkWidth).toBeGreaterThan(dimensions.footerWidth * .65);
