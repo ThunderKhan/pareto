@@ -4,10 +4,10 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
   const failedFonts: string[] = [];
   const fontResponses: string[] = [];
   page.on("requestfailed", (request) => {
-    if (/\\.woff2?(?:\\?|$)/.test(request.url())) failedFonts.push(request.url());
+    if (/\.woff2?(?:\?|$)/.test(request.url())) failedFonts.push(request.url());
   });
   page.on("response", (response) => {
-    if (/\\.woff2?(?:\\?|$)/.test(response.url())) {
+    if (/\.woff2?(?:\?|$)/.test(response.url())) {
       if (response.ok()) fontResponses.push(response.url());
       else failedFonts.push(response.url() + " status=" + response.status());
     }
@@ -38,7 +38,7 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
       action: get(".v2-hero-actions .v2-btn"),
       candidate: get(".v2-window-heading h3"),
       faces: [...document.fonts].map(({family, style, weight, status}) => ({family, style, weight, status})),
-      mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\\.woff2?(?:\\?|$)/.test(url)),
+      mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\.woff2?(?:\?|$)/.test(url)),
     };
   });
   expect(metrics.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
