@@ -27,7 +27,7 @@ const story = [
   { eyebrow: "03 / REVIEW", title: "Keep the human in control.", copy: "Correct what the assistant inferred. Confirm the final criteria before searching candidate records." },
   { eyebrow: "04 / RETRIEVE", title: "Search against attributes.", copy: "The confirmed brief is applied to candidate records. Missing information remains missing evidence." },
   { eyebrow: "05 / EXPLAIN", title: "See reasons, not just ranks.", copy: "Read the criterion-by-criterion breakdown for each match, near miss and unknown." },
-  { eyebrow: "06 / REFINE", title: "Change the request, not the workflow.", copy: "Refine your active search conversationally, or use a reference profile to explore similar talent." },
+  { eyebrow: "06 / REFINE", title: "Change the request, not the workflow.", copy: "The authenticated search is designed for conversational refinement and reference-profile discovery; this preview demonstrates notice-period changes only." },
 ] as const;
 
 function useScrollDirection() {
@@ -400,7 +400,7 @@ export default function ScrollLanding() {
             <div className="principle-row" data-reveal><span>01</span><h3>Explainable by design</h3><p>Required criteria, preferences and missing information have distinct outcomes.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>02</span><h3>Human-confirmed search</h3><p>You can correct the model&apos;s understanding before any results are returned.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>03</span><h3>Iteration without starting over</h3><p>Refine a search over multiple turns while preserving the context you already established.</p><ArrowUpRight size={22} /></div>
-            <div className="principle-row" data-reveal><span>04</span><h3>Explore similar talent</h3><p>Start with a reference profile to discover candidates with comparable experience and skills. This is a product workflow, not part of the synthetic preview above.</p><ArrowUpRight size={22} /></div>
+            <div className="principle-row" data-reveal><span>04</span><h3>Reference-based discovery</h3><p>Planned for the authenticated search workflow: start from a reference profile to explore comparable skills and experience. Not available in this synthetic preview.</p><ArrowUpRight size={22} /></div>
           </div>
         </section>
 
