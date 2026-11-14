@@ -303,13 +303,51 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
     });
     expect(dimensions.scrollWidth, `footer overflow at ${width}px`).toBeLessThanOrEqual(dimensions.viewport + 1);
     expect(dimensions.copyrightTop).toBeLessThan(dimensions.brandBottom);
-    // The oversized wordmark is intentionally cropped by the footer edge.
-    expect(dimensions.wordmarkBottom).toBeGreaterThan(dimensions.footerBottom - 4);
+    // Full descenders must fit inside the footer instead of being cropped.
+    expect(dimensions.wordmarkBottom).toBeLessThanOrEqual(dimensions.footerBottom + 2);
     if (width >= 1440) {
       expect(dimensions.linksLeft).toBeGreaterThan(dimensions.brandLeft + 200);
       expect(dimensions.wordmarkWidth).toBeGreaterThan(dimensions.footerWidth * .65);
     }
   }
+});
+
+test("giant Pareto footer wordmark is legible and each glyph lifts independently", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#site-footer");
+  const footer = page.locator("#site-footer");
+  const wordmark = footer.locator(".v2-footer-wordmark");
+  const letters = wordmark.locator(".v2-footer-letter");
+  await expect(letters).toHaveCount(7);
+  await expect(wordmark).toHaveText("pareto.");
+  await expect(letters.nth(0)).toHaveText("p");
+  await expect(letters.nth(6)).toHaveText(".");
+  await expect(letters.nth(6)).toHaveCSS("color", "rgba(49, 108, 224, 0.75)");
+  const before = await letters.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top));
+  await letters.nth(0).hover();
+  await expect.poll(async () => letters.nth(0).evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(before[0] - 8);
+  const otherTop = await letters.nth(1).evaluate((el) => el.getBoundingClientRect().top);
+  expect(Math.abs(otherTop - before[1])).toBeLessThan(2);
+  await page.mouse.move(2, 2);
+
+  for (const width of [320, 390, 768, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const bounds = await wordmark.evaluate((node) => {
+      const mark = node.getBoundingClientRect();
+      const footer = document.getElementById("site-footer")!.getBoundingClientRect();
+      return {markLeft:mark.left, markRight:mark.right, markBottom:mark.bottom,
+        footerLeft:footer.left, footerRight:footer.right, footerBottom:footer.bottom};
+    });
+    expect(bounds.markLeft, `left crop at ${width}px`).toBeGreaterThanOrEqual(bounds.footerLeft - 2);
+    expect(bounds.markRight, `right crop at ${width}px`).toBeLessThanOrEqual(bounds.footerRight + 2);
+    expect(bounds.markBottom, `bottom crop at ${width}px`).toBeLessThanOrEqual(bounds.footerBottom + 2);
+  }
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const first = wordmark.locator(".v2-footer-letter").first();
+  await first.hover();
+  await expect(first).toHaveCSS("transform", "none");
 });
 
 test("OpenTag-style FAQ has exact typography, no divider lines and animated independently accessible answers", async ({ page }, testInfo) => {

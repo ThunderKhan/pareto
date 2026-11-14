@@ -574,18 +574,26 @@
   transition: color .18s ease, text-decoration-color .18s ease;
 }
 .v2-footer-group a:hover { color: var(--v2-ink); text-decoration: underline; text-underline-offset: 4px; }
+/*
+ * Keep the full lowercase p/descenders visible rather than clipping them
+ * at the footer edge. Individual letters lift on hover, with no JS handlers.
+ */
 .v2-footer-wordmark {
   position: relative;
   left: 50%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
   width: max-content;
   max-width: none;
-  margin-top: clamp(145px, 12vw, 220px);
-  margin-bottom: -.17em;
-  color: rgba(13, 38, 90, .48);
+  margin-top: clamp(72px, 6.5vw, 124px);
+  margin-bottom: 0;
+  padding-block: .15em .12em;
+  color: rgba(13, 38, 90, .52);
   font-family: var(--v2-display);
-  font-size: clamp(11rem, 31vw, 38rem);
+  font-size: clamp(5.1rem, 26vw, 32rem);
   font-weight: 400;
-  line-height: .83;
+  line-height: 1.08;
   letter-spacing: -.075em;
   text-align: center;
   white-space: nowrap;
@@ -593,7 +601,23 @@
   transform: translateX(-50%);
   mix-blend-mode: multiply;
 }
-.v2-footer-wordmark span { color: rgba(49, 108, 224, .60); }
+.v2-footer-letter {
+  display: inline-block;
+  flex: none;
+  transform: translateY(0);
+  transition: transform .42s cubic-bezier(.22, 1, .36, 1), color .3s ease;
+  will-change: transform;
+}
+@media (hover: hover) and (pointer: fine) {
+  .v2-footer-letter:hover {
+    transform: translateY(-.16em);
+    color: rgba(16, 60, 146, .85);
+  }
+}
+.v2-footer-letter--dot { color: rgba(49, 108, 224, .75); }
+@media (prefers-reduced-motion: reduce) {
+  .v2-footer-letter, .v2-footer-letter:hover { transform: none !important; }
+}
 @media (min-width: 1280px) {
   .v2-footer-container { width: min(calc(100% - 19.5vw), 1536px); }
 }
@@ -613,9 +637,9 @@
   .v2-footer-group ul { gap: 13px; }
   .v2-footer-group a { font-size: 15px; }
   .v2-footer-wordmark {
-    margin-top: 96px;
-    margin-bottom: -.13em;
-    font-size: clamp(5.25rem, 26vw, 10rem);
+    margin-top: 64px;
+    font-size: clamp(5.1rem, 26vw, 10rem);
+    padding-block: .18em .14em;
   }
 }
 @media (max-width: 359px) {

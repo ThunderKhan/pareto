@@ -550,7 +550,16 @@ function Footer() {
             </div>
           </nav>
         </div>
-        <div className="v2-footer-wordmark" aria-hidden="true">pareto<span>.</span></div>
+        <div className="v2-footer-wordmark" aria-hidden="true">
+          {"pareto.".split("").map((letter, index) => (
+            <span
+              key={index}
+              className={"v2-footer-letter" + (letter === "." ? " v2-footer-letter--dot" : "")}
+            >
+              {letter}
+            </span>
+          ))}
+        </div>
       </div>
     </footer>
   </>;
