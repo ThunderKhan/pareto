@@ -396,7 +396,7 @@ export default function HomepageV2() {
       <Preview/>
       <Similarity/>
       <Trust/>
-      <Footer/>
     </main>
+    <Footer/>
   </div>;
 }
