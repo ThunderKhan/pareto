@@ -62,8 +62,13 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Start searching" }).first()).toHaveAttribute("href", "/signup");
-  await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
+  const heroButtons = page.locator(".v2-hero-actions a");
+  await expect(heroButtons).toHaveCount(2);
+  await expect(heroButtons.nth(0)).toHaveText("See how it works");
+  await expect(heroButtons.nth(0)).toHaveAttribute("href", "#how-it-works");
+  await expect(heroButtons.nth(1)).toHaveText("Get started free");
+  await expect(heroButtons.nth(1)).toHaveAttribute("href", "/signup");
+  await expect(page.locator(".v2-hero-actions svg, .v2-header-actions a svg, .v2-close a svg")).toHaveCount(0);
   await expect(page.locator(".v2-login")).toHaveText("Login");
   await expect(page.locator(".v2-login")).toHaveAttribute("href", "/login");
   await expect(page.locator(".v2-header-cta")).toHaveText("Get started free");
@@ -162,6 +167,32 @@ test("mobile walkthrough art never obscures headings or body text", async ({ pag
     }, [".v2-process-copy h3", ".v2-process-copy > p"]);
     expect(geometry.headingRight).toBeLessThanOrEqual(geometry.width);
     expect(geometry.copyRight).toBeLessThanOrEqual(geometry.width);
+  }
+});
+
+test("OpenTag-inspired hero buttons match measured mobile and desktop styles", async ({ page }) => {
+  for (const width of [320, 390, 768, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    const metrics = await page.locator(".v2-hero-actions").evaluate((actions) => {
+      const [secondary, primary] = Array.from(actions.querySelectorAll("a"));
+      const a = getComputedStyle(secondary), b = getComputedStyle(primary);
+      return {
+        direction: getComputedStyle(actions).flexDirection,
+        gap: getComputedStyle(actions).gap,
+        secondary: {background:a.backgroundColor, radius:a.borderRadius, height:Math.round(secondary.getBoundingClientRect().height), fontSize:a.fontSize},
+        primary: {background:b.backgroundColor, radius:b.borderRadius, height:Math.round(primary.getBoundingClientRect().height), fontSize:b.fontSize},
+      };
+    });
+    expect(metrics.gap).toBe("8px");
+    expect(metrics.direction).toBe(width < 640 ? "column" : "row");
+    expect(metrics.secondary.background).toBe("rgba(16, 16, 16, 0.08)");
+    expect(metrics.primary.background).toBe("rgb(2, 14, 36)");
+    for (const button of [metrics.secondary, metrics.primary]) {
+      expect(button.radius).toBe(width < 640 ? "10px" : "12px");
+      expect(button.height).toBe(width < 640 ? 40 : 42);
+      expect(button.fontSize).toBe(width < 640 ? "15px" : "16px");
+    }
   }
 });
 
