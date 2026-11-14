@@ -514,7 +514,7 @@ function Footer() {
           <div className="v2-footer-brand">
             <Logo/>
             <p>Recruitment intelligence,<br/>with reasons.</p>
-            <span>Built by std::zero for the Trustume AI Hackathon 2026.</span>
+            <span className="v2-footer-copyright">© 2026 Pareto · std::zero.<br/>Built for the Trustume AI Hackathon.</span>
           </div>
           <nav className="v2-footer-navigation" aria-label="Footer navigation">
             <div className="v2-footer-group">
@@ -549,10 +549,6 @@ function Footer() {
               </ul>
             </div>
           </nav>
-        </div>
-        <div className="v2-footer-meta">
-          <span>© 2026 Pareto · std::zero</span>
-          <span>Made for more transparent hiring.</span>
         </div>
         <div className="v2-footer-wordmark" aria-hidden="true">pareto<span>.</span></div>
       </div>

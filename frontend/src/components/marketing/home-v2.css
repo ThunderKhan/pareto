@@ -471,72 +471,157 @@
 .v2-close-actions .v2-btn--secondary { background: #10101014; }
 .v2-close-actions .v2-btn--secondary:hover { background: #10101021; }
 /*
- * OpenTag-inspired footer structure: brand + grouped links, atmospheric ground,
- * and a large closing wordmark. All graphics are original CSS, not OpenTag assets.
+ * The footer intentionally follows the composition of OpenTag's original:
+ * aligned brand/link columns, copyright below the brand, an organic blurred
+ * field across the ENTIRE section, and an oversized cropped wordmark.
+ * All gradient artwork is original and keeps Pareto's navy/blue identity.
  */
 .v2-footer {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-top: 1px solid var(--v2-border);
-  background: #f6f7f5;
+  border-top: 1px solid rgba(2, 14, 36, .065);
+  background: #edf0f1;
 }
 .v2-footer::before {
   content: "";
   position: absolute;
   z-index: -1;
+  inset: -12% -10%;
+  pointer-events: none;
+  transform: scale(1.08);
+  filter: blur(56px) saturate(.9);
+  background:
+    radial-gradient(ellipse 30% 38% at 7% 32%, rgba(146, 191, 202, .62), transparent 85%),
+    radial-gradient(ellipse 26% 36% at 31% 25%, rgba(231, 220, 192, .48), transparent 84%),
+    radial-gradient(ellipse 35% 48% at 56% 31%, rgba(161, 192, 202, .58), transparent 82%),
+    radial-gradient(ellipse 37% 53% at 93% 33%, rgba(154, 176, 217, .72), transparent 81%),
+    radial-gradient(ellipse 41% 42% at 21% 83%, rgba(154, 187, 184, .62), transparent 83%),
+    radial-gradient(ellipse 40% 49% at 61% 83%, rgba(176, 200, 224, .58), transparent 80%),
+    radial-gradient(ellipse 33% 42% at 100% 88%, rgba(139, 161, 222, .65), transparent 80%),
+    linear-gradient(180deg, #f7f7f0 0%, #e5ebeb 53%, #d5dff0 100%);
+}
+.v2-footer::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 72% 42% at 8% 105%, rgba(70, 123, 235, .18), transparent 75%),
-    radial-gradient(ellipse 62% 52% at 98% 105%, rgba(121, 155, 184, .2), transparent 77%),
-    linear-gradient(180deg, var(--v2-paper) 0%, #f7f7f3 38%, #e5ebf0 100%);
+  background: linear-gradient(to bottom, rgba(255,253,249,.42) 0%, rgba(255,253,249,.11) 25%, transparent 60%);
 }
-.v2-footer-container { width: min(calc(100% - 64px), 1224px); margin: 0 auto; padding-top: 64px; }
-.v2-footer-top { display: grid; grid-template-columns: minmax(230px, 290px) minmax(0, 1fr); align-items: start; gap: clamp(42px, 5vw, 92px); }
-.v2-footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
-.v2-footer-brand .v2-logo { margin-bottom: 24px; }
-.v2-footer-brand > p { margin: 0; color: var(--v2-ink); font-family: var(--v2-display); font-weight: 400; font-size: clamp(1.25rem, 2.15vw, 1.7rem); line-height: 1.18; letter-spacing: -.025em; }
-.v2-footer-brand > span { margin-top: 26px; max-width: 250px; color: #54616c; font-size: 12px; line-height: 1.55; }
-.v2-footer-navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
-.v2-footer-group { min-width: 0; }
-.v2-footer-group h3 { margin: 4px 0 21px; color: var(--v2-ink); font-family: var(--v2-ui); font-size: 14px; font-weight: 650; line-height: 1.35; letter-spacing: -.025em; }
-.v2-footer-group ul { list-style: none; display: flex; flex-direction: column; gap: 16px; margin: 0; padding: 0; }
-.v2-footer-group a { display: inline-block; color: #4e5a64; font-size: 14px; line-height: 1.4; letter-spacing: -.025em; transition: color .18s ease, text-decoration-color .18s ease; }
-.v2-footer-group a:hover { color: var(--v2-ink); text-decoration: underline; text-underline-offset: 4px; }
-.v2-footer-meta { margin-top: 90px; padding-top: 23px; border-top: 1px solid rgba(2,14,36,.11); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 24px; color: #56636f; font-size: 12px; line-height: 1.5; }
-.v2-footer-wordmark {
-  margin: 48px auto -.04em;
-  color: rgba(2, 14, 36, .42);
+.v2-footer-container {
+  width: min(calc(100% - 48px), 1536px);
+  margin-inline: auto;
+  padding-top: 64px;
+}
+.v2-footer-top {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  align-items: start;
+  column-gap: clamp(36px, 4vw, 72px);
+}
+.v2-footer-brand { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.v2-footer-brand .v2-logo { margin-bottom: 26px; }
+.v2-footer-brand > p {
+  margin: 0;
+  max-width: 280px;
+  color: var(--v2-ink);
   font-family: var(--v2-display);
-  font-size: clamp(3.75rem, 17.5vw, 18rem);
   font-weight: 400;
-  line-height: .84;
-  letter-spacing: -.08em;
+  font-size: clamp(1.35rem, 1.75vw, 1.8rem);
+  line-height: 1.16;
+  letter-spacing: -.025em;
+}
+.v2-footer-copyright {
+  display: block;
+  margin-top: 30px;
+  max-width: 256px;
+  color: #44515e;
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -.016em;
+}
+.v2-footer-navigation {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2.2vw, 44px);
+  padding-top: 49px;
+}
+.v2-footer-group { min-width: 0; }
+.v2-footer-group h3 {
+  margin: 0 0 18px;
+  color: var(--v2-ink);
+  font-family: var(--v2-ui);
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 1.4;
+  letter-spacing: -.035em;
+}
+.v2-footer-group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.v2-footer-group a {
+  display: inline-block;
+  color: #414b56;
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: -.035em;
+  transition: color .18s ease, text-decoration-color .18s ease;
+}
+.v2-footer-group a:hover { color: var(--v2-ink); text-decoration: underline; text-underline-offset: 4px; }
+.v2-footer-wordmark {
+  position: relative;
+  left: 50%;
+  width: max-content;
+  max-width: none;
+  margin-top: clamp(145px, 12vw, 220px);
+  margin-bottom: -.17em;
+  color: rgba(13, 38, 90, .48);
+  font-family: var(--v2-display);
+  font-size: clamp(11rem, 31vw, 38rem);
+  font-weight: 400;
+  line-height: .83;
+  letter-spacing: -.075em;
   text-align: center;
   white-space: nowrap;
   user-select: none;
+  transform: translateX(-50%);
+  mix-blend-mode: multiply;
 }
-.v2-footer-wordmark span { color: rgba(70, 123, 235, .63); }
+.v2-footer-wordmark span { color: rgba(49, 108, 224, .60); }
+@media (min-width: 1280px) {
+  .v2-footer-container { width: min(calc(100% - 19.5vw), 1536px); }
+}
 @media (max-width: 1199px) {
-  .v2-footer-top { grid-template-columns: 1fr; gap: 50px; }
-  .v2-footer-navigation { max-width: 880px; }
-  .v2-footer-brand > span { max-width: none; }
+  .v2-footer-top { grid-template-columns: 1fr; row-gap: 44px; }
+  .v2-footer-navigation { padding-top: 0; }
+  .v2-footer-brand .v2-logo { margin-bottom: 20px; }
+  .v2-footer-wordmark { margin-top: 118px; }
 }
 @media (max-width: 699px) {
-  .v2-footer-container { width: calc(100% - 48px); padding-top: 52px; }
-  .v2-footer-top { gap: 46px; }
-  .v2-footer-brand .v2-logo { margin-bottom: 20px; }
-  .v2-footer-navigation { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 33px 20px; }
-  .v2-footer-group h3 { margin-bottom: 16px; }
+  .v2-footer-container { width: calc(100% - 48px); padding-top: 56px; }
+  .v2-footer-top { row-gap: 44px; }
+  .v2-footer-brand > p { font-size: 1.5rem; }
+  .v2-footer-copyright { margin-top: 24px; }
+  .v2-footer-navigation { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 35px 24px; }
+  .v2-footer-group h3 { margin-bottom: 14px; }
   .v2-footer-group ul { gap: 13px; }
-  .v2-footer-meta { align-items: flex-start; flex-direction: column; margin-top: 64px; }
-  .v2-footer-wordmark { margin-top: 42px; }
+  .v2-footer-group a { font-size: 15px; }
+  .v2-footer-wordmark {
+    margin-top: 96px;
+    margin-bottom: -.13em;
+    font-size: clamp(5.25rem, 26vw, 10rem);
+  }
 }
 @media (max-width: 359px) {
   .v2-footer-container { width: calc(100% - 36px); }
   .v2-footer-navigation { column-gap: 14px; }
-  .v2-footer-group a { font-size: 13px; }
+  .v2-footer-group a { font-size: 14px; }
 }
 @keyframes v2-stage-arrive { from { transform: translateY(13px); opacity: .65; } to { transform: translateY(0); opacity: 1; } }
 

@@ -258,6 +258,8 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
   const nav = footer.getByRole("navigation", { name: "Footer navigation" });
   await expect(footer.getByRole("link", { name: "Pareto home" })).toHaveAttribute("href", "/");
   await expect(footer.locator(".v2-footer-group h3")).toHaveText(["Product", "Explore", "Workspace", "Resources"]);
+  await expect(footer.locator(".v2-footer-meta")).toHaveCount(0);
+  await expect(footer.locator(".v2-footer-copyright")).toContainText("© 2026 Pareto · std::zero");
   await expect(nav.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "#how-it-works");
   await expect(nav.getByRole("link", { name: "Candidate similarity" })).toHaveAttribute("href", "#similar");
   await expect(nav.getByRole("link", { name: "FAQs" })).toHaveAttribute("href", "#faq");
@@ -266,6 +268,12 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
   await expect(nav.getByRole("link", { name: "Architecture" })).toHaveAttribute("href", "https://github.com/ThunderKhan/pareto/blob/main/docs/ARCHITECTURE.md");
   await expect(nav.getByRole("link", { name: "Demo guide" })).toHaveAttribute("href", "https://github.com/ThunderKhan/pareto/blob/main/docs/DEMO-SCRIPT.md");
   await expect(footer.locator(".v2-footer-wordmark")).toHaveText("pareto.");
+  const atmosphere = await footer.evaluate((el) => {
+    const gradient = getComputedStyle(el, "::before");
+    return { background: gradient.backgroundImage, filter: gradient.filter };
+  });
+  expect(atmosphere.background).toContain("radial-gradient");
+  expect(atmosphere.filter).toContain("blur");
   const hrefs = await nav.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
   expect(hrefs).toHaveLength(11);
   expect(hrefs.every((href) => href?.startsWith("#") || href?.startsWith("/") || href?.startsWith("https://github.com/ThunderKhan/pareto"))).toBe(true);
@@ -273,11 +281,33 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
   await expect(page).toHaveURL(/#faq$/);
   for (const width of [320, 390, 768, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
-    const dimensions = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      viewport: document.documentElement.clientWidth,
-    }));
+    const dimensions = await page.evaluate(() => {
+      const footer = document.getElementById("site-footer")!;
+      const brand = footer.querySelector(".v2-footer-brand")!.getBoundingClientRect();
+      const copyright = footer.querySelector(".v2-footer-copyright")!.getBoundingClientRect();
+      const wordmark = footer.querySelector(".v2-footer-wordmark")!.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const links = footer.querySelector(".v2-footer-navigation")!.getBoundingClientRect();
+      return {
+        scrollWidth: document.documentElement.scrollWidth,
+        viewport: document.documentElement.clientWidth,
+        brandBottom: brand.bottom,
+        copyrightTop: copyright.top,
+        wordmarkWidth: wordmark.width,
+        footerWidth: footerRect.width,
+        footerBottom: footerRect.bottom,
+        wordmarkBottom: wordmark.bottom,
+        linksLeft: links.left,
+        brandLeft: brand.left,
+      };
+    });
     expect(dimensions.scrollWidth, `footer overflow at ${width}px`).toBeLessThanOrEqual(dimensions.viewport + 1);
+    expect(dimensions.copyrightTop).toBeLessThan(dimensions.brandBottom);
+    expect(dimensions.wordmarkBottom).toBeLessThanOrEqual(dimensions.footerBottom + 2);
+    if (width >= 1440) {
+      expect(dimensions.linksLeft).toBeGreaterThan(dimensions.brandLeft + 200);
+      expect(dimensions.wordmarkWidth).toBeGreaterThan(dimensions.footerWidth * .65);
+    }
   }
 });
 
