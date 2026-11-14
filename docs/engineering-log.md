@@ -49,3 +49,15 @@
 **Verification:** GitHub returned a new document commit; the Markdown fences and key sections were inspected. **No dependency install, application test, Docker deployment or migration was performed by this documentation change.**
 
 **Next:** Begin F-001 local runtime verification and advance through the P0 corpus/evaluator and search slices, updating task statuses only after evidence.
+
+## 2026-11-14 — Design reference study and product navigation scope
+
+**User direction:** Use the private `ThunderKhan/opentag-clone` as Pareto's UI reference; require a public landing, working signup/login, and protected main dashboard. Potential chat/voice components will be evaluated later.
+
+**Source inspection:** Reviewed the private clone README, inspection notes, CSS, homepage, shared header, documentation sidebar, source tree and interactions. Confirmed CSS baseline: `#FFFDF9` page, `#020E24` ink, `#429DFC` accent, Inter body/STK Earl display (subject to font rights), responsive inset 24/32/clamp(48,8.6111vw,124)px, 91px desktop header, 12px button radius and restrained animation. The reference covers public pages **only**; auth/dashboard are Pareto adaptations.
+
+**Deliverable:** Committed `docs/DESIGN.md` and added clear design/navigation requirements and implementation gates across MVP, PRD, ARCHITECTURE and IMPLEMENTATION. Linked the new design reference from repo documentation.
+
+**Verification:** Source CSS variables extracted and GitHub Markdown files reviewed. No screenshot pixel comparison, new web UI implementation, authentication test, local build or deployment performed.
+
+**Boundary:** Original organizer PS1 P0 remains above optional visual polish; no proprietary OpenTag logos, mascot or fonts copied.

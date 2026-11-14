@@ -8,7 +8,7 @@
 > **Primary repository:** `ThunderKhan/pareto` · **Official submission:** `ai-hackathon-trustume/std-zero`  
 > **Official code freeze:** Sunday, **15 November 2026, 5:00 PM IST**  
 > **Presentations:** Sunday, **15 November 2026, 6:00–8:00 PM IST**  
-> **Requirements authority:** [PRD.md](PRD.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → this implementation plan  
+> **Requirements authority:** [PRD.md](PRD.md) → [ARCHITECTURE.md](ARCHITECTURE.md) → [DESIGN.md](DESIGN.md) (visual system) → this implementation plan  
 > **Working rule:** We can cut our enhancements, but we cannot silently cut the original PS1.
 
 ---
@@ -926,3 +926,77 @@ The next actual code task is **F-001**, followed rapidly by the candidate schema
 ---
 
 **Implementation contract:** Requirements in [PRD.md](PRD.md) define *what*. [ARCHITECTURE.md](ARCHITECTURE.md) defines *where and why*. This document defines *in what order, with which evidence, and with which release gate*. Record the truth of what happened in [engineering-log.md](engineering-log.md).
+
+## 17. Additional frontend delivery plan — OpenTag-derived landing → auth → dashboard
+
+**Requirement origin:** New user direction, 14 November 2026. **Design source:** `ThunderKhan/opentag-clone` (private, public marketing clone); canonical rules in [DESIGN.md](DESIGN.md). **Original organizer P0 remains the highest priority.**
+
+### UX-501 — Extract and implement the design-token foundation
+
+**Priority:** P1-PRODUCTIZATION visual foundation; start as a *small scaffold task* before significant UI work.
+
+- [ ] Implement source-derived theme: page `#FFFDF9`, ink/CTA `#020E24`, body gray `#4E4E4E`, accent `#429DFC`, subtle borders, surfaces, radius and shadow tokens.
+- [ ] Replace the current **dark scaffold homepage** with the warm light system.
+- [ ] Implement license-compliant display serif + Inter body (do not copy STK Earl files without redistribution rights).
+- [ ] Build shared `Button`, `Input`, `Card`, `Badge`, `Dialog`, `Navbar` via Tailwind/shadcn overrides and Phosphor.
+- [ ] Verify 24px/32px/desktop clamp responsive gutters and the 66px/65px/91px header-height pattern.
+- [ ] Test keyboard focus and reduced-motion variants. Avoid importing the original clone CSS wholesale.
+
+**Gate:** source values reproduced in CSS, no secret/proprietary assets copied, and landing/header checked at 390 and 1440px.
+
+### UX-502 — Public Pareto landing page
+
+**Priority:** P1-PRODUCTIZATION; create working minimal route early, polish after P0.
+
+- [ ] Route `/` with Pareto wordmark, editorial hero, original product screenshot/illustration, real value proposition and credible feature sections.
+- [ ] **Get started** opens `/signup`; **Log in** opens `/login`.
+- [ ] Use OpenTag-style spacious structure, typography rhythm, soft sections, concise nav/footer. **Do not** copy OpenTag mascot, customer brands, testimonials, photography or private marketing copy.
+- [ ] Feature copy must identify implemented vs upcoming functionality honestly.
+- [ ] Accessibility: skip link, heading order, mobile menu, meaningful CTA labels, reduced motion.
+
+**Gate:** two actual CTA links and working responsive navigation; no invented customer claims.
+
+### UX-503 — Signup/login, callback and session UX
+
+**Priority:** P1-PRODUCTIZATION; **security blocker** before private records/uploads.
+
+- [ ] Create `/signup`, `/login`, `/auth/callback`, `/forgot-password` and `/reset-password` flows.
+- [ ] Supabase Auth with Google OAuth and email/password; handle verification, reset, Google cancel/failure, rate limits and sign-out.
+- [ ] Validate safe internal post-login redirect, protect cookie/session management and verify principals server-side.
+- [ ] Use consistent warm editorial auth composition; source clone does **not** provide actual login screens.
+- [ ] Test an authenticated redirect and a failed/unauthorized request, not merely form rendering.
+
+**Gate:** real authentication success/failure, safe callback and protected-route denial verified. If OAuth provider setup blocks PS1 progress, **synthetic-only demo** is the safe fallback; no private upload is allowed without auth.
+
+### UX-504 — Protected dashboard shell and navigation
+
+**Priority:** P1-PRODUCTIZATION structural shell supporting **P0-ORG**.
+
+- [ ] `/dashboard` overview (real dataset count only if computed), clear **Start candidate search** action and useful empty state.
+- [ ] Reusable dashboard sidebar/topbar with Search, Candidates, Imports (P1), Settings (P1), user menu and sign-out.
+- [ ] `/dashboard/search` hosts all **ORG-FR-01–06** from S-201–S-205; confirmation remains prominent.
+- [ ] `/dashboard/candidates` and `[id]` present real records and the reference-candidate action.
+- [ ] Dashboard working layout is a **new Pareto adaptation** inspired by the clone's 232px docs sidebar and restrained surface system.
+- [ ] Avoid empty fake KPI cards, demo-only actions, or unused navigation destinations.
+
+**Gate:** after authentication, the recruiter reaches real search in one obvious click; all private routes enforce authorization and work on mobile.
+
+### UX-505 — Visual, interaction, and UX regression gate
+
+- [ ] Playwright navigation: landing → signup/login → dashboard → search → candidate detail → “Find Similar”.
+- [ ] Test at 390×844, 768px, 1440×1000 and 1920px; no horizontal overflow.
+- [ ] Compare landing/header screenshots to the private clone's reference screenshots for spacing, type scale, button shape and canvas warmth; log deliberate divergences.
+- [ ] Validate focus states, keyboard access, status wording, reduced-motion, form error states and actual loading behavior.
+- [ ] Check evidence statuses use words **MATCH / FAIL / UNKNOWN**, not colors only.
+- [ ] Record test outputs and actual screenshots; do not claim pixel-perfect fidelity until verified.
+
+### Priority sequencing and cross-references
+
+- **Immediately:** token foundation + minimal public/auth/dashboard route shells as needed for navigation.
+- **Primary effort:** complete all organizer-required S-201–S-205 search slices. UI is part of those vertical slices; do not separate product functionality from usable screens.
+- **After P0 green:** finish secure OAuth, finer landing layouts, additional dashboard pages, diagnostics, import and visual polish.
+- **Later only:** special chat/voice components, evaluated against `DESIGN.md`. Voice is optional, not part of organizer PS1.
+
+**Requirements links:** [PRD.md §21](PRD.md) (`UX-FR-01..08`), [ARCHITECTURE.md §25](ARCHITECTURE.md), [MVP.md §17](MVP.md), [DESIGN.md](DESIGN.md).
+
+**Known current state:** no route/code changes in this documentation task; existing landing remains a dark foundation placeholder until implementation.

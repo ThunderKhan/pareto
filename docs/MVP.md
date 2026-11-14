@@ -344,3 +344,25 @@ Implementation details to settle in subsequent specification documents:
 ---
 
 **Source of truth:** the original Trustume Problem Statement 1 and official event instructions remain authoritative for hackathon compliance. This document adds our agreed product scope and engineering direction; where conflicts arise, official acceptance requirements take priority.
+
+## 17. Product entry experience and OpenTag-derived design (new requirement)
+
+**Design authority:** [DESIGN.md](DESIGN.md). The selected visual reference is the user's private [`ThunderKhan/opentag-clone`](https://github.com/ThunderKhan/opentag-clone), a faithful recreation of **OpenTag's public marketing website**, not its private web application. Its actual CSS tokens, type scales, spacing, buttons, header and motion define Pareto's preferred visual language. **The authentication and internal dashboard are new Pareto designs derived from that language.**
+
+### Public-to-private product journey
+
+1. **Landing page (`/`):** public, substantial, and distinctly Pareto-branded; editorial hero, clear candidate-search value proposition, realistic demonstration preview, trust/explainability messaging, and visible **Get started / Sign up** and **Log in** actions.
+2. **Signup (`/signup`) and login (`/login`):** real Supabase Auth forms supporting **Google OAuth** and email/password, with callback, verification/recovery and failure states; no imitation of OpenTag's external account service.
+3. **Protected dashboard (`/dashboard`):** orient the authenticated recruiter; dominant **Start candidate search** action and navigation to search, candidates, and optional imports.
+4. **Core workspace (`/dashboard/search`):** all **P0 organizer** flows—prompt/reference selection, AI-extracted criteria, editing, explicit confirmation, real candidate results, per-criterion explanations, conversational follow-ups.
+5. **Candidate exploration:** list/detail + “Find Candidates Like Me”, with explanations and actual data. P1 diagnostics and what-if may extend the same working surface.
+6. **Optional P1 imports and settings:** secure document ingestion and account management when actually implemented.
+
+### UI design rules and scope
+
+- **Verified source aesthetic:** warm off-white `#FFFDF9` canvas, navy `#020E24` ink/CTA, restrained body grays, blue accent `#429DFC`, serif editorial display, Inter working typography, fine borders, subtle transitions and responsive spacing.
+- Preserve visual fidelity to the clone's **public-site patterns** while writing original Pareto copy, creating a distinct wordmark, using licensed assets/fonts, and implementing with Next.js + Tailwind + shadcn/ui + **Phosphor Icons**. Do not transplant OpenTag logos, mascot, customer marks or proprietary fonts without permission.
+- The clone **does not** contain authenticated OpenTag dashboard or login UI. Any such Pareto surfaces are **design extrapolations**, not verified “exact copies.”
+- Additional chat/voice components, if later requested, must follow this design system. **Voice is not required** for original PS1.
+
+**Priority clarification:** The landing→auth→dashboard route journey is a committed **P1 product UX requirement**, to scaffold early for coherence and finish alongside secure authentication. However, **P0-ORG search, editing/confirmation, explanation, refinement and reference mode remain release-critical**. A beautiful landing page cannot replace them.

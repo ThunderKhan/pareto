@@ -4,7 +4,7 @@
 > **Version:** 1.0 · 14 November 2026 (IST)  
 > **Product:** Pareto — explainable AI recruitment intelligence  
 > **Challenge:** Trustume AI Hackathon 2026 — Problem Statement 1: *AI-Powered Natural Language Candidate Search & “Find Candidates Like Me”*  
-> **Related:** [MVP.md](MVP.md) · [System architecture](ARCHITECTURE.md) · [Engineering log](engineering-log.md)  
+> **Related:** [MVP.md](MVP.md) · [System architecture](ARCHITECTURE.md) · [Design system](DESIGN.md) · [Engineering log](engineering-log.md)  
 > **Scope authority:** The official PS1 requirements take precedence over any extra feature described here.  
 > **Submission deadline:** 15 November 2026, 5:00 PM IST (official assigned GitHub repository).
 
@@ -503,3 +503,28 @@ Pareto is **hackathon MVP-complete** only when:
 ---
 
 *This PRD preserves the organizer's functional structure while separating Pareto's additional scope. For exact original organizer wording, consult the supplied PS1 Markdown and official guidelines; their content remains authoritative.*
+
+## 21. New product UX requirements — landing, authentication, dashboard, and reference fidelity
+
+The product will use the private [OpenTag public-site clone](https://github.com/ThunderKhan/opentag-clone) as its **visual reference**. The exact verified palette, typography, geometry and motion are specified in [DESIGN.md](DESIGN.md). Since the clone excludes OpenTag's private SaaS app screens, **the following internal UX is newly designed for Pareto**.
+
+| ID | User story / functional requirement | Priority | Acceptance proof |
+| --- | --- | --- | --- |
+| **UX-FR-01** | As a visitor, I can understand Pareto from a public `/` landing page and navigate to signup or login. | P1-PRODUCT (early shell) | Responsive landing with working Get started and Log in; truthful feature claims. |
+| **UX-FR-02** | As a visitor, I can create an account through `/signup` using Google or email/password. | P1-PRODUCT | Supabase account flow, error/verification state and safe callback work in real tests. |
+| **UX-FR-03** | As a recruiter, I can sign in through `/login`, recover credentials and sign out. | P1-PRODUCT | Correct login, Google OAuth, reset and logout states; no silent bypass. |
+| **UX-FR-04** | As an authenticated recruiter, I land on `/dashboard`; unauthenticated users cannot access private pages. | P1-PRODUCT / security-critical with private data | Guarded routes plus server-side owner checks; negative tests for cross-user records. |
+| **UX-FR-05** | As a recruiter, I can reach the complete PS1 search workspace in one clear dashboard action. | P0-ORG **supporting navigation** | `/dashboard/search` accesses ORG-FR-01–06 with explicit confirmation. |
+| **UX-FR-06** | As a recruiter, I can browse candidate records and choose “Find Candidates Like Me” from candidate detail. | P0-ORG **supporting navigation** | Candidate list/detail routes launch real ORG-FR-06 flow. |
+| **UX-FR-07** | As a user, I see consistent reference-derived colors, spacing, type, controls and motion across public and internal pages. | P1-PRODUCT | Visual review at 390px and 1440px; DESIGN.md token compliance and accessible variants. |
+| **UX-FR-08** | As a mobile or keyboard user, I can navigate and perform core actions without overflow or motion-related barriers. | Cross-cutting | Keyboard and reduced-motion test; responsive navigation and visible confirmation. |
+
+### Expected navigation and IA
+
+`/` → `/signup` or `/login` → `/dashboard` → `/dashboard/search` → candidate results → `/dashboard/candidates/[id]` → reference similarity. For signed-in users, a safe `returnTo` can preserve the protected destination after OAuth without allowing open redirects.
+
+Dashboard navigation is intentionally minimal: **Overview, Search, Candidates, Imports (P1), Settings (P1)**. A separate hiring-manager portal, third-party CRM and private OpenTag UI replication are not in scope. Landing CTAs, login, Google OAuth and search buttons must go to functioning routes, not dead placeholders.
+
+**Source versus adaptation:** OpenTag styling rules are verified from its **public clone**; dashboard sidebar dimensions, auth form composition and internal result layouts are **Pareto-specific**. Branding, photography, mascots, font binaries and proprietary copy are not to be copied without appropriate rights.
+
+**Priority protection:** Do not count UX-FR-01–04 as completed original PS1 functional requirements. The six original ORG-FR requirements remain mandatory and must be demonstrated before spending the remaining schedule on visual polish.

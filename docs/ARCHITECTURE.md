@@ -4,7 +4,7 @@
 > **Version:** 1.0 · 14 November 2026 (IST)  
 > **Status:** Proposed target architecture, aligned with the existing M0 scaffold; **not** a claim of implementation or deployment  
 > **Product:** Pareto — AI-powered, explainable candidate discovery and hiring-constraint analysis  
-> **Authoritative requirements:** [PRD.md](PRD.md) (organizer P0 first), [MVP.md](MVP.md)  
+> **Authoritative requirements:** [PRD.md](PRD.md) (organizer P0 first), [MVP.md](MVP.md), [DESIGN.md](DESIGN.md)  
 > **Repository:** `ThunderKhan/pareto` (development), `ai-hackathon-trustume/std-zero` (official submission)  
 > **Code freeze:** 15 November 2026 at 5:00 PM IST
 
@@ -982,3 +982,66 @@ If a decision changes during implementation, add a dated `docs/architecture/adr-
 - Vercel AI SDK provider catalog: https://ai-sdk.dev/providers/ai-sdk-providers
 
 **Rule for future maintainers:** use this document for system boundaries and responsibility allocation; use PRD for *what must work*; use implementation tasks and tests for *what is actually complete*. Architectural intent must not be confused with verified deployed behavior.
+
+## 25. Frontend experience architecture and OpenTag-inspired design boundary
+
+### 25.1 System-level UX decision
+
+Pareto adopts the *verified public-site* visual grammar of [`ThunderKhan/opentag-clone`](https://github.com/ThunderKhan/opentag-clone). The reference has a Next.js-like source design but the user's clone is actually an **independent static HTML/CSS/JS reconstruction**, **not** a React component package to install. Reimplement design tokens and components natively in Next.js; do **not** import the 1.7MB source `reference.css` wholesale or copy unlicensed logo/font/image assets.
+
+The canonical colors, typography, layout, motion, components, provenance and fidelity gates are in [DESIGN.md](DESIGN.md). Verified reference includes warm `#FFFDF9` canvas, navy `#020E24` text, serif display, Inter body, a responsive 91px desktop header and 24/32/48–124px gutters. **Private dashboard and login screens are absent from the clone** and therefore require original Pareto extensions.
+
+### 25.2 Frontend routes and boundaries
+
+```text
+frontend/src/app/
+  (marketing)/page.tsx                 # URL / : public landing
+  (auth)/login/page.tsx                 # URL /login
+  (auth)/signup/page.tsx                # URL /signup
+  (auth)/forgot-password/page.tsx      # URL /forgot-password
+  (auth)/reset-password/page.tsx       # URL /reset-password
+  auth/callback/route.ts               # Supabase OAuth exchange
+  (app)/dashboard/page.tsx             # URL /dashboard : protected
+  (app)/dashboard/search/page.tsx      # URL /dashboard/search : core P0
+  (app)/dashboard/search/[id]/page.tsx
+  (app)/dashboard/candidates/page.tsx
+  (app)/dashboard/candidates/[id]/page.tsx
+  (app)/dashboard/imports/page.tsx     # P1
+  (app)/dashboard/settings/page.tsx    # P1
+  api/v1/                              # existing proposed backend HTTP contracts
+```
+
+Route groups are **organizing directories**, not URL segments. Shared layouts: `MarketingLayout` (public header, editorial canvas, footer), `AuthLayout` (sign-in/signup card and safe callback), `DashboardLayout` (auth guard, compact sidebar, recruiter navigation). Components live under `frontend/src/components/{marketing,auth,shell,search,candidates,ui}`, with all business rules in `backend/`.
+
+### 25.3 End-to-end navigation and security flow
+
+```mermaid
+flowchart LR
+    Landing["Public landing /"] --> Signup["Signup /signup"]
+    Landing --> Login["Login /login"]
+    Signup --> OAuth["Supabase Auth / Google OAuth"]
+    Login --> OAuth
+    OAuth --> Callback["/auth/callback: validate & exchange"]
+    Callback --> Dashboard["Protected /dashboard"]
+    Dashboard --> Search["/dashboard/search (P0-ORG)"]
+    Dashboard --> Candidates["/dashboard/candidates"]
+    Search --> Results["Confirm criteria → real results"]
+    Candidates --> Reference["Select candidate → find similar"]
+    Reference --> Results
+    Results --> Detail["Candidate evidence detail"]
+```
+
+- Marketing renders without private data. Auth redirects validate `returnTo` against an internal allowlist.
+- Route guards must not be confused with authorization: server APIs check the verified principal and record ownership for Prisma queries and Supabase Storage.
+- Dashboard summary counts come from real authorized records, never placeholder statistics.
+- New auth and dashboard visual patterns are adapted from source **marketing and docs navigation**, not claimed to be OpenTag's actual internal application.
+
+### 25.4 UI infrastructure
+
+- **Token seam:** `frontend/src/app/globals.css` exposes design semantic variables mapped from the inspected clone; Tailwind/shadcn consume those tokens.
+- **Component seam:** shared shadcn primitives + Phosphor Icons; high-fidelity header/hero and consistent compact dashboard controls.
+- **Interaction seam:** React client components own transient draft, tab, modal and navigation state; canonical confirmed criteria and search revisions remain on server.
+- **Visual test seam:** screenshot comparisons at mobile (390×844) and desktop (1440×1000), responsive overflow checks, keyboard/focus and `prefers-reduced-motion`. The original repo's reference screenshots provide a baseline only for marketing surfaces.
+- **Performance seam:** do not load source site's huge stylesheet or decorative animation fleet; render landing editorials efficiently, prioritize dashboard interactivity and actual search behavior.
+
+**Release sequencing:** establish enough public/auth/dashboard structure to support the intended journey, then prioritize the complete organizer-required PS1 search vertical slices. Deep landing animation and P1 imports must not delay P0.
