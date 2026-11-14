@@ -28,6 +28,10 @@ test("a single workflow product window changes with accessible tabs", async ({ p
   await expect(review).toHaveAttribute("aria-selected", "true");
   await expect(page.locator(".v2-process-window")).toContainText("Proposed criteria");
   await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-review.png") });
+  await page.locator(".v2-process-window").getByRole("button", { name: "View illustrated results" }).click();
+  await expect(tabs.getByRole("tab", { name: /discover & explain/i })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".v2-process-window")).toContainText("Illustrative shortlist");
+  await review.click();
   await review.focus();
   await page.keyboard.press("ArrowRight");
   const explain = tabs.getByRole("tab", { name: /discover & explain/i });
@@ -73,6 +77,24 @@ test("reference cards and FAQ tell the truth about the synthetic illustration", 
   await unknown.click();
   await expect(page.locator("#trust")).toContainText("Unknown values are marked Needs review");
   await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
+});
+
+test("mobile walkthrough art never obscures headings or body text", async ({ page }) => {
+  for (const width of [320, 390, 599, 767]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/#how-it-works");
+    const icon = page.locator(".v2-process-copy .v2-process-icon");
+    await expect(icon).toBeHidden();
+    const heading = page.locator(".v2-process-copy h3");
+    const copy = page.locator(".v2-process-copy > p");
+    const geometry = await page.evaluate(([headingSelector, copySelector]) => {
+      const h = document.querySelector(headingSelector)!.getBoundingClientRect();
+      const p = document.querySelector(copySelector)!.getBoundingClientRect();
+      return {headingRight:h.right,copyRight:p.right,width:window.innerWidth};
+    }, [".v2-process-copy h3", ".v2-process-copy > p"]);
+    expect(geometry.headingRight).toBeLessThanOrEqual(geometry.width);
+    expect(geometry.copyRight).toBeLessThanOrEqual(geometry.width);
+  }
 });
 
 test("mobile navigation is usable by keyboard and dismisses appropriately", async ({ page }) => {
@@ -121,8 +143,8 @@ for (const size of [
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
-      if (anchor === "hero") await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-      else await node.scrollIntoViewIfNeeded();
+      const top = anchor === "hero" ? 0 : await node.evaluate((el) => window.scrollY + el.getBoundingClientRect().top - 85);
+      await page.evaluate((value) => window.scrollTo({ top: Math.max(0, value), behavior: "instant" }), top);
       await page.screenshot({ path: testInfo.outputPath(size.name + "-" + anchor + ".png") });
       const x = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth }));
       expect(x.content, size.name + "px overflow at " + anchor).toBeLessThanOrEqual(x.viewport + 1);
