@@ -186,7 +186,7 @@ function Problem() {
           <p className="v2-panel-caption">An illustrative opaque score without the underlying requirements.</p>
         </div>
         <div className="v2-contrast-new">
-          <div className="v2-contrast-kicker">PARETO'S APPROACH</div>
+          <div className="v2-contrast-kicker">PARETO&apos;S APPROACH</div>
           <h3>Every criterion has <em>a reason.</em></h3>
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Java · Spring Boot · AWS</span><b>Present</b></div>
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Hyderabad · 8 years</span><b>Present</b></div>
