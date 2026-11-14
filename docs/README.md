@@ -1,10 +1,11 @@
 # Documentation index
 
-This is the M0 project foundation. MVP scope, organizer-first product requirements, and the system architecture are documented. Implementation planning and test evidence follow in later milestones.
+This is the M0 project foundation. MVP scope, organizer-first requirements, architecture and the detailed implementation execution plan are now documented. Actual implementation, verification results and release evidence remain forthcoming.
 
 - **[`MVP.md`](MVP.md)** — product vision, complete PS1 acceptance scope, distinctive features, journeys, data, tech stack, and release gates
 - **[`PRD.md`](PRD.md)** — primary/secondary users, non-negotiable organizer P0 requirements, acceptance tests, product workflows and delivery gates
 - **[`ARCHITECTURE.md`](ARCHITECTURE.md)** — reference-grade horizontal layers, vertical slices, C4-style diagrams, data/API contracts, authorization, deployment and testing
+- **[`IMPLEMENTATION.md`](IMPLEMENTATION.md)** — work packages, dependencies, original PS1 gates, validation, rollback, engineering evidence, and official repo integration
 - [`architecture/`](architecture/README.md) — ADR location and architecture-specific notes
 - `engineering-log.md` — dated, **factual** engineering progress and discovered issues
 - `problem-statement-1.md` — reserved for the original organizer-provided PS1 document
