@@ -150,7 +150,7 @@ test("removed interactive evidence section leaves no dead links or duplicated re
   await expect(page.locator('a[href="#preview"]')).toHaveCount(0);
   const matchingLink = page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Explore matching" });
   await expect(matchingLink).toHaveAttribute("href", "#similar");
-  await expect(page.getByRole("navigation", { name: "Footer navigation" }).getByRole("link", { name: "Explore matching" })).toHaveAttribute("href", "#similar");
+  await expect(page.getByRole("navigation", { name: "Footer navigation" }).getByRole("link", { name: "Candidate similarity" })).toHaveAttribute("href", "#similar");
   await matchingLink.click();
   await expect(page).toHaveURL(/#similar$/);
   await expect(page.locator("#similar")).toContainText("COMPARABLE PROFILES");
