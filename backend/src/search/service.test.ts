@@ -18,6 +18,17 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     await db.$disconnect();
   });
 
+  it("keeps 48 stable synthetic candidates and 129 skill links after repeat seeding", async () => {
+    const rows = await database().candidate.findMany({
+      where: { ownerId: owner, id: { startsWith: `demo-v1-${owner}-` } },
+      select: { id: true, skills: { select: { skillId: true } } },
+    });
+    expect(rows).toHaveLength(48);
+    expect(new Set(rows.map(row => row.id)).size).toBe(48);
+    expect(rows.reduce((sum, row) => sum + row.skills.length, 0)).toBe(129);
+    expect(rows.some(row => row.id === `demo-v1-${owner}-000`)).toBe(true);
+  });
+
   it("runs the organizer search, human edits, two refinements and reference-based follow-up on PostgreSQL", async () => {
     const brief = "Find Senior Java Developers in Hyderabad with 6 to 10 years of experience, Java, Spring Boot, AWS, and a notice period of no more than 30 days.";
     const parsedByModel = [

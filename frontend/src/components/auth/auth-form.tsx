@@ -15,6 +15,12 @@ function safeNext() {
 
 export default function AuthForm({ mode }: { mode: Mode }) {
   const isSignup = mode === "signup";
+  // These are browser-safe settings injected by Next.js from frontend/.env.local.
+  // Keep credentials and database URLs out of the rendered troubleshooting text.
+  const missingSettings = [
+    !process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ? "NEXT_PUBLIC_SUPABASE_URL" : null,
+    !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ? "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" : null,
+  ].filter((value): value is string => value !== null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -83,7 +89,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           <p className="auth-card__subline">{isSignup ? "Set up an account to explore explainable candidate search." : "Access your recruitment workspace."}</p>
           {!client && (
             <div className="auth-card__notice" role="status">
-              Account authentication is not configured in this environment yet. The visual flow is ready; sign-in will become available when Supabase credentials are supplied.
+              Supabase sign-in is not configured. Set <strong>{missingSettings.join(" and ")}</strong> in <code>frontend/.env.local</code> (next to the frontend package.json), then stop and restart <code>pnpm dev</code>. Database settings in <code>backend/.env</code> alone do not enable login.
             </div>
           )}
           <button className="auth-card__google" type="button" onClick={onGoogle} disabled={!client || busy}>

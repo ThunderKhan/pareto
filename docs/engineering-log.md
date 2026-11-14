@@ -211,3 +211,21 @@
 - No application provider credentials were used, no unrelated Supabase projects accessed and no Railway resources consumed. New migration must be verified by CI before claiming its validity.
 
 - Added a consolidated SQL Editor fallback containing exact core+security migrations, plus explicit instructions to baseline Prisma migration history and harden the history table after a later `migrate resolve` creates it. No secrets or cloud actions.
+
+## 2026-11-14 — Fix remote Supabase seed transaction timeout (P2028)
+
+- User reported `pnpm db:seed` failing with Prisma P2028: a 30,000 ms interactive transaction expired after 30,209 ms, at `candidateSkill.deleteMany()`, over a remote Supabase database from Windows Node 24.14.1. The migration had already completed; do not recreate the schema or recruiter.
+- Replaced hundreds of sequential per-candidate upsert/delete/skill writes with four batched statements in a single atomic transaction: insert unique shared skills with `createMany(skipDuplicates)`, remove **only** the specified owner's `demo-v1-<UUID>-` fixtures (FK cascade clears their links), bulk-insert the same 48 candidate IDs, then bulk-insert all 129 skill associations. Retains all previous deterministic data, NULL skill semantics, unrelated owners, and stable reference IDs. Transaction timeout is 60 seconds as a network safety margin, not the primary fix.
+- The ordinary PostgreSQL CI job now calls the seed twice to verify idempotency; a targeted integration assertion checks 48 unique seeded IDs and 129 skill associations after repeated seeding.
+- No database connections/credentials were used by the assistant; user must pull the integration branch and rerun only `pnpm db:seed` locally. Since the old seed failed inside one transaction, the old writes should have rolled back. CI verification pending.
+
+## 2026-11-14 — Verify integration seed fix after external merge
+
+- GitHub reports PR #3 merged externally (not by this session), so further commits to the integration branch no longer trigger `pull_request` CI. Added `integration/release-20261114` to existing checks workflow push branch filters, preserving all other branch triggers including `feat/homepage-v2`.
+- This enables real PostgreSQL migrate, twice-seeded fixtures, integration/Playwright tests and Docker runtime verification of the P2028 fix without touching main, any secrets or Railway.
+
+## 2026-11-14 — Supabase Auth missing configuration and database handoff
+
+- User screenshot showed the signup page in the deliberately disabled unconfigured state. Inspected `frontend/src/components/auth/auth-form.tsx`: its Supabase browser client requires both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Next.js client-side environment injection). Successful Prisma migrations and seeding via `backend/.env` do not imply that `frontend/.env.local` contains these two values. The assistant cannot edit the user's ignored local file.
+- Changed the no-auth notice to name only the *missing variable names*, the exact `frontend/.env.local` path, and the required `pnpm dev` restart; the message contains no keys or credentials. Updated public browser smoke coverage to validate actionable diagnostics when shown, while keeping Supabase OAuth/provider configuration unchanged.
+- User explicitly requested that remaining database branch changes be merged to `main`. PR #3 was already merged externally before this turn; compare `main` to `integration/release-20261114` before creating a new limited follow-up PR. Railway remains deferred.
