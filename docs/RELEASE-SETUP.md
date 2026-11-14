@@ -48,7 +48,7 @@ Railway Docker ARG reference: https://docs.railway.com/builds/dockerfiles
 
 ## 4. Credentialed end-to-end run — GitHub Actions, no chat secrets
 
-A manual-only workflow exists at `.github/workflows/live-recruiter.yml`; dispatch it with **branch `integration/release-20261114`** after setting up an environment named **`pareto-demo`** under GitHub → Settings → Environments. Configure only secure GitHub Environment secrets and variables; no secret values belong in chat.
+The existing `.github/workflows/ci.yml` has an optional **`recruiter-live`** job, activated by manually dispatching **Recruiter search CI** with branch **`integration/release-20261114`** after setting up an environment named **`pareto-demo`** under GitHub → Settings → Environments. Configure only secure GitHub Environment secrets and variables; no secret values belong in chat.
 
 Environment **secrets**:
 ```text
@@ -67,9 +67,9 @@ GEMINI_MODEL                    # if Gemini is configured
 GROQ_MODEL                      # if Groq is configured
 ```
 
-The live workflow provisions **disposable PostgreSQL 17**, migrates and seeds it for exactly `PARETO_E2E_USER_ID`, builds the release against the configured Supabase project, and runs **`frontend/tests/e2e/recruiter.spec.ts` against actual Supabase + Gemini/Groq**. A preflight fails if identity/password/provider configuration is absent. Unlike the regular CI, **the live test must not silently skip**. Do not upload logs/traces containing secrets.
+The manual `recruiter-live` job provisions **disposable PostgreSQL 17**, migrates and seeds it for exactly `PARETO_E2E_USER_ID`, builds the release against the configured Supabase project, and runs **`frontend/tests/e2e/recruiter.spec.ts` against actual Supabase + Gemini/Groq**. A preflight fails if identity/password/provider configuration is absent. Unlike the regular CI, **the live test must not silently skip**. Do not upload logs/traces containing secrets.
 
-The ordinary integration CI still exercises the same database/search services with *controlled model responses* and signed-out/public browser smoke tests; it cannot prove real OAuth or LLM inference.
+Automatic pull-request CI runs the separate `checks` job; the credentialed `recruiter-live` job is limited to a manual dispatch. Ordinary integration CI still exercises the same database/search services with *controlled model responses* and signed-out/public browser smoke tests; it cannot prove real OAuth or LLM inference.
 
 ## 5. Organizer private repository
 

@@ -139,3 +139,8 @@
 
 - [Integration CI #43576477062](https://github.com/ThunderKhan/pareto/actions/runs/43576477062) passed lint, TypeScript, 15 Vitest tests and Next.js production build, but Playwright reported **13 passed, 2 failed, 1 skipped** (real recruiter sign-in). One failure was a strict Playwright locator matching two pieces of text (`Joining window` appeared in both a summary and evidence detail), not a demonstrated product state error. The other was a mobile menu outside-click test timeout while clicking a headline that may be intercepted by the open navigation layer.
 - Changed the evidence selector to the actual disclosure-list entry and replaced the potentially intercepted headline click with a real pointer click at a viewport point outside the sticky header. These are test-target corrections, not a claim of verification; rerun combined CI. Docker build had been skipped due to browser failures.
+
+## 2026-11-14 — Manual live-workflow dispatch compatibility
+
+- Verified GitHub's `workflow_dispatch` semantics: a workflow file must exist on the **default branch** before the UI/API can dispatch it. Since `live-recruiter.yml` was new on the integration branch only, it was not directly runnable before merging (which release policy forbids). Removed that new workflow and attached the gated `recruiter-live` job to the already-existing `.github/workflows/ci.yml` (present on main). Manual dispatch of `Recruiter search CI` selecting `integration/release-20261114` can now execute the live job after the required `pareto-demo` environment secrets and variables are installed. Automatic PR CI still runs only the credentials-free `checks` job.
+- This is a workflow readiness correction only; no live credentials or browser session have been executed.

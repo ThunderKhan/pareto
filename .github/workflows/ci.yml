@@ -58,3 +58,67 @@ jobs:
         run: pnpm test:e2e
       - name: Production Docker image build
         run: docker build -t pareto:ci .
+
+  recruiter-live:
+    if: github.event_name == 'workflow_dispatch' && github.ref_name == 'integration/release-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: pareto-demo
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: pareto
+          POSTGRES_PASSWORD: pareto_live_ci_only
+          POSTGRES_DB: pareto
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pareto -d pareto"
+          --health-interval 5s --health-timeout 3s --health-retries 12
+    env:
+      DATABASE_URL: postgresql://pareto:pareto_live_ci_only@127.0.0.1:5432/pareto
+      DIRECT_DATABASE_URL: postgresql://pareto:pareto_live_ci_only@127.0.0.1:5432/pareto
+      DEMO_OWNER_ID: ${{ vars.PARETO_E2E_USER_ID }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+      PARETO_E2E_EMAIL: ${{ secrets.PARETO_E2E_EMAIL }}
+      PARETO_E2E_PASSWORD: ${{ secrets.PARETO_E2E_PASSWORD }}
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Check secure live acceptance configuration
+        shell: bash
+        run: |
+          for name in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY DEMO_OWNER_ID PARETO_E2E_EMAIL PARETO_E2E_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then echo "::error::Required environment value ${name} is missing"; exit 1; fi
+          done
+          if [[ -z "$GOOGLE_GENERATIVE_AI_API_KEY" || -z "$GEMINI_MODEL" ]] && [[ -z "$GROQ_API_KEY" || -z "$GROQ_MODEL" ]]; then
+            echo "::error::Configure at least one complete Gemini or Groq provider pair"; exit 1
+          fi
+          if [[ ! "$DEMO_OWNER_ID" =~ ^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$ ]]; then
+            echo "::error::PARETO_E2E_USER_ID must be the actual demo recruiter's Supabase UUID"; exit 1
+          fi
+      - name: Install from lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Migrate and seed test recruiter's PostgreSQL workspace
+        run: |
+          pnpm db:generate
+          pnpm db:deploy
+          pnpm db:seed
+      - name: Build Next.js release against the configured Supabase project
+        run: pnpm build
+      - name: Install Playwright Chromium
+        run: pnpm --filter @pareto/frontend exec playwright install --with-deps chromium
+      - name: Real signed-in recruiter workflow (no mocks)
+        run: pnpm --filter @pareto/frontend exec playwright test recruiter.spec.ts --reporter=line --retries=0
