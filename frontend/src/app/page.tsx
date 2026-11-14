@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import HomepageV2 from "../components/marketing/home-v2";
-import { Bitter, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 
-// Homepage-only, build-time self-hosted OFL fonts. No OpenTag font assets are copied.
-const displayFont = Bitter({ subsets: ["latin"], style: "normal", display: "swap", variable: "--font-pareto-v2-display" });
+// Inter stays self-hosted through Next.js; STK Earl is served from local WOFF2 files in home-v2.css.
 const uiFont = Inter({ subsets: ["latin"], style: "normal", display: "swap", variable: "--font-pareto-v2-ui" });
 
 export const metadata: Metadata = {
@@ -12,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <HomepageV2 fontClasses={`${displayFont.variable} ${uiFont.variable}`} />;
+  return <HomepageV2 fontClasses={uiFont.variable} />;
 }
