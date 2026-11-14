@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, type KeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, CheckCircle, CaretDown,
@@ -109,7 +109,7 @@ function Header() {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Label({ children }: { children: ReactNode }) {
   return <span className="v2-eyebrow"><span className="v2-eyebrow-line" aria-hidden="true"/>{children}</span>;
 }
 
@@ -202,7 +202,7 @@ function HowItWorks() {
   const [step, setStep] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const select = (index: number) => { setStep(index); tabs.current[index]?.focus(); };
-  const onKey = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+  const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key === "ArrowRight") {event.preventDefault(); select((index + 1) % 3);}
     if (event.key === "ArrowLeft") {event.preventDefault(); select((index + 2) % 3);}
     if (event.key === "Home") {event.preventDefault(); select(0);}
