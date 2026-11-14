@@ -182,7 +182,7 @@ function Problem() {
           <div className="v2-contrast-kicker">TRADITIONAL FILTERING</div>
           <h3>Matches a keyword.<br/>Misses the context.</h3>
           <div className="v2-filter-pile"><Chip>Java</Chip><Chip>Hyderabad</Chip><Chip>6+ years</Chip><Chip>Any notice period</Chip></div>
-          <div className="v2-opaque-row"><span className="v2-initial">B</span><span>Candidate B <small>“Good match”</small></span><strong>86%</strong></div>
+          <div className="v2-opaque-row"><span className="v2-initial">B</span><span>Candidate B <small>“Good match”</small></span><strong aria-label="Unexplained score">?</strong></div>
           <p className="v2-panel-caption">An illustrative opaque score without the underlying requirements.</p>
         </div>
         <div className="v2-contrast-new">
