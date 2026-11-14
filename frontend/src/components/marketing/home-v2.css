@@ -40,6 +40,8 @@
 .v2-skip:focus { top: 12px; }
 .v2-eyebrow { display: inline-flex; align-items: center; gap: 12px; letter-spacing: .16em; color: var(--v2-muted); font-size: 11px; font-weight: 700; line-height: 1.5; text-transform: uppercase; }
 .v2-eyebrow-line { display: inline-block; width: 24px; height: 1px; background: var(--v2-blue); flex: none; }
+/* Keep the hero eyebrow text-only; other section labels retain their existing treatment. */
+.v2-hero-copy .v2-eyebrow-line { display: none; }
 .v2-overline { color: var(--v2-muted); font-size: 10px; font-weight: 750; letter-spacing: .13em; line-height: 1.5; }
 .v2-btn { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; padding: 0 20px; border-radius: 12px; border: 1px solid transparent; font-size: 16px; line-height: 1.375; font-weight: 500; letter-spacing: -.04em; transition: background-color .18s ease, border-color .18s ease, transform .18s ease; white-space: nowrap; }
 .v2-btn--primary { color: #fff; background: var(--v2-ink); }
