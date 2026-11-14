@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   Check,
   CheckCircle,
-  CircleNotch,
   Code,
   Compass,
   Funnel,
@@ -51,6 +50,7 @@ function useScrollDirection() {
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    document.documentElement.classList.add("motion-ready");
     const animated = document.querySelectorAll<HTMLElement>("[data-reveal]");
     const revealObserver = new IntersectionObserver(
       (entries) => {
@@ -76,7 +76,7 @@ function useScrollDirection() {
         hero.style.setProperty("--hero-progress", progress.toFixed(3));
       }
       const narrative = narrativeRef.current;
-      if (narrative) {
+      if (narrative && window.innerWidth >= 768) {
         const box = narrative.getBoundingClientRect();
         const travel = Math.max(1, box.height - window.innerHeight);
         const progress = Math.max(0, Math.min(0.999, -box.top / travel));
@@ -90,6 +90,7 @@ function useScrollDirection() {
     window.addEventListener("resize", onScroll, { passive: true });
 
     return () => {
+      document.documentElement.classList.remove("motion-ready");
       revealObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
@@ -97,7 +98,7 @@ function useScrollDirection() {
     };
   }, []);
 
-  return { heroRef, narrativeRef, activeStep };
+  return { heroRef, narrativeRef, activeStep, setActiveStep };
 }
 
 function Brand({ light = false }: { light?: boolean }) {
@@ -264,7 +265,7 @@ function InteractivePreview() {
 }
 
 export default function ScrollLanding() {
-  const { heroRef, narrativeRef, activeStep } = useScrollDirection();
+  const { heroRef, narrativeRef, activeStep, setActiveStep } = useScrollDirection();
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -311,7 +312,7 @@ export default function ScrollLanding() {
               <div className="narrative__text" aria-live="off">
                 <span className="narrative__micro">THE RECRUITMENT WORKFLOW</span>
                 <div className="narrative__steps" role="group" aria-label="Workflow stages">
-                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} onClick={() => document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" })}>{String(i + 1).padStart(2, "0")}</button>)}
+                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} onClick={() => setActiveStep(i)}>{String(i + 1).padStart(2, "0")}</button>)}
                 </div>
                 <p className="narrative__eyebrow" key={story[activeStep].eyebrow}>{story[activeStep].eyebrow}</p>
                 <h2 key={story[activeStep].title}>{story[activeStep].title}</h2>

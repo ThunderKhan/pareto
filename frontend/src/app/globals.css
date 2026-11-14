@@ -428,3 +428,10 @@ button, input, textarea { font: inherit; }
  .dashboard-top { height: 60px; }
  .dashboard-main { padding: 54px 24px; }
 }
+
+/* IntersectionObserver reveals enhance visible HTML; the no-JS view remains complete. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] { transition: opacity 650ms cubic-bezier(.22,1,.36,1), transform 650ms cubic-bezier(.22,1,.36,1); }
+  .motion-ready [data-reveal]:not(.is-revealed) { opacity: 0; transform: translateY(22px); }
+  .motion-ready [data-reveal].is-revealed { opacity: 1; transform: translateY(0); }
+}
