@@ -227,11 +227,81 @@ test("reference cards and FAQ explain matching with fictional profiles", async (
   await expect(section.getByRole("heading", { name: /found someone promising.*find others like them/i })).toBeVisible();
   await expect(section).toContainText("Unknown · needs review");
   await section.screenshot({ path: testInfo.outputPath("reference-comparison.png") });
-  await page.goto("/#trust");
-  const unknown = page.locator("#trust").getByText("Does an unknown notice period count as a match?");
+  await page.goto("/#faq");
+  const unknown = page.locator("#faq").getByRole("button", { name: "Does an unknown notice period count as a match?" });
   await unknown.click();
-  await expect(page.locator("#trust")).toContainText("Unknown values are marked Needs review");
+  await expect(unknown).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#faq").getByRole("region", { name: "Does an unknown notice period count as a match?" })).toContainText("Unknown values are marked Needs review");
   await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
+});
+
+test("OpenTag-style FAQ has exact typography, no divider lines and animated independently accessible answers", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#faq");
+  const faq = page.locator("#faq");
+  const heading = faq.getByRole("heading", { name: "Frequently asked questions" });
+  const buttons = faq.locator(".v2-faq-question");
+  await expect(heading).toBeVisible();
+  await expect(faq.getByText("QUESTIONS, ANSWERED")).toHaveCount(0);
+  await expect(faq.getByText(/Nothing hidden in/)).toHaveCount(0);
+  await expect(buttons).toHaveCount(4);
+  await expect(heading).toHaveCSS("font-size", "40px");
+  await expect(heading).toHaveCSS("font-weight", "500");
+  await expect(buttons.first()).toHaveCSS("font-size", "16px");
+  await expect(buttons.first()).toHaveCSS("font-weight", "500");
+  await expect(buttons.first()).toHaveCSS("line-height", "24px");
+  const visuals = await faq.evaluate((root) => {
+    const question = root.querySelector(".v2-faq-question")!;
+    const item = root.querySelector(".v2-faq-item")!;
+    const answer = root.querySelector(".v2-faq-answer")!;
+    const header = root.querySelector("h2")!;
+    return {
+      questionBorder: getComputedStyle(question).borderTopWidth,
+      itemBorder: getComputedStyle(item).borderTopWidth,
+      height: Math.round(header.getBoundingClientRect().height),
+      columns: getComputedStyle(root).display,
+      transition: getComputedStyle(answer).transitionProperty,
+      timing: getComputedStyle(answer).transitionDuration,
+      gap: getComputedStyle(root.querySelector(".v2-faq-list")!).gap,
+    };
+  });
+  expect(visuals.questionBorder).toBe("0px");
+  expect(visuals.itemBorder).toBe("0px");
+  expect(visuals.columns).toBe("block");
+  expect(visuals.transition).toContain("grid-template-rows");
+  expect(visuals.timing).toContain("0.3s");
+  expect(visuals.gap).toBe("16px");
+  await faq.screenshot({ path: testInfo.outputPath("faq-desktop-closed.png") });
+
+  const first = buttons.first();
+  const second = buttons.nth(1);
+  await first.click();
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  await expect(faq.getByRole("region", { name: "Does an unknown notice period count as a match?" })).toBeVisible();
+  await expect(first.locator(".v2-faq-plus-vertical")).toHaveCSS("transform", "matrix(1, 0, 0, 0, 0, 0)");
+  await second.click();
+  await expect(second).toHaveAttribute("aria-expanded", "true");
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  await faq.screenshot({ path: testInfo.outputPath("faq-desktop-open.png") });
+  await first.click();
+  await expect(first).toHaveAttribute("aria-expanded", "false");
+  await expect(faq.getByRole("region", { name: "Does an unknown notice period count as a match?" })).toBeHidden();
+});
+
+test("FAQ remains readable at narrow widths and obeys reduced motion", async ({ page }, testInfo) => {
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 850 });
+    await page.goto("/#faq");
+    const faq = page.locator("#faq");
+    const first = faq.locator(".v2-faq-question").first();
+    await expect(first).toHaveCSS("font-size", width < 640 ? "15px" : "16px");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    if (width === 390) await faq.screenshot({ path: testInfo.outputPath("faq-mobile-closed.png") });
+  }
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#faq");
+  await page.locator("#faq .v2-faq-question").first().click();
+  await expect(page.locator("#faq .v2-faq-answer").first()).toHaveCSS("transition-duration", "0.01ms, 0.01ms");
 });
 
 test("workflow stories stack copy before UI without clipping on mobile and tablet", async ({ page }, testInfo) => {
