@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect, type KeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, CheckCircle, CaretDown,
+  ArrowRight, ArrowUpRight, Check, CheckCircle, CaretDown,
   List, MagnifyingGlass, Question, ShieldCheck, SlidersHorizontal,
   WarningCircle, X,
 } from "@phosphor-icons/react";
