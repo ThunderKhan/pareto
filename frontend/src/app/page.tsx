@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import ScrollLanding from "../components/marketing/scroll-landing";
+import HomepageV2 from "../components/marketing/home-v2";
 
 export const metadata: Metadata = {
-  title: "Pareto — Find the right talent. Know why.",
-  description: "Explainable recruitment intelligence. Describe a hiring brief, confirm criteria, and understand the evidence behind each match.",
+  title: "Pareto — Find the right people. Understand every match.",
+  description: "Describe your hiring brief, confirm the criteria, and understand the evidence behind candidate matches.",
 };
 
 export default function HomePage() {
-  return <ScrollLanding />;
+  return <HomepageV2 />;
 }
