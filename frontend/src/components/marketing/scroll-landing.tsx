@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { assessPreview, summarizePreview, type CandidateAssessment } from "./preview-data";
 import "./marketing.css";
 import {
@@ -102,10 +103,10 @@ function useScrollDirection() {
 
 function Brand({ light = false }: { light?: boolean }) {
   return (
-    <a href="/" className={"brand-mark " + (light ? "brand-mark--light" : "")} aria-label="Pareto home">
+    <Link href="/" className={"brand-mark " + (light ? "brand-mark--light" : "")} aria-label="Pareto home">
       <span className="brand-glyph" aria-hidden="true"><i /><i /><i /></span>
       <span>pareto<span className="brand-period">.</span></span>
-    </a>
+    </Link>
   );
 }
 
