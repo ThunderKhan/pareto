@@ -208,6 +208,25 @@ test("workflow stories stack copy before UI without clipping on mobile and table
 });
 
 
+test("review confirmation remains inside its visual frame at narrow widths", async ({ page }) => {
+  for (const width of [320, 390, 599, 767]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/#how-it-works-step-2");
+    const review = page.locator("#how-it-works-step-2");
+    const bounds = await review.evaluate((root) => {
+      const work = root.querySelector(".v2-workspace")!.getBoundingClientRect();
+      const criteria = root.querySelector(".v2-criteria")!.getBoundingClientRect();
+      const button = root.querySelector(".v2-mock-action")!.getBoundingClientRect();
+      return {frameTop:work.top,frameBottom:work.bottom,criteriaBottom:criteria.bottom,buttonBottom:button.bottom,
+        frameWidth:work.width,documentWidth:document.documentElement.scrollWidth,viewport:window.innerWidth};
+    });
+    expect(bounds.buttonBottom).toBeLessThanOrEqual(bounds.criteriaBottom + 1);
+    expect(bounds.criteriaBottom).toBeLessThanOrEqual(bounds.frameBottom + 1);
+    expect(bounds.frameWidth).toBeLessThanOrEqual(bounds.viewport);
+    expect(bounds.documentWidth).toBeLessThanOrEqual(width);
+  }
+});
+
 test("OpenTag-inspired hero buttons match measured mobile and desktop styles", async ({ page }) => {
   for (const width of [320, 390, 768, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
