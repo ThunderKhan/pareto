@@ -92,7 +92,7 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.getByText("An illustrative opaque score without the underlying requirements.")).toHaveCount(0);
   await expect(page.getByText("Illustrative interface")).toHaveCount(0);
   await expect(page.getByText("Synthetic demonstration")).toHaveCount(0);
-  await expect(page.locator(".v2-example-tag")).toHaveText("EXAMPLE PROFILES");
+  await expect(page.locator("#preview, .v2-example-tag")).toHaveCount(0);
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works" }).click();
   await expect(page).toHaveURL(/#how-it-works$/);
   await expect(page.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
@@ -142,28 +142,22 @@ test("three complete workflow stories alternate text and product UI without tabs
 });
 
 
-test("candidate matching preview recalculates and discloses exact criteria", async ({ page }, testInfo) => {
-  await page.goto("/#preview");
-  const panel = page.getByRole("region", { name: "Interactive candidate matching example" });
-  const one = panel.locator(".v2-candidate").filter({ hasText: "Candidate A" });
-  const two = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
-  const three = panel.locator(".v2-candidate").filter({ hasText: "Candidate C" });
-  await expect(panel.getByTestId("eligible-count")).toHaveText("1");
-  await expect(one).toHaveAttribute("data-status", "match");
-  await expect(two).toHaveAttribute("data-status", "fail");
-  await expect(three).toHaveAttribute("data-status", "unknown");
-  await two.getByText("Inspect Candidate B criteria").click();
-  await expect(two.getByText("Misses · 60 days")).toBeVisible();
-  await panel.screenshot({ path: testInfo.outputPath("preview-30-days.png") });
-  await panel.getByRole("button", { name: "60 days" }).click();
-  await expect(panel.getByTestId("eligible-count")).toHaveText("2");
-  await expect(two).toHaveAttribute("data-status", "match");
-  await expect(two.getByText("Meets · 60 days")).toBeVisible();
-  await expect(three).toHaveAttribute("data-status", "unknown");
-  await panel.screenshot({ path: testInfo.outputPath("preview-60-days.png") });
-  await panel.getByRole("button", { name: "30 days" }).click();
-  await expect(panel.getByTestId("eligible-count")).toHaveText("1");
+test("removed interactive evidence section leaves no dead links or duplicated results", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#preview, .v2-preview-frame, .v2-candidate, .v2-segmented")).toHaveCount(0);
+  await expect(page.getByText("INTERACTIVE EVIDENCE")).toHaveCount(0);
+  await expect(page.getByText("Change one requirement.")).toHaveCount(0);
+  await expect(page.locator('a[href="#preview"]')).toHaveCount(0);
+  const matchingLink = page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Explore matching" });
+  await expect(matchingLink).toHaveAttribute("href", "#similar");
+  await expect(page.getByRole("navigation", { name: "Footer navigation" }).getByRole("link", { name: "Explore matching" })).toHaveAttribute("href", "#similar");
+  await matchingLink.click();
+  await expect(page).toHaveURL(/#similar$/);
+  await expect(page.locator("#similar")).toContainText("COMPARABLE PROFILES");
+  // The separate How It Works shortlist stays available.
+  await expect(page.locator("#how-it-works-step-3 .v2-mini-result")).toHaveCount(3);
 });
+
 
 test("reference cards and FAQ explain matching with fictional profiles", async ({ page }, testInfo) => {
   await page.goto("/#similar");
@@ -327,7 +321,7 @@ for (const size of [
     expect(typography.hero.fontFamily).toContain("Pareto STK Earl");
     expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
     await writeFile(testInfo.outputPath(size.name + "-computed-typography.json"), JSON.stringify(typography, null, 2));
-    const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
+    const anchors = ["hero", "problem", "how-it-works", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
       const top = anchor === "hero" ? 0 : await node.evaluate((el) => window.scrollY + el.getBoundingClientRect().top - 85);
@@ -341,7 +335,7 @@ for (const size of [
       await page.screenshot({ path: testInfo.outputPath(size.name + "-full-page.png"), fullPage: true });
     }
     // Intermediate scroll positions: no long pinned sequences or dead scroll.
-    for (const section of ["problem", "how-it-works", "preview"]) {
+    for (const section of ["problem", "how-it-works", "similar"]) {
       const y = await page.locator("#" + section).evaluate((el) => window.scrollY + el.getBoundingClientRect().top + el.getBoundingClientRect().height * .5);
       await page.evaluate((value) => window.scrollTo({ top: value, behavior: "instant" }), y);
       await page.screenshot({ path: testInfo.outputPath(size.name + "-mid-" + section + ".png") });
