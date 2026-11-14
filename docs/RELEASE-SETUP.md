@@ -38,12 +38,14 @@ References: https://ai.google.dev/gemini-api/docs/models and https://console.gro
 
 - Configure a **dedicated Pareto Supabase Auth** project, not an existing project's account. The CI PostgreSQL server is created as a disposable GitHub Actions service container; it is never connected to Railway.
 - Go to the personal development repo's GitHub **Settings → Environments**, create `pareto-demo`, then add the secret and variable names from Section 4. The test user must have a confirmed email in Supabase and its exact UUID must match `PARETO_E2E_USER_ID`.
-- In **GitHub → Actions → Recruiter search CI → Run workflow**, select branch `integration/release-20261114`. The manual `recruiter-live` job fails on missing configuration; it tests **each configured Gemini/Groq model independently** with actual HTTP requests, then runs the signed-in recruiter browser test against seeded CI PostgreSQL.
+- In **GitHub → Actions**, select the workflow backed by `.github/workflows/ci.yml` (the default branch may display its older title **CI (manual)** rather than the integration branch's **Recruiter search CI**), then **Run workflow** and select branch `integration/release-20261114`. Confirm the selected run exposes the `recruiter-live` job. This is a manual job and fails on missing configuration; it tests **each configured Gemini/Groq model independently** with actual HTTP requests, then runs the signed-in recruiter browser test against seeded CI PostgreSQL.
 - The normal `checks` job uses controlled AI responses, not live inference. When provider APIs are unavailable during the presentation, use manual criteria entry in the real protected workspace; clearly disclose that the NLP portion is offline and never replay recorded outputs as if live.
 - A green manual CI does **not** confirm Google OAuth consent or third-party account permissions. Verify Google sign-in manually against the dedicated Supabase project and actual local callback before the presentation.
 - Follow the exact repeatable [PS1 demo script](DEMO-SCRIPT.md); use only synthetic candidates.
 
 ## 3. Railway deployment — FROZEN until the user's explicit authorization
+
+**Reference instructions only. Do not execute any steps in this section until the user separately authorizes Railway.**
 
 1. Connect the Railway app in ChatGPT or grant access to a Railway project via the Railway dashboard. Use the **integration branch** (not main) until verification is complete. Railway service root: repository root; Dockerfile: root `Dockerfile`.
 2. Provision a **dedicated PostgreSQL** service. Its Postgres connection string goes to runtime `DATABASE_URL` (server secret). Provide `DIRECT_DATABASE_URL` only for Prisma migration (can equal the direct DB URL). **Never set DATABASE_URL as NEXT_PUBLIC_**.
