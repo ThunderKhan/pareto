@@ -175,9 +175,9 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page).toHaveURL(/#how-it-works$/);
   await expect(page.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
   await page.goto("/signup");
-  await expect(page.getByRole("heading", { name: "Get started with Pareto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Create an account" })).toBeVisible();
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Log in to Pareto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
 });
 
 test("hero mascot tracks pointer, walks on hover and respects reduced motion", async ({ page }) => {
