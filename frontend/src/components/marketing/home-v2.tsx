@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect, type ReactNode } from "react";
+import { useRef, useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Check, CheckCircle, CaretDown,
-  List, MagnifyingGlass, Question, ShieldCheck, SlidersHorizontal,
-  WarningCircle, X,
+  ArrowRight, Check, CaretDown,
+  List, MagnifyingGlass, ShieldCheck, SlidersHorizontal,
+  X,
 } from "@phosphor-icons/react";
-import { assessPreview, summarizePreview, previewCandidates, type CandidateAssessment } from "./preview-data";
+import { assessPreview, previewCandidates } from "./preview-data";
 import "./home-v2.css";
 
 const process = [
@@ -86,7 +86,7 @@ function Header() {
         <nav className="v2-desktop-nav" aria-label="Main navigation">
           <a href="#problem">The problem</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#preview">Explore matching</a>
+          <a href="#similar">Explore matching</a>
           <a href="#trust">Why Pareto</a>
         </nav>
         <div className="v2-header-actions">
@@ -100,7 +100,7 @@ function Header() {
       {open && <nav className="v2-mobile-nav" id="v2-mobile-nav" aria-label="Mobile navigation">
         <a href="#problem" onClick={() => setOpen(false)}>The problem</a>
         <a href="#how-it-works" onClick={() => setOpen(false)}>How it works</a>
-        <a href="#preview" onClick={() => setOpen(false)}>Explore matching</a>
+        <a href="#similar" onClick={() => setOpen(false)}>Explore matching</a>
         <a href="#trust" onClick={() => setOpen(false)}>Why Pareto</a>
         <Link href="/login" onClick={() => setOpen(false)}>Login</Link>
         <Link href="/signup" className="v2-mobile-primary" onClick={() => setOpen(false)}>Get started free</Link>
@@ -229,67 +229,6 @@ function HowItWorks() {
   </section>;
 }
 
-function CandidateRow({ assessment }: { assessment: CandidateAssessment }) {
-  const c = assessment.candidate;
-  const status = assessment.status;
-  return <article className={"v2-candidate v2-candidate--" + status} data-status={status}>
-    <div className="v2-candidate-top">
-      <div className="v2-avatar" aria-hidden="true">{c.id}</div>
-      <div className="v2-candidate-name"><h3>{c.name}</h3><p>{c.title} · {c.city ?? "Location unknown"}</p><span>{c.years === null ? "Experience unknown" : c.years + " years"} · {c.skills.join(" · ")}</span></div>
-      <div className={"v2-candidate-badge v2-candidate-badge--" + status}>{status === "match" ? <CheckCircle size={16} aria-hidden="true" /> : status === "fail" ? <WarningCircle size={16} aria-hidden="true"/> : <Question size={16} aria-hidden="true"/>}{status === "match" ? "Eligible" : status === "fail" ? "Excluded" : "Needs review"}</div>
-    </div>
-    <div className="v2-reason">{assessment.reason}</div>
-    <details className="v2-candidate-details">
-      <summary>Inspect {c.name} criteria <CaretDown size={15} aria-hidden="true" /></summary>
-      <div className="v2-breakdown">
-        {assessment.checks.map((check) => <div className="v2-breakdown-row" key={check.label}>
-          <span><b>{check.label}</b><small>{check.expected}</small></span>
-          <span className={"v2-check-state v2-check-state--" + check.state}>{check.state === "match" ? "Meets" : check.state === "fail" ? "Misses" : "Unknown"} · {check.actual}</span>
-        </div>)}
-      </div>
-    </details>
-  </article>;
-}
-
-function Preview() {
-  const [notice, setNotice] = useState<30 | 60>(30);
-  const assessments = useMemo(() => assessPreview(notice), [notice]);
-  const total = useMemo(() => summarizePreview(assessments), [assessments]);
-  return <section className="v2-section v2-preview" id="preview">
-    <div className="v2-container">
-      <div className="v2-section-intro"><Label>INTERACTIVE EVIDENCE</Label><h2>Change one requirement. <em>See what changes.</em></h2><p>Change the joining window from 30 to 60 days to see how each matching decision changes.</p></div>
-      <div className="v2-preview-frame" role="region" aria-label="Interactive candidate matching example">
-        <div className="v2-preview-sidebar">
-          <div className="v2-overline">SEARCH CRITERIA</div>
-          <h3>Backend engineers<br/>in Hyderabad</h3>
-          <div className="v2-preview-filter"><span>Required skills</span><strong>Java, Spring Boot, AWS</strong></div>
-          <div className="v2-preview-filter"><span>Experience</span><strong>6–10 years</strong></div>
-          <div className="v2-notice-control">
-            <span id="v2-notice-label">Maximum joining notice</span>
-            <div role="group" aria-labelledby="v2-notice-label" className="v2-segmented">
-              <button type="button" aria-pressed={notice === 30} onClick={() => setNotice(30)}>30 days</button>
-              <button type="button" aria-pressed={notice === 60} onClick={() => setNotice(60)}>60 days</button>
-            </div>
-          </div>
-          
-          <div className="v2-preview-key"><span>✓ Eligible</span><span>! Excluded</span><span>? Needs review</span></div>
-        </div>
-        <div className="v2-preview-content">
-          <div className="v2-preview-heading"><div><div className="v2-overline">EXPLAINABLE RESULTS</div><h3>What the evidence says.</h3></div><span className="v2-example-tag">EXAMPLE PROFILES</span></div>
-          <div className="v2-count-bar" role="status" aria-live="polite" aria-atomic="true">
-            <span><strong data-testid="eligible-count">{total.eligible}</strong><small>Eligible</small></span>
-            <span><strong>{total.excluded}</strong><small>Excluded</small></span>
-            <span><strong>{total.needsReview}</strong><small>Needs review</small></span>
-            <p>Joining window: <b>{notice} days</b></p>
-          </div>
-          <div className="v2-candidates">{assessments.map((item) => <CandidateRow key={item.candidate.id} assessment={item}/>)}</div>
-          
-        </div>
-      </div>
-    </div>
-  </section>;
-}
-
 const comparable = previewCandidates[0];
 function Similarity() {
   const others = previewCandidates.slice(1);
@@ -363,7 +302,7 @@ function Footer() {
         <Link className="v2-btn v2-btn--primary" href="/signup">Start searching</Link>
       </div>
     </section>
-    <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#preview">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
+    <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#similar">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
   </>;
 }
 
@@ -391,7 +330,6 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
       </section>
       <Problem/>
       <HowItWorks/>
-      <Preview/>
       <Similarity/>
       <Trust/>
     </main>
