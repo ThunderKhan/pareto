@@ -198,6 +198,36 @@ for (const size of [
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width: size.width, height: size.height });
     await page.goto("/");
+    const typography = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const style = (selector: string) => {
+        const el = document.querySelector(selector);
+        if (!el) throw new Error("Missing typography element " + selector);
+        const value = getComputedStyle(el);
+        return {
+          fontFamily: value.fontFamily,
+          fontSize: value.fontSize,
+          fontWeight: value.fontWeight,
+          lineHeight: value.lineHeight,
+          letterSpacing: value.letterSpacing,
+          fontStyle: value.fontStyle,
+          rect: { width: Math.round(el.getBoundingClientRect().width), height: Math.round(el.getBoundingClientRect().height) },
+        };
+      };
+      return {
+        viewport: window.innerWidth,
+        hero: style(".v2-hero h1"),
+        displayEmphasis: style(".v2-hero h1 em"),
+        section: style(".v2-problem .v2-section-intro h2"),
+        lead: style(".v2-hero-copy > p"),
+        navigation: style(".v2-header-cta"),
+        product: style(".v2-window-heading h3"),
+        fonts: [...document.fonts].filter((font) => font.status === "loaded").map((font) => ({family: font.family, weight: font.weight, style: font.style})),
+      };
+    });
+    expect(typography.hero.fontFamily).toMatch(/__Bitter_/);
+    expect(typography.lead.fontFamily).toMatch(/__Inter_/);
+    await testInfo.attach(size.name + "-computed-typography.json", {body: JSON.stringify(typography, null, 2), contentType: "application/json"});
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
