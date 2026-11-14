@@ -244,8 +244,8 @@
 @media (max-width: 359px) {
   .v2-how .v2-container { width: calc(100% - 36px); }
 }
-.v2-story-media { padding: 20px; min-width: 0; background: #f5f5f2; display: flex; align-items: center; }
-.v2-story-media .v2-workspace { grid-template-columns: 145px minmax(0,1fr); min-height: 452px; box-shadow: 0 1px 2px #020e2410; }
+
+
 .v2-story-media .v2-workspace-rail { padding-inline: 9px; }
 .v2-story-media .v2-workspace-content { padding: 20px; }
 .v2-story-media .v2-window-heading h3 { font-size: 19px; }
@@ -433,7 +433,7 @@
   .v2-contrast { grid-template-columns: 1fr; }
   .v2-contrast > div { padding: 28px; }
   .v2-contrast h3 { font-size: 32px; }
-  .v2-story-media { padding: 15px; }
+
   .v2-preview-content { padding: 25px 21px; }
   .v2-source-person, .v2-similar-compare { padding: 27px; }
   .v2-trust-grid { grid-template-columns: 1fr; }
@@ -471,7 +471,7 @@
   .v2-section { padding-block: 75px; }
   .v2-section-intro { gap: 15px; margin-bottom: 38px; }
   .v2-contrast > div { padding: 23px; }
-  .v2-story-media { padding: 10px; }
+
   .v2-story-media .v2-workspace { grid-template-columns: 1fr; }
   .v2-story-media .v2-workspace-rail { display: none; }
   .v2-story-media .v2-workspace-content { padding: 14px; }
