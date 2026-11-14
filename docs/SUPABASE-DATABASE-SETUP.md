@@ -107,8 +107,8 @@ Run `pnpm dev` from repository root, restart it after editing env values, and op
 
 **Use only on a fresh Pareto project after verifying those five tables do not exist.** This is a fallback, not an additional step after successful `pnpm db:deploy`.
 
-1. In Supabase SQL Editor for `nqglypstndrdvomqyzgj`, run the exact original checked-in file `backend/prisma/migrations/20261114000000_core/migration.sql`.
-2. Then run the exact new file `backend/prisma/migrations/20261114163000_supabase_api_security/migration.sql`.
+1. In the dedicated Pareto Supabase SQL Editor, paste the [exact combined SQL fallback](SUPABASE-SQL-EDITOR-FALLBACK.sql), combining both committed migrations in one transaction, **only if the five Pareto tables do not already exist**.
+2. Alternatively, run the original `backend/prisma/migrations/20261114000000_core/migration.sql`, then `backend/prisma/migrations/20261114163000_supabase_api_security/migration.sql`, once each in that order.
 3. **Manual SQL Editor execution does not record Prisma history.** Do not run `pnpm db:deploy` afterward until you have marked both migrations applied; otherwise Prisma may try to recreate existing tables. When a trusted Postgres connection becomes available, run:
    ```powershell
    pnpm --filter @pareto/backend exec prisma migrate resolve --applied 20261114000000_core
@@ -116,6 +116,11 @@ Run `pnpm dev` from repository root, restart it after editing env values, and op
    pnpm --filter @pareto/backend exec prisma migrate status
    ```
    Use `resolve` **only after confirming** the exact SQL from each migration was applied successfully and the corresponding migration is not already recorded. This is a baseline, not a repair for a partial or unknown schema. If migrations are already recorded, do **not** mark them again.
+   **If using the SQL Editor fallback**, the `_prisma_migrations` history table did not exist when the security migration ran. Once `migrate resolve` creates it, harden the newly-created table in Supabase SQL Editor:
+   ```sql
+   ALTER TABLE public."_prisma_migrations" ENABLE ROW LEVEL SECURITY;
+   REVOKE ALL PRIVILEGES ON public."_prisma_migrations" FROM anon, authenticated, service_role;
+   ```
 4. If Windows cannot reach the project through either direct or session pooler, the seed script and Next.js Prisma backend also cannot connect. Fix the network/credentials rather than faking `_prisma_migrations` rows in SQL Editor. Avoid manually inserting migration tracking rows.
 
 See Supabase's [Postgres connection guide](https://supabase.com/docs/guides/database/connecting-to-postgres), [Data API security model](https://supabase.com/docs/guides/api/securing-your-api), and Prisma's [migrate deploy](https://www.prisma.io/docs/cli/v7/migrate/deploy) / [baseline](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/baselining) documentation.
