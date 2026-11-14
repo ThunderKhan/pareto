@@ -109,6 +109,7 @@ test("three complete workflow stories alternate text and product UI without tabs
   const section = page.locator("#how-it-works");
   const rows = section.locator(".v2-story-row");
   await expect(rows).toHaveCount(3);
+  await expect(section.locator(".v2-story-step")).toHaveCount(0);
   await expect(section.getByRole("tablist")).toHaveCount(0);
   await expect(section.locator(".v2-steps, .v2-step-controls")).toHaveCount(0);
   await expect(section.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
