@@ -144,3 +144,8 @@
 
 - Verified GitHub's `workflow_dispatch` semantics: a workflow file must exist on the **default branch** before the UI/API can dispatch it. Since `live-recruiter.yml` was new on the integration branch only, it was not directly runnable before merging (which release policy forbids). Removed that new workflow and attached the gated `recruiter-live` job to the already-existing `.github/workflows/ci.yml` (present on main). Manual dispatch of `Recruiter search CI` selecting `integration/release-20261114` can now execute the live job after the required `pareto-demo` environment secrets and variables are installed. Automatic PR CI still runs only the credentials-free `checks` job.
 - This is a workflow readiness correction only; no live credentials or browser session have been executed.
+
+## 2026-11-14 — Production container smoke gate added
+
+- Combined CI at `e53a2362` [run 43576880718](https://github.com/ThunderKhan/pareto/actions/runs/43576880718) passed 15/15 Vitest tests, 15/15 executed Chromium tests, with 1 credential-dependent recruiter test skipped; Next.js build and Docker image build passed.
+- The existing CI only built the Docker image; this did not verify it could start. Added a post-build smoke step that runs the actual standalone container, polls `GET /api/health`, verifies an unsigned `GET /api/v1/search` returns 401, and cleans up the container. The added gate must **pass in a future CI run** before claiming runtime smoke evidence. This is still not a Railway deployment or authenticated provider verification.
