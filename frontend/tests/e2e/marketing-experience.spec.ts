@@ -409,6 +409,36 @@ test("final CTA shows the original Pareto mascot and two working destinations", 
   await expect(actions.nth(1)).toHaveAttribute("href", "/signup");
 });
 
+test("final CTA and footer transition seamlessly without a border or excessive gap", async ({ page }) => {
+  await page.goto("/#get-started");
+  const ending = page.locator(".v2-page-ending");
+  const cta = ending.locator("#get-started");
+  const footer = ending.locator("#site-footer");
+  await expect(ending).toContainText("Turn hiring briefs into matches");
+  await expect(cta).toHaveCSS("border-top-width", "0px");
+  await expect(footer).toHaveCSS("border-top-width", "0px");
+
+  for (const width of [390, 768, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await ending.evaluate((el) => {
+      const cta = el.querySelector(".v2-close")!.getBoundingClientRect();
+      const footer = el.querySelector(".v2-footer")!.getBoundingClientRect();
+      const actions = el.querySelector(".v2-close-actions")!.getBoundingClientRect();
+      const brand = el.querySelector(".v2-footer-brand .v2-logo")!.getBoundingClientRect();
+      return {
+        sectionSeam: Math.abs(cta.bottom - footer.top),
+        actionToBrand: brand.top - actions.bottom,
+        viewport: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      };
+    });
+    expect(metrics.sectionSeam, `section geometry at ${width}px`).toBeLessThan(2);
+    expect(metrics.actionToBrand, `CTA/footer gap at ${width}px`).toBeLessThan(185);
+    expect(metrics.actionToBrand).toBeGreaterThan(40);
+    expect(metrics.scrollWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(metrics.viewport + 1);
+  }
+});
+
 test("OpenTag-inspired Pareto footer has real grouped links and no invented pages", async ({ page }) => {
   await page.goto("/");
   const footer = page.locator("#site-footer");
@@ -426,11 +456,22 @@ test("OpenTag-inspired Pareto footer has real grouped links and no invented page
   await expect(nav.getByRole("link", { name: "Demo guide" })).toHaveAttribute("href", "https://github.com/ThunderKhan/pareto/blob/main/docs/DEMO-SCRIPT.md");
   await expect(footer.locator(".v2-footer-wordmark")).toHaveText("pareto.");
   const atmosphere = await footer.evaluate((el) => {
-    const gradient = getComputedStyle(el, "::before");
-    return { background: gradient.backgroundImage, filter: gradient.filter };
+    const ending = el.closest(".v2-page-ending")!;
+    const gradient = getComputedStyle(ending, "::before");
+    const veil = getComputedStyle(ending, "::after");
+    return {
+      background: gradient.backgroundImage,
+      filter: gradient.filter,
+      veil: veil.backgroundImage,
+      footerBorder: getComputedStyle(el).borderTopWidth,
+      footerBackground: getComputedStyle(el).backgroundColor,
+    };
   });
   expect(atmosphere.background).toContain("radial-gradient");
   expect(atmosphere.filter).toContain("blur");
+  expect(atmosphere.veil).toContain("linear-gradient");
+  expect(atmosphere.footerBorder).toBe("0px");
+  expect(atmosphere.footerBackground).toBe("rgba(0, 0, 0, 0)");
   const hrefs = await nav.locator("a").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("href")));
   expect(hrefs).toHaveLength(11);
   expect(hrefs.every((href) => href?.startsWith("#") || href?.startsWith("/") || href?.startsWith("https://github.com/ThunderKhan/pareto"))).toBe(true);
