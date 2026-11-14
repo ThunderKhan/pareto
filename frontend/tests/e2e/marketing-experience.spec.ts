@@ -246,12 +246,12 @@ test("OpenTag-style FAQ has exact typography, no divider lines and animated inde
   await expect(faq.getByText(/Nothing hidden in/)).toHaveCount(0);
   await expect(buttons).toHaveCount(4);
   const headlineSize = await heading.evaluate(el => parseFloat(getComputedStyle(el).fontSize));
-  expect(headlineSize).toBeGreaterThan(39);
-  expect(headlineSize).toBeLessThanOrEqual(40);
+  expect(headlineSize).toBeGreaterThan(71);
+  expect(headlineSize).toBeLessThanOrEqual(72);
   await expect(heading).toHaveCSS("font-weight", "500");
-  await expect(buttons.first()).toHaveCSS("font-size", "16px");
+  await expect(buttons.first()).toHaveCSS("font-size", "22px");
   await expect(buttons.first()).toHaveCSS("font-weight", "500");
-  await expect(buttons.first()).toHaveCSS("line-height", "24px");
+  await expect(buttons.first()).toHaveCSS("line-height", "33px");
   const visuals = await faq.evaluate((root) => {
     const question = root.querySelector(".v2-faq-question")!;
     const item = root.querySelector(".v2-faq-item")!;
@@ -272,7 +272,7 @@ test("OpenTag-style FAQ has exact typography, no divider lines and animated inde
   expect(visuals.columns).toBe("block");
   expect(visuals.transition).toContain("grid-template-rows");
   expect(visuals.timing).toContain("0.3s");
-  expect(visuals.gap).toBe("16px");
+  expect(visuals.gap).toBe("13px");
   await faq.screenshot({ path: testInfo.outputPath("faq-desktop-closed.png") });
 
   const first = buttons.first();
