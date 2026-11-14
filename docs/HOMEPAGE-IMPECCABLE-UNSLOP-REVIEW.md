@@ -26,7 +26,7 @@ This is a **refinement pass**. It deliberately preserves the user's established 
 | --- | --- | --- |
 | P1 | Mobile carousel pagination uses 9 × 9 CSS pixel controls. | 44 × 44 touch targets; visual indicators remain small. |
 | P1 | Recruiter previews and status labels contain 9–11px text, undermining legibility. | Key evidence labels are 12–13px at desktop; mobile candidate rows have an 11px floor with wrapping. |
-| P2 | Fictional candidate data on the homepage is labeled only deep in the FAQ. | Quiet disclosure immediately beneath the hero demo; no fake badge or unsupported claim. |
+| P2 | A disclosure below the hero preview added visual clutter. | Removed the extra caption; the FAQ retains a clear explanation that candidate examples are fictional. |
 | P2 | Marketing and evidence metadata use wide tracked all caps. | Sentence-case labels, reduced tracking, consistent neutral text roles. |
 | P2 | Small FAQ and footer links use condensed negative tracking. | Normal tracking on small reading text. |
 | P2 | Final CTA mascot bobs forever; footer letters declare `will-change` at rest. | CTA mascot stays still until hovered; no persistent GPU layer hints. |
@@ -37,7 +37,7 @@ This is a **refinement pass**. It deliberately preserves the user's established 
 1. **Spacing:** preserved the established page rhythm; retained visible separation of sections and controls.
 2. **Color:** retained ivory/navy/blue and reinforced a quiet text token.
 3. **Icons:** reused existing Phosphor and original mascot artwork; no emoji or new icon tiles.
-4. **Copy:** changed shouty metadata to useful sentence-case and disclosed fictional data.
+4. **Copy:** changed shouty metadata to sentence case, removed a distracting demo caption, and retained the factual explanation in the FAQ.
 5. **Type:** made evidence readable and removed negative tracking on small text.
 6. **Layout:** enlarged carousel hitboxes without enlarging dots or breaking the mobile grid.
 7. **Details:** improved control sizing and removed unneeded layer hints.

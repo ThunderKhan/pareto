@@ -60,12 +60,11 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
   await writeFile(testInfo.outputPath("computed-typography.json"), JSON.stringify({ ...metrics, fontResponses, failedFonts }, null, 2));
 });
 
-test("landing page has legible candidate evidence and clear synthetic data disclosure", async ({ page }) => {
+test("landing page has legible candidate evidence and a clean preview layout", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await expect(page.locator(".v2-hero-stage .v2-stage-disclosure")).toHaveText(
-    "Illustrative workflow · Fictional candidate profiles"
-  );
+  await expect(page.locator(".v2-hero-stage .v2-stage-disclosure")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Are the candidate profiles shown on this page real?" })).toHaveCount(1);
   await expect(page.locator("#problem .v2-eyebrow")).toHaveText("The problem");
   await expect(page.locator("#how-it-works .v2-eyebrow")).toHaveText("Three steps");
   await expect(page.locator("#similar .v2-overline").first()).toHaveText("Reference profile");

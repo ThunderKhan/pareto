@@ -596,7 +596,6 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
         <div className="v2-container v2-hero-stage">
           
           <WorkspaceFrame state="hero"/>
-          <p className="v2-stage-disclosure">Illustrative workflow · Fictional candidate profiles</p>
         </div>
       </section>
       <Problem/>
