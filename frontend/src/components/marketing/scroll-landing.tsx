@@ -196,7 +196,7 @@ function HeroScene() {
           </div>
           <div className="hero-console__bottom">
             <span><ShieldCheck size={15} weight="fill" /> Recruiter review required</span>
-            <span className="hero-console__fake-button">Confirm search <ArrowRight size={13} /></span>
+            <a className="hero-console__fake-button" href="#preview" aria-label="Explore the illustrative search preview">Explore preview <ArrowRight size={13} /></a>
           </div>
         </div>
       </div>
