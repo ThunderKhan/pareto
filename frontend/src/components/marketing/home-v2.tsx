@@ -390,7 +390,6 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
           
         </div>
       </section>
-      <div className="v2-thesis"><div className="v2-container"><span>FROM INTENT</span><span className="v2-thesis-line"/><span>TO EVIDENCE</span><span className="v2-thesis-line"/><span>TO A BETTER DECISION</span></div></div>
       <Problem/>
       <HowItWorks/>
       <Preview/>
