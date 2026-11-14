@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, Check, CheckCircle, CaretDown,
+  ArrowRight, Check, CheckCircle, CaretDown,
   List, MagnifyingGlass, Question, ShieldCheck, SlidersHorizontal,
   WarningCircle, X,
 } from "@phosphor-icons/react";
@@ -365,7 +365,7 @@ function Footer() {
         <Label>MORE CLARITY. BETTER SEARCH.</Label>
         <h2>Search with <em>clarity.</em></h2>
         <p>Start with a brief. Keep the reasoning visible.</p>
-        <Link className="v2-btn v2-btn--primary" href="/signup">Start searching <ArrowUpRight size={18} aria-hidden="true" /></Link>
+        <Link className="v2-btn v2-btn--primary" href="/signup">Start searching</Link>
       </div>
     </section>
     <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#preview">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
@@ -382,7 +382,7 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
           <Label>INTELLIGENT CANDIDATE DISCOVERY</Label>
           <h1 id="v2-hero-title">Find the right people.<br/><em>Understand every match.</em></h1>
           <p>Describe who you&apos;re looking for. Review your criteria. Discover candidates backed by clear evidence.</p>
-          <div className="v2-hero-actions"><Link className="v2-btn v2-btn--primary" href="/signup">Start searching <ArrowUpRight size={18} aria-hidden="true" /></Link><a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works <ArrowRight size={18} aria-hidden="true" /></a></div>
+          <div className="v2-hero-actions"><a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works</a><Link className="v2-btn v2-btn--primary" href="/signup">Get started free</Link></div>
         </div>
         <div className="v2-container v2-hero-stage">
           
