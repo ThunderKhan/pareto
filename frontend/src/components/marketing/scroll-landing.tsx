@@ -93,7 +93,7 @@ function useScrollDirection() {
       const travel = Math.max(0, narrative.offsetHeight - window.innerHeight);
       window.scrollTo({
         top: window.scrollY + narrative.getBoundingClientRect().top + travel * ((step + 0.5) / story.length),
-        behavior: "auto",
+        behavior: "instant",
       });
     }
   };
