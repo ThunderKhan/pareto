@@ -122,7 +122,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               <summary>Local setup instructions</summary>
               <p>Set <code>{missingSettings.join(" and ")}</code> in <code>frontend/.env.local</code>, then restart <code>pnpm dev</code>.</p>
             </details>}
-          </div>
+          </div>}
 
           <button className="auth-social" type="button" onClick={onGoogle} disabled={!client || busy}>
             <GoogleIcon /> {signup ? "Sign up with Google" : "Continue with Google"}
