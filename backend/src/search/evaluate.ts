@@ -22,11 +22,16 @@ export type Eligibility = "ELIGIBLE" | "NEEDS_REVIEW" | "INELIGIBLE";
 function check(rule: Rule, candidate: CandidateProfile) {
   function evidence<K extends keyof CandidateProfile>(field: K, requested: string, matches: (actual: NonNullable<CandidateProfile[K]>) => boolean) {
     const actual = candidate[field];
-    const outcome: Outcome = actual === null ? "UNKNOWN" : matches(actual) ? "MATCH" : "FAIL";
+    // Legacy fixtures store empty history/certification arrays even when no evidence was collected.
+    // Unlike explicitly-known empty skills, these arrays cannot prove a negative.
+    const undocumented = actual === null ||
+      ((field === "pastRoles" || field === "certifications") && Array.isArray(actual) && actual.length === 0);
+    const outcome: Outcome = undocumented ? "UNKNOWN" :
+      matches(actual as NonNullable<CandidateProfile[K]>) ? "MATCH" : "FAIL";
     const shown = Array.isArray(actual) ? actual.join(", ") || "None documented" : String(actual);
     return {
       rule, requested, actual, field, outcome,
-      reason: actual === null ? "This field is missing from the profile." : `Stored: ${shown}. Requested: ${requested}.`,
+      reason: undocumented ? "This field is not documented in the profile." : `Stored: ${shown}. Requested: ${requested}.`,
     };
   }
   switch (rule.field) {

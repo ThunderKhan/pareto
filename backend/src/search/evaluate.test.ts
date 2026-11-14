@@ -31,6 +31,28 @@ describe("candidate evaluation", () => {
     expect(result.details[3]).toMatchObject({ outcome: "FAIL", field: "skills", actual: ["JavaScript", "AWS"] });
     expect(result.details[5]).toMatchObject({ outcome: "UNKNOWN", actual: null });
   });
+  it("does not turn undocumented prior roles or certifications into proven mismatches", () => {
+    const requirements = criteriaSchema.parse([
+      { field: "pastRole", value: "Java Developer", mode: "required" },
+      { field: "certification", value: "AWS Solutions Architect", mode: "required" },
+    ]);
+    const undocumented = evaluate({ ...profile, pastRoles: [], certifications: [] }, requirements);
+    expect(undocumented.eligibility).toBe("NEEDS_REVIEW");
+    expect(undocumented.details.map(detail => detail.outcome)).toEqual(["UNKNOWN", "UNKNOWN"]);
+    expect(undocumented.details.every(detail => detail.reason.includes("not documented"))).toBe(true);
+
+    const documentedMismatch = evaluate({
+      ...profile, pastRoles: ["Python Developer"], certifications: ["CKA"],
+    }, requirements);
+    expect(documentedMismatch.eligibility).toBe("INELIGIBLE");
+    expect(documentedMismatch.details.map(detail => detail.outcome)).toEqual(["FAIL", "FAIL"]);
+
+    // An explicitly-known empty skill list does prove that a required skill is absent.
+    const missingSkill = evaluate({ ...profile, skills: [] }, criteriaSchema.parse([
+      { field: "skill", mode: "required", value: "Java" },
+    ]));
+    expect(missingSkill.eligibility).toBe("INELIGIBLE");
+  });
   it("rejects inverted ranges and conflicting aliases", () => {
     expect(criteriaSchema.safeParse([{ field: "experience", mode: "required", minMonths: 120, maxMonths: 72 }]).success).toBe(false);
     expect(criteriaSchema.safeParse([...rules, { field: "skill", value: "AWS", mode: "required", exclude: true }]).success).toBe(false);
