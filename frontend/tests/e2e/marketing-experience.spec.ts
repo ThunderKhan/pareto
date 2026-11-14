@@ -98,6 +98,48 @@ test("mobile capability pagination has accessible touch targets", async ({ page 
   }
 });
 
+test("desktop homepage scroll uses Lenis and preserves sticky-header anchor navigation", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const root = page.locator("html");
+  await expect(root).toHaveClass(/lenis/);
+  await expect(root).toHaveCSS("scroll-behavior", "auto");
+
+  await page.locator(".v2-hero-actions").getByRole("link", { name: "See how it works" }).click();
+  await expect(page).toHaveURL(/#how-it-works$/);
+  await expect.poll(async () =>
+    Math.abs(await page.locator("#how-it-works").evaluate(el => el.getBoundingClientRect().top) - 90),
+    { timeout: 10000 }
+  ).toBeLessThan(70);
+
+  // Compact layouts do not intercept wheel/touch scrolling or carousel snaps.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(root).not.toHaveClass(/lenis/);
+  await expect(page.locator(".v2-trust-mobile-track")).toHaveCSS("scroll-snap-type", "x mandatory");
+});
+
+test("live reduced-motion preference disables Lenis and anchor smoothing", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const root = page.locator("html");
+  await expect(root).not.toHaveClass(/lenis/);
+  await expect(root).toHaveCSS("scroll-behavior", "auto");
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect(root).toHaveClass(/lenis/);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(root).not.toHaveClass(/lenis/);
+});
+
+test("recruiter workspace routes never mount homepage scroll smoothing", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveClass(/lenis/);
+  await page.goto("/login");
+  await expect(page.locator("html")).not.toHaveClass(/lenis/);
+});
+
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Find your next match." })).toBeVisible();
