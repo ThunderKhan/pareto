@@ -42,20 +42,21 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
       mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\.woff2?(?:\?|$)/.test(url)),
     };
   });
-  expect(metrics.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
-  expect(metrics.section.fontFamily).toMatch(/^Bitter(?:,|$)/);
+  expect(metrics.hero.fontFamily).toContain("Pareto STK Earl");
+  expect(metrics.section.fontFamily).toContain("Pareto STK Earl");
   expect(metrics.body.fontFamily).toMatch(/^Inter(?:,|$)/);
   expect(metrics.nav.fontFamily).toMatch(/^Inter(?:,|$)/);
   expect(metrics.action.fontFamily).toMatch(/^Inter(?:,|$)/);
   expect(metrics.candidate.fontFamily).toMatch(/^Inter(?:,|$)/);
   expect(metrics.italicEmphasis.fontStyle).toBe("normal");
   expect(metrics.hero.fontSynthesis).toBe("none");
-  expect(metrics.faces.some((face) => face.family === "Bitter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.faces.some((face) => face.family === "Pareto STK Earl" && face.weight === "400" && face.status === "loaded")).toBe(true);
   expect(metrics.faces.some((face) => face.family === "Inter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
   expect(metrics.mediaFonts.length).toBeGreaterThanOrEqual(2);
   expect(fontResponses.length).toBeGreaterThanOrEqual(2);
   expect(failedFonts).toEqual([]);
-  expect(metrics.mediaFonts.some((url) => /stkearl/i.test(url))).toBe(false);
+  expect(metrics.mediaFonts.some((url) => /stk-earl-regular\.woff2/i.test(url))).toBe(true);
+  expect(fontResponses.some((url) => /stk-earl-regular\.woff2/i.test(url))).toBe(true);
   await writeFile(testInfo.outputPath("computed-typography.json"), JSON.stringify({ ...metrics, fontResponses, failedFonts }, null, 2));
 });
 
@@ -69,6 +70,9 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(heroButtons.nth(1)).toHaveText("Get started free");
   await expect(heroButtons.nth(1)).toHaveAttribute("href", "/signup");
   await expect(page.locator(".v2-hero-actions svg, .v2-header-actions a svg, .v2-close a svg")).toHaveCount(0);
+  await expect(page.locator(".v2-hero .v2-eyebrow")).toHaveCount(0);
+  await expect(page.locator(".v2-hero-proof-item")).toHaveText(["Natural-language search", "Evidence-backed matching"]);
+  await expect(page.locator(".v2-hero h1 em")).toHaveCSS("color", "rgb(2, 14, 36)");
   await expect(page.locator(".v2-login")).toHaveText("Login");
   await expect(page.locator(".v2-login")).toHaveAttribute("href", "/login");
   await expect(page.locator(".v2-header-cta")).toHaveText("Get started free");
@@ -266,7 +270,7 @@ for (const size of [
         fonts: [...document.fonts].filter((font) => font.status === "loaded").map((font) => ({family: font.family, weight: font.weight, style: font.style})),
       };
     });
-    expect(typography.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
+    expect(typography.hero.fontFamily).toContain("Pareto STK Earl");
     expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
     await writeFile(testInfo.outputPath(size.name + "-computed-typography.json"), JSON.stringify(typography, null, 2));
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
