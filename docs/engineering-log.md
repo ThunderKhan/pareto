@@ -19,3 +19,11 @@
 **Scope boundary:** This is a product specification, not completed implementation or evidence of passing tests. Detailed API, schema and architecture specifications remain to be written.
 
 **Privacy:** The source repository is currently public, so the original organizer-supplied statement remains uncommitted pending a privacy change.
+
+## 2026-11-14 — M0 documentation: organizer-first PRD
+
+**Action:** Added `docs/PRD.md` with primary and secondary user personas, explicit `P0-ORG` prioritization for all original PS1 functional sections (A–D), acceptance tests for extraction/confirmation, matching, explainability, conversation refinement, and reference-based search, plus separate Pareto add-on requirements.
+
+**Scope decision:** Persona details and feature-level acceptance criteria live in the PRD; the MVP keeps product vision and a short audience description. Document ingestion and Google OAuth remain productization scope rather than misrepresented organizer requirements.
+
+**Verification:** Documentation committed and fetched from GitHub; application functionality, tests and deployment remain unverified.
