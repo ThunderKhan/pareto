@@ -22,21 +22,12 @@ import {
 } from "@phosphor-icons/react";
 
 const story = [
-  {
-    eyebrow: "01 / INTERPRET",
-    title: "From intent to something precise.",
-    copy: "Describe the person you need in plain language. A structured proposal makes every assumption visible before the search runs.",
-  },
-  {
-    eyebrow: "02 / CONFIRM",
-    title: "A human stays in control.",
-    copy: "Edit experience, location, skills, and joining time. Pareto never treats an AI interpretation as permission to run an unreviewed search.",
-  },
-  {
-    eyebrow: "03 / EXPLAIN",
-    title: "Know why every result is here.",
-    copy: "See what matched, what failed, and what remains unknown. The evidence comes from candidate records, not an invented model score.",
-  },
+  { eyebrow: "01 / DESCRIBE", title: "Start with a hiring question.", copy: "Write your brief in plain language instead of translating it into a dozen rigid filters." },
+  { eyebrow: "02 / EXTRACT", title: "Make assumptions visible.", copy: "Role, skills, location, experience and joining time become structured, editable criteria." },
+  { eyebrow: "03 / REVIEW", title: "Keep the human in control.", copy: "Correct what the assistant inferred. Confirm the final criteria before searching candidate records." },
+  { eyebrow: "04 / RETRIEVE", title: "Search against attributes.", copy: "The confirmed brief is applied to candidate records. Missing information remains missing evidence." },
+  { eyebrow: "05 / EXPLAIN", title: "See reasons, not just ranks.", copy: "Read the criterion-by-criterion breakdown for each match, near miss and unknown." },
+  { eyebrow: "06 / REFINE", title: "Change the request, not the workflow.", copy: "Refine your active search conversationally, or use a reference profile to explore similar talent." },
 ] as const;
 
 function useScrollDirection() {
@@ -77,7 +68,7 @@ function useScrollDirection() {
         const travel = Math.max(1, box.height - window.innerHeight);
         const progress = Math.max(0, Math.min(0.999, -box.top / travel));
         narrative.style.setProperty("--narrative-progress", progress.toFixed(3));
-        setActiveStep(Math.min(2, Math.floor(progress * 3)));
+        setActiveStep(Math.min(story.length - 1, Math.floor(progress * story.length)));
       }
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
@@ -94,7 +85,19 @@ function useScrollDirection() {
     };
   }, []);
 
-  return { heroRef, narrativeRef, activeStep, setActiveStep };
+  const selectStep = (step: number) => {
+    setActiveStep(step);
+    const narrative = narrativeRef.current;
+    // Align the pinned story timeline with an explicitly selected stage.
+    if (narrative && window.innerWidth >= 768 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const travel = Math.max(0, narrative.offsetHeight - window.innerHeight);
+      window.scrollTo({
+        top: window.scrollY + narrative.getBoundingClientRect().top + travel * ((step + 0.5) / story.length),
+        behavior: "auto",
+      });
+    }
+  };
+  return { heroRef, narrativeRef, activeStep, selectStep };
 }
 
 function Brand({ light = false }: { light?: boolean }) {
@@ -108,15 +111,29 @@ function Brand({ light = false }: { light?: boolean }) {
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     if (!open) return;
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    const outside = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
     window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    window.addEventListener("pointerdown", outside);
+    return () => {
+      window.removeEventListener("keydown", close);
+      window.removeEventListener("pointerdown", outside);
+    };
   }, [open]);
 
   return (
-    <header className="site-header">
+    <header ref={headerRef} className="site-header">
       <div className="site-header__inner container-wide">
         <Brand />
         <nav className="nav-desktop" aria-label="Main navigation">
@@ -128,6 +145,7 @@ function Header() {
           <a className="nav-login" href="/login">Log in</a>
           <a className="button button--dark nav-cta" href="/signup">Get started <ArrowUpRight size={17} weight="bold" aria-hidden="true" /></a>
           <button
+            ref={toggleRef}
             className="menu-toggle"
             type="button"
             aria-label={open ? "Close navigation" : "Open navigation"}
@@ -285,7 +303,7 @@ function InteractivePreview() {
 }
 
 export default function ScrollLanding() {
-  const { heroRef, narrativeRef, activeStep, setActiveStep } = useScrollDirection();
+  const { heroRef, narrativeRef, activeStep, selectStep } = useScrollDirection();
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -326,13 +344,13 @@ export default function ScrollLanding() {
           </div>
         </section>
 
-        <section className="narrative" id="evidence" ref={narrativeRef} aria-label="From intent to explainable results">
+        <section className="narrative" id="evidence" ref={narrativeRef} aria-label="Six stages of explainable candidate search">
           <div className="narrative__sticky">
             <div className="narrative__inner container-wide">
               <div className="narrative__text" aria-live="off">
                 <span className="narrative__micro">THE RECRUITMENT WORKFLOW</span>
                 <div className="narrative__steps" role="group" aria-label="Workflow stages">
-                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} onClick={() => setActiveStep(i)}>{String(i + 1).padStart(2, "0")}</button>)}
+                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} aria-label={s.eyebrow + ": " + s.title} onClick={() => selectStep(i)}>{String(i + 1).padStart(2, "0")}</button>)}
                 </div>
                 <p className="narrative__eyebrow" key={story[activeStep].eyebrow}>{story[activeStep].eyebrow}</p>
                 <h2 key={story[activeStep].title}>{story[activeStep].title}</h2>
@@ -348,8 +366,15 @@ export default function ScrollLanding() {
                     ["Experience", "6–10 years"],
                     ["Location", "Hyderabad"],
                     ["Joining", "≤ 30 days"],
-                  ].map(([key, value], i) => <div className={"narrative__art-row " + (activeStep >= 1 && i === 3 ? "is-emphasized" : "")} key={key}><span>{key}</span><strong>{value}</strong><Check size={16} weight="bold" /></div>)}
-                  <div className="narrative__art-foot">{activeStep === 0 ? "AI proposes a structure" : activeStep === 1 ? "Recruiter confirms the filters" : "Evidence is checked against records"} <ArrowRight size={16} /></div>
+                  ].map(([key, value], i) => <div className={"narrative__art-row " + (activeStep >= 2 && i === 3 ? "is-emphasized" : "")} key={key}><span>{key}</span><strong>{value}</strong><Check size={16} weight="bold" /></div>)}
+                  <div className="narrative__art-foot">{[
+                      "A brief begins in natural language",
+                      "The assistant proposes editable criteria",
+                      "Recruiter confirms the final constraints",
+                      "Confirmed criteria are applied to records",
+                      "Each criterion has a visible outcome",
+                      "Search context is ready for refinement",
+                    ][activeStep]} <ArrowRight size={16} /></div>
                 </div>
                 <div className="narrative__art-corner" aria-hidden="true">P / 03</div>
               </div>
@@ -375,6 +400,7 @@ export default function ScrollLanding() {
             <div className="principle-row" data-reveal><span>01</span><h3>Explainable by design</h3><p>Required criteria, preferences and missing information have distinct outcomes.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>02</span><h3>Human-confirmed search</h3><p>You can correct the model&apos;s understanding before any results are returned.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>03</span><h3>Iteration without starting over</h3><p>Refine a search over multiple turns while preserving the context you already established.</p><ArrowUpRight size={22} /></div>
+            <div className="principle-row" data-reveal><span>04</span><h3>Explore similar talent</h3><p>Start with a reference profile to discover candidates with comparable experience and skills. This is a product workflow, not part of the synthetic preview above.</p><ArrowUpRight size={22} /></div>
           </div>
         </section>
 
