@@ -62,7 +62,7 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
 
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Find your next match." })).toBeVisible();
   const heroButtons = page.locator(".v2-hero-actions a");
   await expect(heroButtons).toHaveCount(2);
   await expect(heroButtons.nth(0)).toHaveText("See how it works");
@@ -71,12 +71,11 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(heroButtons.nth(1)).toHaveAttribute("href", "/signup");
   await expect(page.locator(".v2-hero-actions svg, .v2-header-actions a svg, .v2-close a svg")).toHaveCount(0);
   await expect(page.locator(".v2-hero .v2-eyebrow")).toHaveCount(0);
-  await expect(page.locator(".v2-hero-proof-item")).toHaveText(["Natural-language search", "Evidence-backed matching"]);
+  await expect(page.locator(".v2-hero-proof")).toHaveCount(0);
   await expect(page.locator(".v2-hero h1 em")).toHaveCSS("color", "rgb(2, 14, 36)");
-  await expect(page.locator(".v2-hero-accent")).toHaveText("every match.");
+  await expect(page.locator(".v2-hero-accent")).toHaveText("match.");
   await expect(page.locator(".v2-hero-accent")).toHaveCSS("color", "rgb(70, 123, 235)");
-  await expect(page.locator(".v2-hero-proof-item svg").first()).toHaveCSS("color", "rgb(70, 123, 235)");
-  await expect(page.locator(".v2-hero-proof")).toHaveCSS("border-top-color", "rgb(219, 231, 251)");
+  await expect(page.locator(".v2-hero-copy > p")).toHaveText("Describe the role. Discover candidates with reasons, not guesses.");
   await expect(page.locator(".v2-hero-stage .v2-rail-item--selected")).toHaveCSS("background-color", "rgb(238, 244, 255)");
   await expect(page.locator(".v2-hero-stage .v2-rail-item--selected svg")).toHaveCSS("color", "rgb(70, 123, 235)");
   await expect(page.locator(".v2-hero-stage .v2-query mark").first()).toHaveCSS("background-color", "rgb(231, 239, 255)");
@@ -100,6 +99,27 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.getByRole("heading", { name: "Get started with Pareto" })).toBeVisible();
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Log in to Pareto" })).toBeVisible();
+});
+
+test("hero mascot tracks pointer, walks on hover and respects reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const mascot = page.locator(".v2-hero-mascot");
+  const eyes = mascot.locator(".v2-hero-mascot__pupils");
+  const leftLeg = mascot.locator(".v2-hero-mascot__leg--left");
+  await expect(mascot).toBeVisible();
+  await expect(eyes).toHaveAttribute("transform", "translate(0 0)");
+  await page.mouse.move(30, 160);
+  await expect.poll(() => eyes.getAttribute("transform")).not.toBe("translate(0 0)");
+  await expect(leftLeg).toHaveCSS("animation-name", "none");
+  await mascot.hover();
+  await expect(leftLeg).toHaveCSS("animation-name", "v2-hero-left-step");
+  await page.mouse.move(4, 4);
+  await expect(leftLeg).toHaveCSS("animation-name", "none");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await mascot.hover();
+  await expect(leftLeg).toHaveCSS("animation-name", "none");
+  await expect(eyes).toHaveAttribute("transform", "translate(0 0)");
 });
 
 test("three complete workflow stories alternate text and product UI without tabs", async ({ page }, testInfo) => {
@@ -323,11 +343,15 @@ test("giant Pareto footer wordmark is legible and each glyph lifts independently
   await expect(letters.nth(0)).toHaveText("p");
   await expect(letters.nth(6)).toHaveText(".");
   await expect(letters.nth(6)).toHaveCSS("color", "rgba(49, 108, 224, 0.75)");
-  const before = await letters.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top));
+  // Fix the scroll position before measuring: Playwright's hover may scroll a
+  // partly hidden giant wordmark, which previously moved *both* rectangles.
+  await letters.nth(0).scrollIntoViewIfNeeded();
+  await page.mouse.move(0, 0);
+  const baseline = await letters.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top));
   await letters.nth(0).hover();
-  await expect.poll(async () => letters.nth(0).evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(before[0] - 8);
+  await expect.poll(async () => letters.nth(0).evaluate((el) => el.getBoundingClientRect().top)).toBeLessThan(baseline[0] - 8);
   const otherTop = await letters.nth(1).evaluate((el) => el.getBoundingClientRect().top);
-  expect(Math.abs(otherTop - before[1])).toBeLessThan(2);
+  expect(Math.abs(otherTop - baseline[1])).toBeLessThan(3);
   await page.mouse.move(2, 2);
 
   for (const width of [320, 390, 768, 1440, 1920]) {

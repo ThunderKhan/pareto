@@ -9,6 +9,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { assessPreview, previewCandidates } from "./preview-data";
+import { HeroMascot } from "./hero-mascot";
 import "./home-v2.css";
 
 const process = [
@@ -572,13 +573,12 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
     <main id="v2-main">
       <section className="v2-hero" aria-labelledby="v2-hero-title">
         <div className="v2-container v2-hero-copy">
-          <h1 id="v2-hero-title">Find the right people.<br/><em>Understand <span className="v2-hero-accent">every match.</span></em></h1>
-          <p>Describe who you&apos;re looking for. Review your criteria. Discover candidates backed by clear evidence.</p>
-          <div className="v2-hero-proof" aria-label="Pareto capabilities">
-            <span className="v2-hero-proof-item"><MagnifyingGlass size={17} aria-hidden="true" />Natural-language search</span>
-            <span className="v2-hero-proof-divider" aria-hidden="true" />
-            <span className="v2-hero-proof-item"><ShieldCheck size={17} aria-hidden="true" />Evidence-backed matching</span>
-          </div>
+          <h1 id="v2-hero-title" aria-label="Find your next match.">
+            <span className="v2-hero-heading-before">Find your</span>
+            <HeroMascot/>
+            <span className="v2-hero-heading-after">next <em><span className="v2-hero-accent">match.</span></em></span>
+          </h1>
+          <p>Describe the role. Discover candidates with reasons, not guesses.</p>
           <div className="v2-hero-actions"><a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works</a><Link className="v2-btn v2-btn--primary" href="/signup">Get started free</Link></div>
         </div>
         <div className="v2-container v2-hero-stage">
