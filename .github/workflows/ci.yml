@@ -139,5 +139,11 @@ jobs:
         run: pnpm build
       - name: Install Playwright Chromium
         run: pnpm --filter @pareto/frontend exec playwright install --with-deps chromium
+      - name: Verify actual configured AI providers independently (no recorded responses)
+        run: pnpm --filter @pareto/backend exec vitest run src/search/provider-live.test.ts --reporter=default
+        env:
+          PARETO_VERIFY_LIVE_MODELS: "1"
       - name: Real signed-in recruiter workflow (no mocks)
         run: pnpm --filter @pareto/frontend exec playwright test recruiter.spec.ts --reporter=line --retries=0
+        env:
+          PARETO_REQUIRE_LIVE: "1"
