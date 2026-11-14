@@ -402,6 +402,15 @@
 .v2-faq-answer-inner { min-height: 0; overflow: hidden; }
 .v2-faq-answer p { margin: 0; padding: 0 16px 16px; color: var(--v2-muted); font-family: var(--v2-ui); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: -.04em; }
 @media (min-width: 640px) { .v2-faq { padding: 96px 0; } }
+/* The reference screenshot uses a larger desktop editorial treatment than
+   the clone's base ot-h2 token; scale optically while keeping its typefaces. */
+@media (min-width: 1024px) {
+  .v2-faq-container { max-width: 1032px; }
+  .v2-faq h2 { font-size: clamp(3rem, 6vw, 4.5rem); margin-bottom: 39px; }
+  .v2-faq-list { gap: 13px; }
+  .v2-faq-question { font-size: 22px; line-height: 1.5; padding-block: 16px; }
+  .v2-faq-answer p { font-size: 19px; line-height: 1.55; }
+}
 @media (max-width: 639px) {
   .v2-faq-question, .v2-faq-answer p { font-size: 15px; line-height: 1.5; }
 }
