@@ -41,6 +41,8 @@ Copy `.env.example` to the repository-root `.env`, fill in the public Supabase v
 
 See [Railway deployment and environment variables](docs/DEPLOYMENT.md).
 
+**Release integration (Nov 14):** Both feature branches are combined without rewriting history on `integration/release-20261114` ([draft PR #3](https://github.com/ThunderKhan/pareto/pull/3)). See [live credential setup, gated acceptance, Railway and organizer repository runbook](docs/RELEASE-SETUP.md). CI verifies the production Docker runtime and unsigned 401; real Supabase/Gemini/Groq login, Railway URL, and organizer submission are **not yet verified**.
+
 ## Stack
 
 Next.js App Router, TypeScript, Tailwind CSS, Phosphor Icons, PostgreSQL, Prisma 7, Supabase Auth, Gemini and Groq, Zod, Pino, Vitest, Playwright, Docker and pnpm.

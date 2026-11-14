@@ -889,7 +889,7 @@ The status column records the current evidence. See the engineering log for test
 | --- | --- | --- | --- | --- |
 | F-001 | Install, lockfile, build and baseline test verification | P0-FOUNDATION | — | Frozen install, check and production build passed on GitHub CI |
 | F-002 | Prisma v7 adapter, local PostgreSQL and migration | P0-FOUNDATION | F-001 | Prior local PostgreSQL 18.6 and CI PostgreSQL 17 migration/seed passed |
-| F-003 | Docker reproducibility and runtime check | P0-FOUNDATION | F-001, F-002 | Docker image build passed in CI; Compose runtime unverified |
+| F-003 | Docker reproducibility and runtime check | P0-FOUNDATION | F-001, F-002 | CI Docker image boot, HTTP liveness and signed-out 401 passed; Compose topology still unverified |
 | F-004 | Zod HTTP contracts, request IDs and logging | P0-FOUNDATION | F-001 | Implemented with bounded JSON input and request IDs |
 | D-101 | Typed search and delta contracts | P0-FOUNDATION | F-001 | Verified with unit tests |
 | D-102 | Candidate schema, seeded corpus and repo adapters | P0-FOUNDATION | F-002, D-101 | 48-profile seed and DB integration passed |
@@ -903,11 +903,11 @@ The status column records the current evidence. See the engineering log for test
 | P-301 | Diagnostics / zero-result rescue | P1-DIFFERENTIATION | P0 green | NOT STARTED |
 | P-302 | What-if comparison without mutation | P1-DIFFERENTIATION | P-301 | NOT STARTED |
 | P-303 | Near-match counterfactual explanation | P1-DIFFERENTIATION | D-104, P-301 | NOT STARTED |
-| P-401 | Google OAuth, session security and ownership | P1-PRODUCTIZATION | F-004 + DB | Existing Auth paths wired; hosted Auth and OAuth pending |
+| P-401 | Google OAuth, session security and ownership | P1-PRODUCTIZATION | F-004 + DB | Supabase SSR refresh proxy added; no dedicated Pareto Supabase project or live OAuth test yet |
 | P-402 | Private PDF/DOCX/TXT ingestion | P1-PRODUCTIZATION | P-401 | NOT STARTED |
 | P-403 | UX hardening and failure states | P1-PRODUCTIZATION | P0 green | NOT STARTED |
-| R-501 | Integrated tests, Docker/deployment verification | Release | Core slices | CI 15/15 Vitest, 5/5 executed Playwright, production build and Docker image passed; authenticated browser test skipped, runtime/Railway pending |
-| R-502 | Official repo integration, README, slides | Release | Verified release | Personal feature branch available; official repository access blocked |
+| R-501 | Integrated tests, Docker/deployment verification | Release | Core slices | Integration CI: 15/15 Vitest, 15/15 executed Playwright, 1 auth Playwright skipped; Next.js build, Docker boot, health and 401 passed; Railway/live auth pending |
+| R-502 | Official repo integration, README, slides | Release | Verified release | Both feature histories integrated in draft PR #3 (main untouched); organizer private repository 404 to GitHub app; presentation not submitted |
 
 **Status transitions:** change a row only after the corresponding evidence is logged. A task can be `IMPLEMENTED / UNVERIFIED` even when code has been merged; it is not `VERIFIED` until its gate actually passes.
 
