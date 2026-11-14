@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { assessPreview, previewCandidates } from "./preview-data";
 import { HeroMascot } from "./hero-mascot";
+import { HomepageSmoothScroll } from "./homepage-smooth-scroll";
 import "./home-v2.css";
 
 const process = [
@@ -107,7 +108,7 @@ function Header() {
           </button>
         </div>
       </div>
-      {open && <nav className="v2-mobile-nav" id="v2-mobile-nav" aria-label="Mobile navigation">
+      {open && <nav className="v2-mobile-nav" id="v2-mobile-nav" aria-label="Mobile navigation" data-lenis-prevent>
         <Link href="/" onClick={() => setOpen(false)}>Home</Link>
         <a href="#problem" onClick={() => setOpen(false)}>The problem</a>
         <a href="#how-it-works" onClick={() => setOpen(false)}>How it works</a>
@@ -578,6 +579,7 @@ function Footer() {
 
 export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string }) {
   return <div className={"v2-page " + fontClasses}>
+    <HomepageSmoothScroll/>
     <a href="#v2-main" className="v2-skip">Skip to content</a>
     <Header/>
     <main id="v2-main">
