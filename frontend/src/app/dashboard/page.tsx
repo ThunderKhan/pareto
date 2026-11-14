@@ -12,7 +12,6 @@ export default function DashboardPage() {
         <p>Describe a role, review the structured requirements, and make a deliberate search.</p>
         <Link href="/dashboard/search" className="button button--dark">Start candidate search →</Link>
       </div>
-      <p className="dashboard-disclosure">The authenticated shell is available; the production candidate-matching backend is under implementation. No hiring results are shown until the real data path is ready.</p>
     </main>
   );
 }
