@@ -4,7 +4,10 @@ test("public landing, navigation and health", async ({ page, request }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /start searching/i }).first()).toHaveAttribute("href", "/signup");
-  await expect(page.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
+  await expect(page.locator(".v2-login")).toHaveText("Login");
+  await expect(page.locator(".v2-login")).toHaveAttribute("href", "/login");
+  await expect(page.locator(".v2-header-cta")).toHaveText("Get started free");
+  await expect(page.locator(".v2-header-cta")).toHaveAttribute("href", "/signup");
   await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
   const health = await request.get("/api/health");
   expect(health.ok()).toBe(true);
