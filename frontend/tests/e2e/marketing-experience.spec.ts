@@ -122,6 +122,63 @@ test("hero mascot tracks pointer, walks on hover and respects reduced motion", a
   await expect(eyes).toHaveAttribute("transform", "translate(0 0)");
 });
 
+test("OpenTag-inspired public header uses the Pareto mascot and real navigation", async ({ page, request }) => {
+  const [mark, favicon] = await Promise.all([
+    request.get("/brand/pareto-mark.svg"),
+    request.get("/icon.svg"),
+  ]);
+  expect(mark.ok()).toBe(true);
+  expect(favicon.ok()).toBe(true);
+  expect(await favicon.text()).toBe(await mark.text());
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const header = page.locator(".v2-header");
+  const nav = header.getByRole("navigation", { name: "Main navigation" });
+  const logo = header.getByRole("link", { name: "Pareto home" });
+  await expect(logo).toHaveAttribute("href", "/");
+  const image = logo.locator(".v2-brand-mark");
+  await expect(image).toHaveAttribute("src", "/brand/pareto-mark.svg");
+  await expect.poll(() => image.evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await expect(nav.locator("a")).toHaveText(["Home", "The problem", "How it works", "Explore matching", "Why Pareto", "FAQs"]);
+  await expect(nav.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "FAQs" })).toHaveAttribute("href", "#faq");
+  await expect(header.getByRole("link", { name: "Login" })).toHaveAttribute("href", "/login");
+  await expect(header.getByRole("link", { name: "Get started free" })).toHaveAttribute("href", "/signup");
+  const alignment = await header.evaluate(el => {
+    const brand = el.querySelector(".v2-logo")!.getBoundingClientRect();
+    const nav = el.querySelector(".v2-desktop-nav")!.getBoundingClientRect();
+    const actions = el.querySelector(".v2-header-actions")!.getBoundingClientRect();
+    return { brandRight: brand.right, navLeft: nav.left, navRight: nav.right, actionsLeft: actions.left };
+  });
+  expect(alignment.navLeft).toBeGreaterThan(alignment.brandRight + 20);
+  expect(alignment.actionsLeft).toBeGreaterThan(alignment.navRight);
+});
+
+test("public header adapts without horizontal overflow and mobile menu retains all destinations", async ({ page }) => {
+  await page.goto("/");
+  for (const width of [320, 390, 768, 1024, 1199, 1200, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    const metrics = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+      desktop: getComputedStyle(document.querySelector(".v2-desktop-nav")!).display,
+      toggle: getComputedStyle(document.querySelector(".v2-menu-toggle")!).display,
+    }));
+    expect(metrics.scrollWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(metrics.viewport + 1);
+    expect(metrics.desktop === "none", `desktop nav state at ${width}px`).toBe(width < 1200);
+    expect(metrics.toggle === "none", `mobile toggle state at ${width}px`).toBe(width >= 1200);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  const toggle = page.getByRole("button", { name: "Open navigation" });
+  await toggle.click();
+  const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
+  await expect(mobile.getByRole("link")).toHaveText(["Home", "The problem", "How it works", "Explore matching", "Why Pareto", "FAQs", "Login", "Get started free"]);
+  await mobile.getByRole("link", { name: "FAQs" }).click();
+  await expect(page).toHaveURL(/#faq$/);
+  await expect(mobile).toHaveCount(0);
+});
+
 test("three complete workflow stories alternate text and product UI without tabs", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/#how-it-works");

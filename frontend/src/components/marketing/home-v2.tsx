@@ -41,11 +41,15 @@ const facets = [
 function Logo({ inverse = false }: { inverse?: boolean }) {
   return (
     <Link href="/" className={"v2-logo" + (inverse ? " v2-logo--inverse" : "")} aria-label="Pareto home">
-      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-        <rect x="1" y="1" width="28" height="28" rx="7" fill="currentColor" />
-        <path d="M9 8.5h5.8c4 0 6.4 2.3 6.4 5.8s-2.4 5.7-6.4 5.7H12v3.5H9V8.5Zm3 2.8v5.9h2.7c2.3 0 3.5-1.1 3.5-3s-1.2-2.9-3.5-2.9H12Z" fill="var(--v2-logo-hole, #fffdf9)" />
-        <circle cx="21.6" cy="22" r="1.7" fill="var(--v2-logo-hole, #fffdf9)" />
-      </svg>
+      <Image
+        className="v2-brand-mark"
+        src="/brand/pareto-mark.svg"
+        alt=""
+        aria-hidden="true"
+        width={36}
+        height={36}
+        unoptimized
+      />
       <span>pareto<span className="v2-logo-period">.</span></span>
     </Link>
   );
@@ -83,14 +87,18 @@ function Header() {
   }, [open]);
   return (
     <header className="v2-header" ref={container}>
-      <div className="v2-container v2-header-inner">
-        <Logo />
-        <nav className="v2-desktop-nav" aria-label="Main navigation">
-          <a href="#problem">The problem</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#similar">Explore matching</a>
-          <a href="#trust">Why Pareto</a>
-        </nav>
+      <div className="v2-header-shell v2-header-inner">
+        <div className="v2-header-main">
+          <Logo />
+          <nav className="v2-desktop-nav" aria-label="Main navigation">
+            <Link href="/" aria-current="page">Home</Link>
+            <a href="#problem">The problem</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#similar">Explore matching</a>
+            <a href="#trust">Why Pareto</a>
+            <a href="#faq">FAQs</a>
+          </nav>
+        </div>
         <div className="v2-header-actions">
           <Link className="v2-login" href="/login">Login</Link>
           <Link className="v2-btn v2-btn--primary v2-header-cta" href="/signup">Get started free</Link>
@@ -100,10 +108,12 @@ function Header() {
         </div>
       </div>
       {open && <nav className="v2-mobile-nav" id="v2-mobile-nav" aria-label="Mobile navigation">
+        <Link href="/" onClick={() => setOpen(false)}>Home</Link>
         <a href="#problem" onClick={() => setOpen(false)}>The problem</a>
         <a href="#how-it-works" onClick={() => setOpen(false)}>How it works</a>
         <a href="#similar" onClick={() => setOpen(false)}>Explore matching</a>
         <a href="#trust" onClick={() => setOpen(false)}>Why Pareto</a>
+        <a href="#faq" onClick={() => setOpen(false)}>FAQs</a>
         <Link href="/login" onClick={() => setOpen(false)}>Login</Link>
         <Link href="/signup" className="v2-mobile-primary" onClick={() => setOpen(false)}>Get started free</Link>
       </nav>}
