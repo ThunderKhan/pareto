@@ -550,7 +550,6 @@
 /* Final conversion panel follows OpenTag's centered composition, with Pareto's own artwork and palette. */
 .v2-close {
   overflow: hidden;
-  border-top: 1px solid var(--v2-border);
   background: radial-gradient(ellipse 48% 34% at 90% 105%, rgba(70,123,235,.06), transparent 80%), var(--v2-paper);
   text-align: center;
 }
