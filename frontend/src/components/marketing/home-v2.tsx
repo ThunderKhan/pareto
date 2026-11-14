@@ -355,27 +355,55 @@ function Trust() {
   const [mobileStep, setMobileStep] = useState(0);
 
   useEffect(() => {
-    if (typeof IntersectionObserver === "undefined") return;
     const media = window.matchMedia("(min-width: 1024px)");
     let observer: IntersectionObserver | undefined;
+    let animationFrame: number | null = null;
+
+    // IntersectionObserver thresholds alone can miss a step that stays partially
+    // visible while being centered. The scroll handler keeps the active demo
+    // synchronized with the viewport's reading position in that case.
+    const syncActiveStep = () => {
+      if (!media.matches || animationFrame !== null) return;
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = null;
+        const timeline = stepsRef.current[0]?.closest(".v2-trust-timeline");
+        if (!timeline) return;
+        const section = timeline.getBoundingClientRect();
+        if (section.bottom < 0 || section.top > window.innerHeight) return;
+        const line = window.innerHeight * .44;
+        let nearest = -1;
+        let closest = Infinity;
+        stepsRef.current.forEach((node, index) => {
+          if (!node) return;
+          const rect = node.getBoundingClientRect();
+          const distance = Math.abs(rect.top + rect.height / 2 - line);
+          if (distance < closest) { closest = distance; nearest = index; }
+        });
+        if (nearest !== -1) setActiveStep(current => current === nearest ? current : nearest);
+      });
+    };
+
     const observe = () => {
       observer?.disconnect();
       if (!media.matches) return;
-      observer = new IntersectionObserver((entries) => {
-        const visible = entries.filter(entry => entry.isIntersecting);
-        if (!visible.length) return;
-        // When adjacent entries overlap, select the step closest to the viewport's reading band.
-        const center = window.innerHeight * .44;
-        visible.sort((a, b) => Math.abs(a.boundingClientRect.top + a.boundingClientRect.height / 2 - center)
-          - Math.abs(b.boundingClientRect.top + b.boundingClientRect.height / 2 - center));
-        const index = stepsRef.current.indexOf(visible[0].target as HTMLButtonElement);
-        if (index !== -1) setActiveStep(index);
-      }, { rootMargin: "-20% 0px -35% 0px", threshold: .25 });
-      stepsRef.current.forEach(node => { if (node) observer?.observe(node); });
+      if (typeof IntersectionObserver !== "undefined") {
+        observer = new IntersectionObserver(syncActiveStep,
+          { rootMargin: "-20% 0px -35% 0px", threshold: .25 });
+        stepsRef.current.forEach(node => { if (node) observer?.observe(node); });
+      }
+      syncActiveStep();
     };
     observe();
+    window.addEventListener("scroll", syncActiveStep, { passive: true });
+    window.addEventListener("resize", syncActiveStep);
     media.addEventListener("change", observe);
-    return () => { observer?.disconnect(); media.removeEventListener("change", observe); };
+    return () => {
+      observer?.disconnect();
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", syncActiveStep);
+      window.removeEventListener("resize", syncActiveStep);
+      media.removeEventListener("change", observe);
+    };
   }, []);
 
   const chooseStep = (index: number) => {
