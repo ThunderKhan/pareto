@@ -37,3 +37,15 @@
 **Verification:** Architecture Markdown and cross-reference links committed to GitHub. No application build, Docker execution, LLM call, SQL migration or deployment was performed in this documentation milestone.
 
 **Next:** Write a phased `IMPLEMENTATION.md`, then implement the P0 organizer vertical slices before optional features.
+
+## 2026-11-14 — M0 documentation: implementation plan
+
+**Action:** Committed `docs/IMPLEMENTATION.md` with organizer-first P0 acceptance gates, phased work packages and dependencies, live vertical-slice strategy, local/Docker/DB/AI test plans, realistic fallback decisions, and production-oriented deployment/release steps.
+
+**Engineering workflow:** The plan requires actual issue/commit/test/verification evidence and records observed problems rather than inventing retrospective challenges. It explicitly protects organizer acceptance and the November 15 5:00 PM IST code freeze.
+
+**Repository integration risk:** The development and organizer repositories have independent histories. The plan uses a reviewed merge/integration branch and warns against force-pushing organizer history.
+
+**Verification:** GitHub returned a new document commit; the Markdown fences and key sections were inspected. **No dependency install, application test, Docker deployment or migration was performed by this documentation change.**
+
+**Next:** Begin F-001 local runtime verification and advance through the P0 corpus/evaluator and search slices, updating task statuses only after evidence.
