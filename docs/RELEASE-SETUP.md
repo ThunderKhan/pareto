@@ -7,17 +7,17 @@
 - GitHub development repository `ThunderKhan/pareto` is **public**. Private applicant records and credentials must never be committed.
 - The connected GitHub app sees the user's personal `ThunderKhan` installation, **not** the organizer's `ai-hackathon-trustume` organization. Calls to `ai-hackathon-trustume/std-zero` return 404. This means **unavailable to this integration**, not necessarily nonexistent.
 - Connected Supabase currently lists four existing projects, none named Pareto. **Do not change another project's Auth or production database.** Create or explicitly authorize a dedicated Pareto demo project.
-- No Railway connection has been confirmed. A Railway app connection has been offered in ChatGPT; deployment requires account authorization and a project/service.
+- **Railway credits are intentionally preserved. Do not install/connect its app, provision a database or project, or deploy until explicitly authorized by the user.** Local Docker, GitHub CI, a dedicated Supabase Auth project and disposable CI PostgreSQL are the only current release verification paths.
 
 ## 1. Supabase Auth — dedicated Pareto project
 
 1. In the [Supabase dashboard](https://supabase.com/dashboard), create a project for **Pareto demo** (or explicitly select an authorized dedicated one); review any charges before provisioning. Obtain the **Project URL** and **publishable key** from Connect/API Keys. Only these two values are intended to reach the browser.
 2. **Authentication → Providers → Email**: enable email/password sign-in. Decide whether email confirmation is enabled and make sure the demo recruiter has a **confirmed account**. Check email delivery; do not assume sign-up works if confirmation messages are blocked. Under **Authentication → Users**, locate the test recruiter and record its UUID privately.
 3. **Authentication → URL Configuration**:
-   - Site URL: `https://<your-railway-domain>` once the actual domain is assigned (or `http://localhost:3000` for local testing).
-   - Redirect URLs: `http://localhost:3000/auth/callback` and `https://<your-railway-domain>/auth/callback`. Add only real trusted hosts.
+   - Site URL: `http://localhost:3000` for local testing. Do not configure a fictional production domain; update it after a deployment is explicitly authorized.
+   - Redirect URLs **before cloud deployment**: `http://localhost:3000/auth/callback` and `http://127.0.0.1:3000/auth/callback` (Playwright's actual base URL). Add a production callback only after an authorized host exists.
 4. For **Google OAuth**, create a Google Cloud OAuth **Web application** after configuring the OAuth consent screen/test users:
-   - Authorized JavaScript origins: `http://localhost:3000` and `https://<your-railway-domain>`.
+   - Authorized JavaScript origins: `http://localhost:3000` (and `http://127.0.0.1:3000` if using that host). Add a production origin only after a real domain exists.
    - Authorized redirect URI **in Google Cloud**: `https://<your-supabase-project-ref>.supabase.co/auth/v1/callback` (copy the exact callback shown on Supabase's Google provider page).
    - Save the **Google client ID and client secret only in Supabase → Authentication → Providers → Google**; enable the provider. Do **not** put the Google OAuth client secret in Pareto env or GitHub source.
    - Supabase's provider callback and Pareto's `/auth/callback` are two distinct URLs. Pareto performs the PKCE code exchange at its own callback.
@@ -34,7 +34,16 @@ Reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client a
 
 References: https://ai.google.dev/gemini-api/docs/models and https://console.groq.com/docs/models and https://console.groq.com/docs/deprecations
 
-## 3. Railway deployment — wait for account/project authorization
+## 2A. Verify with GitHub Actions without Railway
+
+- Configure a **dedicated Pareto Supabase Auth** project, not an existing project's account. The CI PostgreSQL server is created as a disposable GitHub Actions service container; it is never connected to Railway.
+- Go to the personal development repo's GitHub **Settings → Environments**, create `pareto-demo`, then add the secret and variable names from Section 4. The test user must have a confirmed email in Supabase and its exact UUID must match `PARETO_E2E_USER_ID`.
+- In **GitHub → Actions → Recruiter search CI → Run workflow**, select branch `integration/release-20261114`. The manual `recruiter-live` job fails on missing configuration; it tests **each configured Gemini/Groq model independently** with actual HTTP requests, then runs the signed-in recruiter browser test against seeded CI PostgreSQL.
+- The normal `checks` job uses controlled AI responses, not live inference. When provider APIs are unavailable during the presentation, use manual criteria entry in the real protected workspace; clearly disclose that the NLP portion is offline and never replay recorded outputs as if live.
+- A green manual CI does **not** confirm Google OAuth consent or third-party account permissions. Verify Google sign-in manually against the dedicated Supabase project and actual local callback before the presentation.
+- Follow the exact repeatable [PS1 demo script](DEMO-SCRIPT.md); use only synthetic candidates.
+
+## 3. Railway deployment — FROZEN until the user's explicit authorization
 
 1. Connect the Railway app in ChatGPT or grant access to a Railway project via the Railway dashboard. Use the **integration branch** (not main) until verification is complete. Railway service root: repository root; Dockerfile: root `Dockerfile`.
 2. Provision a **dedicated PostgreSQL** service. Its Postgres connection string goes to runtime `DATABASE_URL` (server secret). Provide `DIRECT_DATABASE_URL` only for Prisma migration (can equal the direct DB URL). **Never set DATABASE_URL as NEXT_PUBLIC_**.
@@ -67,7 +76,7 @@ GEMINI_MODEL                    # if Gemini is configured
 GROQ_MODEL                      # if Groq is configured
 ```
 
-The manual `recruiter-live` job provisions **disposable PostgreSQL 17**, migrates and seeds it for exactly `PARETO_E2E_USER_ID`, builds the release against the configured Supabase project, and runs **`frontend/tests/e2e/recruiter.spec.ts` against actual Supabase + Gemini/Groq**. A preflight fails if identity/password/provider configuration is absent. Unlike the regular CI, **the live test must not silently skip**. Do not upload logs/traces containing secrets.
+The manual `recruiter-live` job independently checks every configured Gemini and Groq provider and provisions **disposable PostgreSQL 17**, migrates and seeds it for exactly `PARETO_E2E_USER_ID`, builds the release against the configured Supabase project, and runs **`frontend/tests/e2e/recruiter.spec.ts` against actual Supabase + Gemini/Groq**. A preflight fails if identity/password/provider configuration is absent. Unlike the regular CI, **the live test must not silently skip**. Do not upload logs/traces containing secrets.
 
 Automatic pull-request CI runs the separate `checks` job; the credentialed `recruiter-live` job is limited to a manual dispatch. Ordinary integration CI still exercises the same database/search services with *controlled model responses* and signed-out/public browser smoke tests; it cannot prove real OAuth or LLM inference.
 
@@ -82,6 +91,6 @@ GitHub App installation reference: https://docs.github.com/en/apps/using-github-
 
 ## Release gate / current limitations
 
-- Do not merge PR #3 or label the demo production-verified until integrated CI passes **and** the real signed-in journey has run against real provider keys.
+- Do not merge PR #3 or label the demo live-verified until integrated CI passes **and** the real signed-in journey has run against actual Supabase and model-provider credentials. **Railway deployment is separately deferred by the user even after these gates pass.**
 - No Railway URL is confirmed. No organizer write access is confirmed. Those actions depend on account permissions outside the current connection.
 - Optional diagnostics, simulators and resume ingestion remain deferred until the release blockers are resolved.

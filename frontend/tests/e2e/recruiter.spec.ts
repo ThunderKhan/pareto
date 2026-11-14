@@ -81,6 +81,19 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await expect(confirmed.getByText("Similarity-ranked").first()).toBeVisible();
   await expect(confirmed.getByRole("heading", { name: "Asha Nair", exact: true })).toHaveCount(0);
 
+  // Follow up on a similarity search: a required AWS rule must change eligibility,
+  // preserving the reference self-exclusion and all other preferred attributes.
+  await page.getByLabel("Refine this search").fill("Require AWS skills in the similar candidate cohort");
+  await page.getByRole("button", { name: "Propose refinement" }).click();
+  await expect(page.getByRole("heading", { name: "Review draft criteria" })).toBeVisible({ timeout: 30000 });
+  const referenceRules = await draftFields(page);
+  expect(referenceRules.some(rule => rule.field === "skill" && rule.mode === "required")).toBe(true);
+  await page.getByRole("button", { name: "Confirm Search" }).click();
+  await expect(confirmed.getByRole("heading", { name: "Search results · revision 2" })).toBeVisible();
+  await expect(confirmed).toContainText("21 eligible");
+  await expect(confirmed).toContainText("2 need review");
+  await expect(confirmed.getByRole("heading", { name: "Asha Nair", exact: true })).toHaveCount(0);
+
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/", { timeout: 15000 });
   expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
