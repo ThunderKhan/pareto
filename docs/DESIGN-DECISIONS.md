@@ -13,6 +13,8 @@
 - **Illustration:** original front-facing React/CSS product windows and an original folded-document / magnifying-lens SVG motif with no cloned OpenTag assets.
 - **Statuses:** explicit `Eligible`, `Excluded`, and `Needs review` labels with icon/word evidence, not colors alone. Synthetic data never represents production recruiting records.
 
+- **Text contrast adjustment:** the measured source contains several pale 9–12px metadata colors. V2 strengthens secondary interface labels to `#62717B` (about 5.0:1 on white) rather than copying inaccessible values; decorative accent strokes remain visually subtle. This is a source-authorized accessibility exception, not a new brand palette.
+
 ## Structural and release boundaries
 - The new homepage is a standalone marketing component `home-v2.tsx`, replacing only the `/` import in `frontend/src/app/page.tsx`. The old `scroll-landing.tsx`, `marketing.css` and deterministic `preview-data.ts` remain unchanged for rollback.
 - No dashboard, APIs, authentication, Prisma, migration, CI, infrastructure, or release settings are edited. This work originates from `integration/release-20261114`.
