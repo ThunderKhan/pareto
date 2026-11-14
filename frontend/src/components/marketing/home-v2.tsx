@@ -501,7 +501,7 @@ function Trust() {
 
 
 function Footer() {
-  return <>
+  return <div className="v2-page-ending">
     <section className="v2-close" id="get-started" aria-labelledby="v2-close-title">
       <div className="v2-container v2-close-inner">
         <Image
@@ -574,7 +574,7 @@ function Footer() {
         </div>
       </div>
     </footer>
-  </>;
+  </div>;
 }
 
 export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string }) {
