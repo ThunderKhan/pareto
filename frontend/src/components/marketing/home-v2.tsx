@@ -86,7 +86,7 @@ function Header() {
         <nav className="v2-desktop-nav" aria-label="Main navigation">
           <a href="#problem">The problem</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#preview">Live preview</a>
+          <a href="#preview">Explore matching</a>
           <a href="#trust">Why Pareto</a>
         </nav>
         <div className="v2-header-actions">
@@ -100,7 +100,7 @@ function Header() {
       {open && <nav className="v2-mobile-nav" id="v2-mobile-nav" aria-label="Mobile navigation">
         <a href="#problem" onClick={() => setOpen(false)}>The problem</a>
         <a href="#how-it-works" onClick={() => setOpen(false)}>How it works</a>
-        <a href="#preview" onClick={() => setOpen(false)}>Live preview</a>
+        <a href="#preview" onClick={() => setOpen(false)}>Explore matching</a>
         <a href="#trust" onClick={() => setOpen(false)}>Why Pareto</a>
         <Link href="/login" onClick={() => setOpen(false)}>Log in</Link>
         <Link href="/signup" className="v2-mobile-primary" onClick={() => setOpen(false)}>Start searching <ArrowRight size={17} aria-hidden="true" /></Link>
@@ -265,7 +265,7 @@ function Preview() {
       <div className="v2-section-intro"><Label>INTERACTIVE EVIDENCE</Label><h2>Change one requirement. <em>See what changes.</em></h2><p>Change the joining window from 30 to 60 days to see how each matching decision changes.</p></div>
       <div className="v2-preview-frame" role="region" aria-label="Interactive candidate matching example">
         <div className="v2-preview-sidebar">
-          <div className="v2-overline">ACTIVE SEARCH</div>
+          <div className="v2-overline">SEARCH CRITERIA</div>
           <h3>Backend engineers<br/>in Hyderabad</h3>
           <div className="v2-preview-filter"><span>Required skills</span><strong>Java, Spring Boot, AWS</strong></div>
           <div className="v2-preview-filter"><span>Experience</span><strong>6–10 years</strong></div>
@@ -280,7 +280,7 @@ function Preview() {
           <div className="v2-preview-key"><span>✓ Eligible</span><span>! Excluded</span><span>? Needs review</span></div>
         </div>
         <div className="v2-preview-content">
-          <div className="v2-preview-heading"><div><div className="v2-overline">EXPLAINABLE RESULTS</div><h3>What the evidence says.</h3></div><span className="v2-synthetic-tag">EXAMPLE PROFILES</span></div>
+          <div className="v2-preview-heading"><div><div className="v2-overline">EXPLAINABLE RESULTS</div><h3>What the evidence says.</h3></div><span className="v2-example-tag">EXAMPLE PROFILES</span></div>
           <div className="v2-count-bar" role="status" aria-live="polite" aria-atomic="true">
             <span><strong data-testid="eligible-count">{total.eligible}</strong><small>Eligible</small></span>
             <span><strong>{total.excluded}</strong><small>Excluded</small></span>
@@ -300,7 +300,7 @@ function Similarity() {
   const others = previewCandidates.slice(1);
   return <section className="v2-section v2-similar" id="similar">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify comparable strengths. Similarity is a set of explainable attributes, not an invented percentage.</p></div>
+      <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify people with comparable skills, experience and location.</p></div>
       <div className="v2-similar-board">
         <div className="v2-source-person">
           <div className="v2-overline">REFERENCE PROFILE</div>
@@ -368,7 +368,7 @@ function Footer() {
         <Link className="v2-btn v2-btn--primary" href="/signup">Start searching <ArrowUpRight size={18} aria-hidden="true" /></Link>
       </div>
     </section>
-    <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#preview">Live preview</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
+    <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#preview">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
   </>;
 }
 
