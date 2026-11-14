@@ -16,13 +16,16 @@ test("signup uses the Pareto split layout and keeps real, accessible form fields
   await expect(page.getByLabel("Last name")).toHaveAttribute("required", "");
   await expect(page.getByLabel("Email")).toHaveAttribute("autocomplete", "email");
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "new-password");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("placeholder", "At least 6 characters");
   await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   await expect(page.getByRole("button", { name: /apple/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /windows/i })).toHaveCount(0);
 
-  const notice = page.getByRole("status").filter({ hasText: "Supabase sign-in is not configured" });
+  const notice = page.getByRole("status").filter({ hasText: "Authentication is unavailable in this environment." });
   if (await notice.count()) {
+    await expect(notice.getByText("Local setup instructions")).toBeVisible();
+    await notice.locator("summary").click();
     await expect(notice).toContainText("frontend/.env.local");
     await expect(page.getByRole("button", { name: "Sign up with Google" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Create account" })).toBeDisabled();
@@ -36,6 +39,8 @@ test("login reuses the split layout, supports Google, and preserves account reco
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByLabel("Email")).toHaveAttribute("autocomplete", "email");
   await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("autocomplete", "current-password");
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("placeholder", "Enter your password");
+  await expect(page.locator(".auth-form")).toHaveAttribute("aria-busy", "false");
   await expect(page.getByLabel(/First name/)).toHaveCount(0);
   await expect(page.getByLabel(/Last name/)).toHaveCount(0);
   await expect(page.locator(".auth-form__names")).toHaveCount(0);
@@ -100,6 +105,23 @@ test("auth screens stay readable on narrow viewports and disable shader for redu
     if (width < 960) await expect(page.locator(".auth-art")).toBeHidden();
     else await expect(page.locator(".auth-art")).toBeVisible();
   }
+});
+
+test("auth controls show keyboard focus and expose readable input text", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/login");
+  const logo = page.getByRole("link", { name: "Pareto home" });
+  await page.keyboard.press("Tab");
+  await expect(logo).toBeFocused();
+  await expect(logo).toHaveCSS("outline-style", "solid");
+  const placeholderColor = await page.getByLabel("Email").evaluate(el =>
+    getComputedStyle(el, "::placeholder").color
+  );
+  expect(placeholderColor).toBe("rgb(91, 107, 128)");
+  const labelSize = await page.locator(".auth-field span").first().evaluate(el =>
+    parseFloat(getComputedStyle(el).fontSize)
+  );
+  expect(labelSize).toBeGreaterThanOrEqual(13);
 });
 
 test("auth pages have a static fallback without motion even if the GPU shader does not render", async ({ page }) => {

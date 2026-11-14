@@ -115,8 +115,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           </div>
 
           {!client && <div className="auth-card__notice" role="status">
-            Supabase sign-in is not configured. Set <strong>{missingSettings.join(" and ")}</strong> in <code>frontend/.env.local</code>, then restart <code>pnpm dev</code>.
-          </div>}
+            <strong>Authentication is unavailable in this environment.</strong>
+            <span> Sign-in and signup will become available once the service is configured.</span>
+            {process.env.NODE_ENV !== "production" && <details className="auth-config-details">
+              <summary>Local setup instructions</summary>
+              <p>Set <code>{missingSettings.join(" and ")}</code> in <code>frontend/.env.local</code>, then restart <code>pnpm dev</code>.</p>
+            </details>}
+          </div>
 
           <button className="auth-social" type="button" onClick={onGoogle} disabled={!client || busy}>
             <GoogleIcon /> {signup ? "Sign up with Google" : "Continue with Google"}
@@ -124,7 +129,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
           <div className="auth-divider"><span>or continue with email</span></div>
 
-          <form className="auth-form" onSubmit={onSubmit}>
+          <form className="auth-form" onSubmit={onSubmit} aria-busy={busy}>
             {signup && <div className="auth-form__names">
               <label className="auth-field" htmlFor="auth-first-name">
                 <input id="auth-first-name" type="text" autoComplete="given-name" value={firstName} onChange={event => setFirstName(event.target.value)} placeholder="e.g. Alex" maxLength={80} required disabled={!client || busy} />
@@ -141,7 +146,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               <span>Email</span>
             </label>
             <label className="auth-field" htmlFor="auth-password">
-              <input id="auth-password" type={revealPassword ? "text" : "password"} autoComplete={signup ? "new-password" : "current-password"} value={password} onChange={event => setPassword(event.target.value)} placeholder="At least 6 characters" minLength={6} required disabled={!client || busy} />
+              <input id="auth-password" type={revealPassword ? "text" : "password"} autoComplete={signup ? "new-password" : "current-password"} value={password} onChange={event => setPassword(event.target.value)} placeholder={signup ? "At least 6 characters" : "Enter your password"} minLength={6} required disabled={!client || busy} />
               <span>Password</span>
             </label>
             <div className="auth-form__aside">

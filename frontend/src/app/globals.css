@@ -373,12 +373,12 @@ button, input, textarea { font: inherit; }
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #a8b7ca transparent;
   border: 1px solid #d8dadd;
   border-radius: 12px;
   background: white;
 }
-.auth-sheet::-webkit-scrollbar { display: none; }
 .auth-sheet__header {
   display: flex;
   align-items: center;
@@ -429,10 +429,21 @@ button, input, textarea { font: inherit; }
   border-radius: 10px;
   background: #fff9eb;
   color: #765126;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
+.auth-config-details { margin-top: 8px; }
+.auth-config-details summary {
+  display: list-item;
+  cursor: pointer;
+  color: #684820;
+  font-size: 13px;
+  font-weight: 600;
+}
+.auth-config-details p { margin: 8px 0 0; }
+.auth-config-details code { font-size: .91em; }
+
 .auth-social {
   display: flex;
   align-items: center;
@@ -487,19 +498,18 @@ button, input, textarea { font: inherit; }
   border: 0;
   outline: 0;
   color: #020e24;
-  font-size: 14px;
-  letter-spacing: -.025em;
+  font-size: 15px;
+  letter-spacing: -.015em;
 }
-.auth-field input::placeholder { color: #98a3b0; opacity: 1; }
+.auth-field input::placeholder { color: #5b6b80; opacity: 1; }
 .auth-field span {
   order: 1;
   flex: none;
   color: #2a3442;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 550;
-  letter-spacing: -.015em;
+  letter-spacing: normal;
 }
-.auth-field span small { color: #718196; font-weight: 400; font-size: 11px; }
 .auth-field input:not(:placeholder-shown) + span { color: #536787; }
 .auth-form__aside {
   display: flex;
@@ -513,13 +523,14 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 36px;
   border: 0;
   background: transparent;
   padding: 7px 2px;
   color: #566678;
   font-size: 12px;
 }
-.auth-forgot { color: #285aab; font-weight: 550; font-size: 12px; }
+.auth-forgot { display: inline-flex; align-items: center; min-height: 36px; color: #285aab; font-weight: 550; font-size: 13px; }
 .auth-forgot:hover, .auth-switch a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .auth-submit {
   display: inline-flex;
@@ -544,6 +555,12 @@ button, input, textarea { font: inherit; }
 .auth-message--error { background: #fff0f0; color: #992a2a; }
 .auth-switch { margin: 14px 0 0; color: #66717c; font-size: 13px; text-align: center; }
 .auth-switch a { color: #194e9d; font-weight: 650; }
+.auth-shell a:focus-visible,
+.auth-shell button:focus-visible,
+.auth-config-details summary:focus-visible {
+  outline: 2px solid #467beb;
+  outline-offset: 3px;
+}
 .auth-art {
   position: relative;
   isolation: isolate;
@@ -617,7 +634,7 @@ button, input, textarea { font: inherit; }
   .auth-intro { margin-bottom: 12px; }
   .auth-intro h1 { font-size: clamp(2.35rem, 3.4vw, 3.2rem); margin-bottom: 7px; }
   .auth-intro p { font-size: 15px; }
-  .auth-card__notice { padding: 8px 10px; margin-bottom: 8px; font-size: 11px; line-height: 1.35; }
+  .auth-card__notice { padding: 8px 10px; margin-bottom: 8px; font-size: 12px; line-height: 1.4; }
   .auth-social { min-height: 40px; }
   .auth-divider { margin: 10px 0; }
   .auth-form { gap: 8px; }
