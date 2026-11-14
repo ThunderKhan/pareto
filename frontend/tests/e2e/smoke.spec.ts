@@ -36,7 +36,7 @@ test("public workflow shortlist and similarity remain after evidence panel remov
 test("signup and login pages exist and explain unconfigured auth", async ({ page }) => {
   await page.goto("/signup");
   await expect(page.getByRole("heading", { name: "Create an account" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign up with Google" })).toBeVisible();
   const setupNotice = page.getByRole("status").filter({ hasText: "Supabase sign-in is not configured" });
   if (await setupNotice.count()) {
     await expect(setupNotice).toContainText("frontend/.env.local");
