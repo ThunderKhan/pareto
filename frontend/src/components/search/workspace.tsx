@@ -117,6 +117,10 @@ export default function SearchWorkspace() {
 
   const previous = new Map((draft?.active ? results?.criteria ?? [] : []).map(rule => [ruleKey(rule), rule]));
   const current = new Map(draft?.criteria.map(rule => [ruleKey(rule), rule]));
+  // A reference-only search contains preferences, not required eligibility filters.
+  // Never present all similarity-ranked profiles as "eligible" for unspecified requirements.
+  const similarityOnly = Boolean(results?.referenceId) && results?.criteria.every(rule => rule.mode === "preferred");
+
   const changes = [...new Set([...previous.keys(), ...current.keys()])].flatMap(key => {
     const before = previous.get(key);
     const after = current.get(key);
@@ -172,7 +176,9 @@ export default function SearchWorkspace() {
     </form>}
     {results && <section className="search-panel" aria-label="Confirmed results">
       <h2>Search results · revision {results.version}</h2>
-      <p>{results.counts.ELIGIBLE} eligible · {results.counts.NEEDS_REVIEW} need review · {results.counts.INELIGIBLE} ineligible</p>
+      {similarityOnly
+        ? <p>{results.total} candidates ranked by similarity · no required filters yet</p>
+        : <p>{results.counts.ELIGIBLE} eligible · {results.counts.NEEDS_REVIEW} need review · {results.counts.INELIGIBLE} ineligible</p>}
       {results.referenceId && <p>Similarity counts equally weighted preferred profile criteria. Missing evidence earns zero credit.</p>}
       <details><summary>Confirmed criteria</summary><ul>{results.criteria.map(rule =>
         <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul></details>
@@ -199,7 +205,7 @@ export default function SearchWorkspace() {
         <article key={candidate.id} className="search-result">
           <h3>{candidate.displayName}</h3>
           <p>{candidate.roleTitle ?? "Role not documented"} · {candidate.city ?? "City not documented"}</p>
-          <p><strong>{statuses[eligibility]}</strong>{requiredTotal > 0 && ` · ${requiredMet}/${requiredTotal} requirements met`}
+          <p><strong>{similarityOnly ? "Similarity-ranked" : statuses[eligibility]}</strong>{requiredTotal > 0 && ` · ${requiredMet}/${requiredTotal} requirements met`}
             {preferenceTotal > 0 && ` · ${preferenceMet}/${preferenceTotal} ${results.referenceId ? "similarity" : "preferred"} criteria matched`}</p>
           <details><summary>Match evidence</summary><ul>{details.map(detail =>
             <li key={ruleKey(detail.rule)}><strong>{labels[detail.rule.field]} · {detail.outcome}</strong> · {detail.reason}</li>)}</ul></details>

@@ -163,3 +163,9 @@
 - Added a PostgreSQL integration regression that creates a synthetic sparse profile for the fixture owner, expects 422 for the owner and 404 for another recruiter, then deletes the temporary profile in `finally`.
 - Added an evaluator regression distinguishing Java from JavaScript under required exclusion, explicitly known absent skills vs unreported skills, and preferred unknown notice values (unknown preference must not exclude a candidate).
 - All modifications are on `integration/release-20261114`; Railway remains explicitly deferred. **Tests newly added are unverified until CI executes**; previous green run [43577502070](https://github.com/ThunderKhan/pareto/actions/runs/43577502070) applies only to pre-change commit `bdb6e3a5`.
+
+## 2026-11-14 — Reference-only result copy: prevent misleading eligibility claims
+
+- Reviewed the seeded reference search behavior: initial `referenceCriteria()` creates **preferred** criteria only. Consequently, all 47 non-reference candidates satisfy zero required filters and the deterministic engine labels them `ELIGIBLE`. That status is internally coherent, but presenting “47 eligible” in the recruiter UI falsely suggests the cohort meets explicit mandatory filters.
+- Changed the confirmed-results summary and per-profile status for a **reference-only, all-preferred search** to “candidates ranked by similarity” / “Similarity-ranked”, while preserving deterministic preference matching and the reference candidate’s self-exclusion. If a recruiter subsequently confirms any required criterion, ordinary eligible/review/ineligible status appears again. No fake eligibility counts or modifications to matching-engine policy were introduced.
+- Focused browser verification for this UI state is added to the credentialed recruiter acceptance path; real authenticated verification is still blocked until account settings are configured.
