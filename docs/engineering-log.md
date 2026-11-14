@@ -182,3 +182,9 @@
 - The scripted counts derive from the checked-in synthetic fixture generator and existing deterministic evaluator. They are not claims that a real Supabase/Gemini/Groq demo has been observed.
 - Extended the credentialed Playwright acceptance test with the follow-up reference AWS constraint: 21 eligible, 2 needing review, self-exclusion unchanged. This new assertion requires actual provider and account configuration; it has **not** yet run live.
 - Updated the release setup runbook to explicitly freeze Railway until user authorization; local/CI steps use dedicated Supabase Auth and disposable GitHub Postgres, with both localhost and 127.0.0.1 callbacks documented. No Railway resources touched.
+
+## 2026-11-14 — Authenticated sign-out assertion corrected; organizer membership rechecked
+
+- Found a verification defect in the live Playwright acceptance test: using the standalone `request` fixture after browser sign-out cannot prove browser cookie invalidation, because that API request context has independent cookies and would return 401 even with the browser still authenticated. Changed to `page.context().request`, the HTTP context sharing the **same browser session**, and added a pre-signout HTTP 200 assertion retrieving the actual synthetic Asha Nair record. The post-signout assertion requires the **same context** to return 401. This updated live test remains gated by real Supabase account credentials.
+- Rechecked linked GitHub identity `ThunderKhan`: no organization memberships were returned to this connection; only a personal-account app installation exists. The official repository still returns 404. The organizer must confirm team invitation and selected private repository access; 404 does not prove nonexistence.
+- No Railway account connections, service provisioning, deployments, or changes to any other Supabase projects were made.

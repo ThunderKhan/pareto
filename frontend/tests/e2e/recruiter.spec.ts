@@ -9,7 +9,7 @@ async function draftFields(page: Page) {
   );
 }
 
-test("real recruiter: edit, confirm, inspect evidence, refine twice, and find similar profiles", async ({ page, request }) => {
+test("real recruiter: edit, confirm, inspect evidence, refine twice, and find similar profiles", async ({ page }) => {
   const email = process.env.PARETO_E2E_EMAIL;
   const password = process.env.PARETO_E2E_PASSWORD;
   if (!email || !password) {
@@ -24,6 +24,14 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 25000 });
   await page.getByRole("link", { name: /start candidate search/i }).click();
+  // The request context attached to this browser shares the actual Supabase cookies.
+  // The isolated Playwright test request fixture would always be unauthorized, even
+  // when browser sign-out was broken, so it cannot prove session invalidation.
+  const signedInSearch = await page.context().request.get("/api/v1/search?q=Asha");
+  expect(signedInSearch.status()).toBe(200);
+  expect(await signedInSearch.json()).toEqual(expect.arrayContaining([
+    expect.objectContaining({ displayName: "Asha Nair" }),
+  ]));
 
   await page.getByLabel("Hiring brief").fill(
     "Find Senior Java Developers in Hyderabad with 6 to 10 years of experience and Java. They must be able to join within 30 days.",
@@ -96,5 +104,5 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/", { timeout: 15000 });
-  expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
+  expect((await page.context().request.get("/api/v1/search?q=Asha")).status()).toBe(401);
 });

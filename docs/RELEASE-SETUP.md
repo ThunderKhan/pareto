@@ -5,7 +5,7 @@
 ## Account ownership and current audit
 
 - GitHub development repository `ThunderKhan/pareto` is **public**. Private applicant records and credentials must never be committed.
-- The connected GitHub app sees the user's personal `ThunderKhan` installation, **not** the organizer's `ai-hackathon-trustume` organization. Calls to `ai-hackathon-trustume/std-zero` return 404. This means **unavailable to this integration**, not necessarily nonexistent.
+- The authenticated GitHub account is `ThunderKhan`. The connected app sees a personal `ThunderKhan` installation and reports **no organization memberships**; it cannot see `ai-hackathon-trustume`. Calls to `ai-hackathon-trustume/std-zero` return 404. This does **not** establish whether the organizer repository exists. Verify the team invitation and repository membership in the browser, then request selected-repository installation approval from the organizer.
 - Connected Supabase currently lists four existing projects, none named Pareto. **Do not change another project's Auth or production database.** Create or explicitly authorize a dedicated Pareto demo project.
 - **Railway credits are intentionally preserved. Do not install/connect its app, provision a database or project, or deploy until explicitly authorized by the user.** Local Docker, GitHub CI, a dedicated Supabase Auth project and disposable CI PostgreSQL are the only current release verification paths.
 
