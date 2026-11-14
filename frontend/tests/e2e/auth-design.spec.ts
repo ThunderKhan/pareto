@@ -46,6 +46,7 @@ test("login reuses the split layout, supports Google, and preserves account reco
   await expect(page.locator(".auth-form__names")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Forgot password?" })).toHaveAttribute("href", "/forgot-password");
   await expect(page.getByRole("link", { name: "Create an account" })).toHaveAttribute("href", "/signup");
+  await expect(page.getByRole("button", { name: "Show password" })).toHaveAttribute("aria-pressed", "false");
 });
 
 test("six auth refinements remove nonessential chrome and retain useful controls", async ({ page }) => {
@@ -122,6 +123,23 @@ test("auth controls show keyboard focus and expose readable input text", async (
     parseFloat(getComputedStyle(el).fontSize)
   );
   expect(labelSize).toBeGreaterThanOrEqual(13);
+});
+
+test("mobile form fields use a zoom-safe text size and controls remain accessible", async ({ page }) => {
+  for (const route of ["/login", "/signup"]) {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route);
+    const size = await page.getByLabel("Email").evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+    expect(size).toBeGreaterThanOrEqual(16);
+    for (const name of ["Show password", ...(route === "/login" ? ["Forgot password?"] : [])]) {
+      const control = name === "Forgot password?"
+        ? page.getByRole("link", { name })
+        : page.getByRole("button", { name });
+      const rect = await control.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect!.height).toBeGreaterThanOrEqual(44);
+    }
+  }
 });
 
 test("auth pages have a static fallback without motion even if the GPU shader does not render", async ({ page }) => {

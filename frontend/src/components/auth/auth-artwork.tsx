@@ -33,7 +33,7 @@ export default function AuthArtwork({ mode }: { mode: "login" | "signup" }) {
           unoptimized
         />
         <div className="auth-art__bottom-text">
-          <span className="auth-art__bottom-overline">PARETO / RECRUITMENT INTELLIGENCE</span>
+          <span className="auth-art__bottom-overline">Pareto · Recruitment intelligence</span>
           <strong>Good hiring deserves good reasons.</strong>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
 import AuthArtwork from "./auth-artwork";
+import "./auth.css";
 
 type Mode = "login" | "signup";
 type AuthMessage = { text: string; error: boolean };
@@ -150,7 +151,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               <span>Password</span>
             </label>
             <div className="auth-form__aside">
-              <button type="button" className="auth-show-password" onClick={() => setRevealPassword(value => !value)} aria-label={revealPassword ? "Hide password" : "Show password"} disabled={!client || busy}>
+              <button type="button" className="auth-show-password" onClick={() => setRevealPassword(value => !value)} aria-pressed={revealPassword} aria-label={revealPassword ? "Hide password" : "Show password"} disabled={!client || busy}>
                 {revealPassword ? <EyeSlash size={17} aria-hidden="true"/> : <Eye size={17} aria-hidden="true"/>}
                 {revealPassword ? "Hide" : "Show"} password
               </button>

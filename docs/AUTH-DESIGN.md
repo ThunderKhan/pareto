@@ -16,6 +16,7 @@ Adaptation is original code. The requested animated `GrainGradient` is from [Pap
 - Google OAuth is wired into both screens through `signInWithOAuth({provider:'google'})`, preserving the existing callback route. The Google provider **must be enabled** in the actual Supabase project for a completed OAuth flow; visual implementation alone cannot configure the provider.
 - The functional `/forgot-password` link remains on the login page. Note that the underlying password-recovery page currently states the reset feature is not active.
 - No Apple button is shown because the project has no configured Apple OAuth integration. No fake Windows download, dead legal URLs or unsupported consent controls are added.
+- The form uses scoped `components/auth/auth.css` design tokens and legible mobile inputs (16px minimum) to avoid automatic iOS zoom. Password toggles announce their pressed state; keyboard focus remains visible.
 - The large right-side canvas renders Paper's GrainGradient at `speed=1.2`, recolored blue/navy. The original Pareto mascot appears as a supporting visual. The unnecessary top tagline, supporting paragraph, auth footer, back link, and privacy reassurance are removed.
 - At ordinary desktop viewport sizes the two panels fit the screen without page scrolling. Short and narrow viewports may scroll to keep inputs accessible; neither controls nor errors are clipped.
 - Below 960px or with reduced motion, the shader is not mounted; CSS provides a static gradient. This keeps mobile layouts responsive and honors accessibility preferences.
