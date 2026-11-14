@@ -119,7 +119,8 @@ for (const size of [
     const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
       const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
-      await node.scrollIntoViewIfNeeded();
+      if (anchor === "hero") await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      else await node.scrollIntoViewIfNeeded();
       await page.screenshot({ path: testInfo.outputPath(size.name + "-" + anchor + ".png") });
       const x = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth }));
       expect(x.content, size.name + "px overflow at " + anchor).toBeLessThanOrEqual(x.viewport + 1);
