@@ -6,6 +6,8 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.getByRole("link", { name: "Start searching" }).first()).toHaveAttribute("href", "/signup");
   await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
   await expect(page.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
+  await expect(page.locator(".v2-hero-stage .v2-criteria-item")).toHaveCount(5);
+  await expect(page.locator(".v2-hero-stage .v2-criteria-item svg")).toHaveCount(5);
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works" }).click();
   await expect(page).toHaveURL(/#how-it-works$/);
   await expect(page.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
@@ -124,6 +126,10 @@ for (const size of [
       await page.screenshot({ path: testInfo.outputPath(size.name + "-" + anchor + ".png") });
       const x = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth }));
       expect(x.content, size.name + "px overflow at " + anchor).toBeLessThanOrEqual(x.viewport + 1);
+    }
+    if (size.width === 1440 || size.width === 390) {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      await page.screenshot({ path: testInfo.outputPath(size.name + "-full-page.png"), fullPage: true });
     }
     // Intermediate scroll positions: no long pinned sequences or dead scroll.
     for (const section of ["problem", "how-it-works", "preview"]) {
