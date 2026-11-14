@@ -3,8 +3,8 @@
 import { useRef, useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, Check, CaretDown,
-  List, MagnifyingGlass, ShieldCheck, SlidersHorizontal,
+  ArrowRight, Check, CheckCircle, CaretDown,
+  List, MagnifyingGlass, ShieldCheck, SlidersHorizontal, WarningCircle,
   X,
 } from "@phosphor-icons/react";
 import { assessPreview, previewCandidates } from "./preview-data";
