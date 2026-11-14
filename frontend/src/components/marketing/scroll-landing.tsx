@@ -137,9 +137,9 @@ function Header() {
       <div className="site-header__inner container-wide">
         <Brand />
         <nav className="nav-desktop" aria-label="Main navigation">
-          <a href="#approach">How it works</a>
-          <a href="#evidence">Why Pareto</a>
-          <a href="#preview">Explore the product</a>
+          <a href="#approach">The problem</a>
+          <a href="#evidence">How it works</a>
+          <a href="#preview">Live preview</a>
         </nav>
         <div className="nav-actions">
           <a className="nav-login" href="/login">Log in</a>
@@ -159,9 +159,9 @@ function Header() {
       </div>
       {open && (
         <nav id="mobile-navigation" className="mobile-navigation" aria-label="Mobile navigation">
-          <a href="#approach" onClick={() => setOpen(false)}>How it works</a>
-          <a href="#evidence" onClick={() => setOpen(false)}>Why Pareto</a>
-          <a href="#preview" onClick={() => setOpen(false)}>Explore the product</a>
+          <a href="#approach" onClick={() => setOpen(false)}>The problem</a>
+          <a href="#evidence" onClick={() => setOpen(false)}>How it works</a>
+          <a href="#preview" onClick={() => setOpen(false)}>Live preview</a>
           <a href="/login" onClick={() => setOpen(false)}>Log in</a>
           <a className="mobile-navigation__primary" href="/signup" onClick={() => setOpen(false)}>Get started <ArrowRight size={18} /></a>
         </nav>
@@ -318,7 +318,7 @@ export default function ScrollLanding() {
               <p className="landing-hero__lede">Turn a hiring brief into a search you can inspect, refine, and trust. Every candidate comes with the evidence behind the match.</p>
               <div className="landing-hero__actions">
                 <a className="button button--dark button--large" href="/signup">Get started <ArrowUpRight size={18} weight="bold" /></a>
-                <a className="text-link" href="#approach">See how it works <ArrowRight size={18} /></a>
+                <a className="text-link" href="#evidence">See how it works <ArrowRight size={18} /></a>
               </div>
               <div className="landing-hero__fineprint"><span className="hero-tiny-dot" /> A human confirms every search. An algorithm explains every result.</div>
             </div>
@@ -394,7 +394,7 @@ export default function ScrollLanding() {
           </div>
         </section>
 
-        <section className="principles-section container-wide">
+        <section className="principles-section container-wide" id="principles">
           <div className="principles-section__heading" data-reveal><p className="eyebrow">BUILT FOR DECISIONS</p><h2>Less black box.<br /><em>More clarity.</em></h2></div>
           <div className="principles-section__rows">
             <div className="principle-row" data-reveal><span>01</span><h3>Explainable by design</h3><p>Required criteria, preferences and missing information have distinct outcomes.</p><ArrowUpRight size={22} /></div>
@@ -419,7 +419,7 @@ export default function ScrollLanding() {
         <div className="container-wide site-footer__inner">
           <Brand />
           <span>Built to make candidate search more transparent.</span>
-          <div><a href="#approach">How it works</a><a href="/login">Log in</a><span>© 2026 Pareto</span></div>
+          <div><a href="#evidence">How it works</a><a href="#principles">Our approach</a><a href="/login">Log in</a><span>© 2026 Pareto</span></div>
         </div>
       </footer>
     </>
