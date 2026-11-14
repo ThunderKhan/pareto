@@ -120,32 +120,32 @@ function Chip({ children, strong = false }: { children: React.ReactNode; strong?
 function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "describe" | "review" | "results"; onConfirm?: () => void }) {
   const sample = assessPreview(30);
   return (
-    <div className="v2-workspace" aria-label="Illustrative Pareto recruiter workspace with synthetic sample data">
-      <aside className="v2-workspace-rail" aria-label="Illustrative application navigation">
+    <div className="v2-workspace" aria-label="Pareto candidate search workflow">
+      <aside className="v2-workspace-rail" aria-label="Application navigation">
         <div className="v2-workspace-mini-brand"><span className="v2-workspace-mini-icon">p.</span><span>pareto</span><CaretDown size={12} aria-hidden="true" /></div>
         <p className="v2-rail-caption">WORKSPACE</p>
         <div className="v2-rail-item v2-rail-item--selected"><MagnifyingGlass size={16} aria-hidden="true"/> Candidate search</div>
         <div className="v2-rail-item"><SlidersHorizontal size={16} aria-hidden="true" /> Search criteria</div>
         <div className="v2-rail-spacer"/>
-        <div className="v2-workspace-person"><span className="v2-person-dot">R</span><span>Recruiter workspace<small>Synthetic demonstration</small></span></div>
+        <div className="v2-workspace-person"><span className="v2-person-dot">R</span><span>Recruiter workspace</span></div>
       </aside>
       <div className="v2-workspace-main">
         <div className="v2-workspace-toolbar">
           <span className="v2-workspace-breadcrumb">Recruitment / <strong>Candidate search</strong></span>
-          <span className="v2-sample-label"><span className="v2-sample-dot"/> SAMPLE DATA</span>
+          
         </div>
         <div className="v2-workspace-content">
           <div className="v2-window-overline">SEARCH / NEW REQUEST</div>
           <div className="v2-window-heading">
             <div><h3>{state === "results" ? "A shortlist with reasons." : state === "review" ? "Review the interpretation." : "Describe your ideal candidate."}</h3>
-            <p>{state === "results" ? "Illustrative matches against the confirmed criteria." : state === "review" ? "Make the requirements explicit before searching." : "Turn a natural-language brief into an editable search."}</p></div>
+            <p>{state === "results" ? "Matches against the confirmed criteria." : state === "review" ? "Make the requirements explicit before searching." : "Turn a natural-language brief into an editable search."}</p></div>
             <div className="v2-window-step">{state === "results" ? "03 / 03" : state === "review" ? "02 / 03" : "01 / 03"}</div>
           </div>
           {(state === "hero" || state === "describe" || state === "review") && (
-            <div className="v2-query" aria-label="Synthetic example hiring brief">
+            <div className="v2-query" aria-label="Example hiring brief">
               <div className="v2-query-label"><MagnifyingGlass size={16} aria-hidden="true"/> HIRING BRIEF</div>
               <p>Find <mark>Java backend engineers</mark> in <mark>Hyderabad</mark> with <mark>6–10 years</mark> of experience, <mark>Spring Boot and AWS</mark>, who can join <mark>within 30 days</mark>.</p>
-              <span>Plain-English input <span aria-hidden="true">·</span> illustrative, not submitted</span>
+              
             </div>
           )}
           {(state === "hero" || state === "review") && (
@@ -154,18 +154,18 @@ function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "descr
               <div className="v2-criteria-grid">
                 {facets.map(([label, value]) => <div className="v2-criteria-item" key={label}><span>{label}</span><strong>{value}</strong><Check size={14} aria-hidden="true"/></div>)}
               </div>
-              <div className="v2-criteria-bottom"><ShieldCheck size={17} aria-hidden="true"/> Recruiter confirmation required {onConfirm && state === "review" ? <button type="button" className="v2-mock-action" onClick={onConfirm}>View illustrated results <ArrowRight size={14} aria-hidden="true"/></button> : <a href="#how-it-works" className="v2-mock-action">Explore workflow <ArrowRight size={14} aria-hidden="true"/></a>}</div>
+              <div className="v2-criteria-bottom"><ShieldCheck size={17} aria-hidden="true"/> Recruiter confirmation required {onConfirm && state === "review" ? <button type="button" className="v2-mock-action" onClick={onConfirm}>View results <ArrowRight size={14} aria-hidden="true"/></button> : <a href="#how-it-works" className="v2-mock-action">Explore workflow <ArrowRight size={14} aria-hidden="true"/></a>}</div>
             </div>
           )}
           {state === "describe" && <div className="v2-prompt-next"><SignalArt variant="interpret"/><p><strong>Understanding the brief</strong><span>Role, location, skills and joining requirements can be extracted for review.</span></p></div>}
           {state === "results" && <div className="v2-mini-results">
-            <div className="v2-block-title"><span>Illustrative shortlist <small>30-day joining requirement</small></span><span className="v2-state-pill">Sample records</span></div>
+            <div className="v2-block-title"><span>Shortlist <small>30-day joining requirement</small></span></div>
             {sample.map((item) => <div className="v2-mini-result" key={item.candidate.id}>
               <span className="v2-initial">{item.candidate.id}</span>
               <span><strong>{item.candidate.name}</strong><small>{item.candidate.years} yrs · {item.candidate.city}</small></span>
               <span className={"v2-mini-result-state v2-mini-result-state--" + item.status}>{item.status === "match" ? "Eligible" : item.status === "fail" ? "Excluded" : "Needs review"}</span>
             </div>)}
-            <p className="v2-mini-footnote">All statuses are derived from three synthetic fixtures. No live candidate database is queried.</p>
+            
           </div>}
         </div>
       </div>
@@ -183,7 +183,7 @@ function Problem() {
           <h3>Matches a keyword.<br/>Misses the context.</h3>
           <div className="v2-filter-pile"><Chip>Java</Chip><Chip>Hyderabad</Chip><Chip>6+ years</Chip><Chip>Any notice period</Chip></div>
           <div className="v2-opaque-row"><span className="v2-initial">B</span><span>Candidate B <small>“Good match”</small></span><strong aria-label="Unexplained score">?</strong></div>
-          <p className="v2-panel-caption">An illustrative opaque score without the underlying requirements.</p>
+          
         </div>
         <div className="v2-contrast-new">
           <div className="v2-contrast-kicker">PARETO&apos;S APPROACH</div>
@@ -191,7 +191,7 @@ function Problem() {
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Java · Spring Boot · AWS</span><b>Present</b></div>
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Hyderabad · 8 years</span><b>Present</b></div>
           <div className="v2-evidence-line v2-evidence-line--miss"><WarningCircle size={19} aria-hidden="true"/><span>Joining within 30 days</span><b>60-day notice</b></div>
-          <p className="v2-panel-caption">The same synthetic Candidate B is excluded under a 30-day requirement.</p>
+          
         </div>
       </div>
     </div>
@@ -262,8 +262,8 @@ function Preview() {
   const total = useMemo(() => summarizePreview(assessments), [assessments]);
   return <section className="v2-section v2-preview" id="preview">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>INTERACTIVE EVIDENCE</Label><h2>Change one requirement. <em>See what changes.</em></h2><p>Move the joining window from 30 to 60 days. The status of each candidate changes only when its actual synthetic record supports it.</p></div>
-      <div className="v2-preview-frame" role="region" aria-label="Interactive synthetic candidate matching example">
+      <div className="v2-section-intro"><Label>INTERACTIVE EVIDENCE</Label><h2>Change one requirement. <em>See what changes.</em></h2><p>Change the joining window from 30 to 60 days to see how each matching decision changes.</p></div>
+      <div className="v2-preview-frame" role="region" aria-label="Interactive candidate matching example">
         <div className="v2-preview-sidebar">
           <div className="v2-overline">ACTIVE SEARCH</div>
           <h3>Backend engineers<br/>in Hyderabad</h3>
@@ -276,11 +276,11 @@ function Preview() {
               <button type="button" aria-pressed={notice === 60} onClick={() => setNotice(60)}>60 days</button>
             </div>
           </div>
-          <p className="v2-tiny-help">Three invented profiles; no authenticated query is executed.</p>
+          
           <div className="v2-preview-key"><span>✓ Eligible</span><span>! Excluded</span><span>? Needs review</span></div>
         </div>
         <div className="v2-preview-content">
-          <div className="v2-preview-heading"><div><div className="v2-overline">EXPLAINABLE RESULTS</div><h3>What the evidence says.</h3></div><span className="v2-synthetic-tag">SYNTHETIC DATA</span></div>
+          <div className="v2-preview-heading"><div><div className="v2-overline">EXPLAINABLE RESULTS</div><h3>What the evidence says.</h3></div><span className="v2-synthetic-tag">EXAMPLE PROFILES</span></div>
           <div className="v2-count-bar" role="status" aria-live="polite" aria-atomic="true">
             <span><strong data-testid="eligible-count">{total.eligible}</strong><small>Eligible</small></span>
             <span><strong>{total.excluded}</strong><small>Excluded</small></span>
@@ -288,7 +288,7 @@ function Preview() {
             <p>Joining window: <b>{notice} days</b></p>
           </div>
           <div className="v2-candidates">{assessments.map((item) => <CandidateRow key={item.candidate.id} assessment={item}/>)}</div>
-          <p className="v2-preview-disclaimer"><ShieldCheck size={17} aria-hidden="true"/>Missing notice periods remain unknown, not eligible. This is a client-side sample, not a production search.</p>
+          
         </div>
       </div>
     </div>
@@ -303,7 +303,7 @@ function Similarity() {
       <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify comparable strengths. Similarity is a set of explainable attributes, not an invented percentage.</p></div>
       <div className="v2-similar-board">
         <div className="v2-source-person">
-          <div className="v2-overline">REFERENCE PROFILE · SYNTHETIC</div>
+          <div className="v2-overline">REFERENCE PROFILE</div>
           <div className="v2-source-identity"><span className="v2-source-avatar">A</span><div><h3>{comparable.name}</h3><p>{comparable.title}</p></div></div>
           <div className="v2-source-divider"/>
           <div className="v2-source-meta"><span>LOCATION</span><strong>{comparable.city}</strong></div>
@@ -312,16 +312,16 @@ function Similarity() {
           <div className="v2-source-footer"><SignalArt variant="interpret"/><span>Reference attributes provide a starting point for human review.</span></div>
         </div>
         <div className="v2-similar-compare">
-          <div className="v2-similar-board-heading"><span className="v2-overline">COMPARABLE PROFILES</span><span>Attribute-level sample</span></div>
+          <div className="v2-similar-board-heading"><span className="v2-overline">COMPARABLE PROFILES</span></div>
           {others.map((candidate) => {
             const common = candidate.skills.filter((skill) => comparable.skills.some((item) => item.toLowerCase() === skill.toLowerCase()));
             const experienceGap = candidate.years === null || comparable.years === null ? null : Math.abs(candidate.years - comparable.years);
             return <div className="v2-comparison" key={candidate.id}>
-              <div className="v2-comparison-head"><span className="v2-avatar">{candidate.id}</span><div><h3>{candidate.name}</h3><p>{candidate.title}</p></div><span className="v2-compare-label">Synthetic</span></div>
+              <div className="v2-comparison-head"><span className="v2-avatar">{candidate.id}</span><div><h3>{candidate.name}</h3><p>{candidate.title}</p></div></div>
               <div className="v2-comparison-grid"><span>Shared skills <b>{common.join(" · ") || "None documented"}</b></span><span>Experience <b>{experienceGap === null ? "Unknown" : experienceGap === 0 ? "Same tenure" : experienceGap + (experienceGap === 1 ? " year apart" : " years apart")}</b></span><span>Location <b>{candidate.city === null ? "Unknown" : candidate.city === comparable.city ? "Same city" : candidate.city}</b></span><span>Notice period <b>{candidate.notice === null ? "Unknown · needs review" : candidate.notice + " days"}</b></span></div>
             </div>;
           })}
-          <p className="v2-compare-disclaimer">Illustration only. No similarity model, real candidate lookup or private search is invoked here.</p>
+          
         </div>
       </div>
     </div>
@@ -330,9 +330,9 @@ function Similarity() {
 
 const faqs = [
   ["Does an unknown notice period count as a match?", "No. Unknown values are marked Needs review unless another known required criterion already fails. Missing evidence must never be treated as eligibility."],
-  ["Does the public preview search a real candidate database?", "No. The page uses three explicitly synthetic fixtures and a deterministic local evaluator. Authenticated search lives in the separate protected application."],
-  ["Can recruiters change the criteria before searching?", "The recruitment workflow requires a review-and-confirm step. The product illustration shows this intended interaction; the public preview itself does not submit a search."],
-  ["How does reference-based discovery work?", "The concept compares meaningful candidate attributes such as skills, experience and location. The example shown here is illustrative, not a claim that a public similarity search has run."],
+  ["Does the public preview search a real candidate database?", "No. This preview uses fictional candidate profiles to explain the matching approach. Live candidate search requires a signed-in account."],
+  ["Can recruiters change the criteria before searching?", "Yes. Recruiters review and confirm the interpreted requirements before searching. The walkthrough shows the steps."],
+  ["How does reference-based discovery work?", "It compares skills, experience, location and other meaningful attributes to highlight similarities and differences."],
 ];
 
 function Trust() {
@@ -385,9 +385,9 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
           <div className="v2-hero-actions"><Link className="v2-btn v2-btn--primary" href="/signup">Start searching <ArrowUpRight size={18} aria-hidden="true" /></Link><a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works <ArrowRight size={18} aria-hidden="true" /></a></div>
         </div>
         <div className="v2-container v2-hero-stage">
-          <div className="v2-stage-top"><span>THE PARETO WORKSPACE</span><span>01 / INTERPRET / REVIEW / EXPLAIN</span></div>
+          
           <WorkspaceFrame state="hero"/>
-          <div className="v2-stage-bottom"><span><span className="v2-stage-dot"/> A recruiter stays in control</span><span>Illustrative interface · Synthetic candidate data</span></div>
+          
         </div>
       </section>
       <div className="v2-thesis"><div className="v2-container"><span>FROM INTENT</span><span className="v2-thesis-line"/><span>TO EVIDENCE</span><span className="v2-thesis-line"/><span>TO A BETTER DECISION</span></div></div>
