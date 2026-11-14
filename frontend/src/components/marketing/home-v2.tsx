@@ -300,7 +300,7 @@ function Similarity() {
   const others = previewCandidates.slice(1);
   return <section className="v2-section v2-similar" id="similar">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify comparable strengths. Similarity is a set of explainable attributes—not an invented percentage.</p></div>
+      <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify comparable strengths. Similarity is a set of explainable attributes, not an invented percentage.</p></div>
       <div className="v2-similar-board">
         <div className="v2-source-person">
           <div className="v2-overline">REFERENCE PROFILE · SYNTHETIC</div>
@@ -385,7 +385,7 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
           <div className="v2-hero-actions"><Link className="v2-btn v2-btn--primary" href="/signup">Start searching <ArrowUpRight size={18} aria-hidden="true" /></Link><a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works <ArrowRight size={18} aria-hidden="true" /></a></div>
         </div>
         <div className="v2-container v2-hero-stage">
-          <div className="v2-stage-top"><span>THE PARETO WORKSPACE</span><span>01 — INTERPRET / REVIEW / EXPLAIN</span></div>
+          <div className="v2-stage-top"><span>THE PARETO WORKSPACE</span><span>01 / INTERPRET / REVIEW / EXPLAIN</span></div>
           <WorkspaceFrame state="hero"/>
           <div className="v2-stage-bottom"><span><span className="v2-stage-dot"/> A recruiter stays in control</span><span>Illustrative interface · Synthetic candidate data</span></div>
         </div>
