@@ -3,7 +3,10 @@ import { expect, test } from "@playwright/test";
 test("public landing, navigation and health", async ({ page, request }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /start searching/i }).first()).toHaveAttribute("href", "/signup");
+  await expect(page.locator(".v2-hero-actions .v2-btn--primary")).toHaveText("Get started free");
+  await expect(page.locator(".v2-hero-actions .v2-btn--primary")).toHaveAttribute("href", "/signup");
+  await expect(page.locator(".v2-hero-actions .v2-btn--secondary")).toHaveAttribute("href", "#how-it-works");
+  await expect(page.locator(".v2-hero-actions svg, .v2-header-actions a svg")).toHaveCount(0);
   await expect(page.locator(".v2-login")).toHaveText("Login");
   await expect(page.locator(".v2-login")).toHaveAttribute("href", "/login");
   await expect(page.locator(".v2-header-cta")).toHaveText("Get started free");
@@ -17,7 +20,7 @@ test("public landing, navigation and health", async ({ page, request }) => {
 test("synthetic what-if preview computes from stated records", async ({ page }) => {
   await page.goto("/#preview");
   // The region is labelled on a div; locate it by its explicit accessible label.
-  const panel = page.locator('[aria-label="Interactive synthetic candidate matching example"]');
+  const panel = page.locator('[aria-label="Interactive candidate matching example"]');
   await expect(panel).toBeVisible();
   await expect(panel.getByTestId("eligible-count")).toContainText("1");
   const candidateB = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
