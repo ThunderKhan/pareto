@@ -72,7 +72,17 @@
 .v2-hero h1 { max-width: 1040px; margin: 18px auto 20px; font-family: var(--v2-display); font-weight: 400; font-size: clamp(2.5rem, calc((100vw - 2 * var(--v2-type-inset)) / 16), 4.5rem); line-height: 1; letter-spacing: -.03em; text-wrap: balance; }
 .v2-hero h1 em { color: #566777; }
 .v2-hero-copy > p { max-width: 620px; margin: 0 auto; font-size: var(--v2-type-body); line-height: 1.5; color: var(--v2-muted); text-wrap: pretty; letter-spacing: -.015em; }
-.v2-hero-actions { margin: 25px auto 45px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.v2-hero-actions { margin: 25px auto 45px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; width: 100%; }
+ /* Exact button presentation from opentag-clone/src/pages/home.html (hero actions). */
+.v2-hero-actions .v2-btn { width: 100%; min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; font-family: var(--v2-ui); font-size: 15px; line-height: 22px; font-weight: 500; letter-spacing: -.04em; gap: 0; transition: background-color .2s ease; transform: none; }
+.v2-hero-actions .v2-btn--secondary { background: #10101014; color: var(--v2-ink); }
+.v2-hero-actions .v2-btn--secondary:hover { background: #10101021; border: 0; }
+.v2-hero-actions .v2-btn--primary { background: #020e24; color: #fff; }
+.v2-hero-actions .v2-btn--primary:hover { background: rgb(2 14 36 / 85%); transform: none; }
+@media (min-width: 640px) {
+  .v2-hero-actions { flex-direction: row; align-items: center; width: auto; }
+  .v2-hero-actions .v2-btn { width: auto; min-height: 42px; padding-inline: 20px; border-radius: 12px; font-size: 16px; }
+}
 .v2-hero-stage { padding-bottom: 100px; }
 .v2-workspace { width: 100%; display: grid; grid-template-columns: 196px minmax(0,1fr); min-width: 0; overflow: hidden; background: white; border: 1px solid #d8dce0; border-radius: 14px; box-shadow: var(--v2-shadow); text-align: left; }
 .v2-hero-stage > .v2-workspace { min-height: 525px; animation: v2-stage-arrive .7s cubic-bezier(.22,1,.36,1) both; }
@@ -461,7 +471,6 @@
   .v2-logo { font-size: 21px; gap: 7px; }
   .v2-header-cta { display: none; }
   .v2-hero h1 { font-size: 36px; }
-  .v2-hero-actions .v2-btn { width: 100%; }
   .v2-workspace-content { padding: 15px 11px; }
   .v2-workspace-toolbar { padding-inline: 11px; }
   .v2-criteria-item { grid-template-columns: minmax(64px,.7fr) minmax(0,1.3fr) 12px; padding-inline: 8px; }
