@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, type ReactNode } from "react";
+import { useId, useRef, useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -270,6 +270,40 @@ const faqs = [
   ["How does reference-based discovery work?", "It compares skills, experience, location and other meaningful attributes to highlight similarities and differences."],
 ];
 
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const id = useId();
+  return <li className="v2-faq-item">
+    <h3>
+      <button type="button" id={id + "-question"} className="v2-faq-question"
+        aria-expanded={expanded} aria-controls={id + "-answer"}
+        onClick={() => setExpanded(value => !value)}>
+        <span>{question}</span>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"
+          className="v2-faq-plus">
+          <path d="M4 10H16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+          <path d="M10 4V16" className="v2-faq-plus-vertical" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+        </svg>
+      </button>
+    </h3>
+    <div id={id + "-answer"} className={"v2-faq-answer" + (expanded ? " v2-faq-answer--open" : "")}
+      role="region" aria-labelledby={id + "-question"} aria-hidden={!expanded}>
+      <div className="v2-faq-answer-inner"><p>{answer}</p></div>
+    </div>
+  </li>;
+}
+
+function FAQ() {
+  return <section id="faq" className="v2-faq" aria-labelledby="v2-faq-title">
+    <div className="v2-faq-container">
+      <h2 id="v2-faq-title">Frequently asked questions</h2>
+      <ul className="v2-faq-list">
+        {faqs.map(([question, answer]) => <FAQItem key={question} question={question} answer={answer}/>)}
+      </ul>
+    </div>
+  </section>;
+}
+
 const trustSteps = [
   {
     title: "Interpret the brief",
@@ -421,10 +455,6 @@ function Trust() {
             onClick={() => chooseMobileStep(index)}/>)}
         </div>
       </div>
-      <div className="v2-faq">
-        <div><Label>QUESTIONS, ANSWERED</Label><h3>Nothing hidden in <em>the fine print.</em></h3></div>
-        <div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}<CaretDown size={19} aria-hidden="true"/></summary><p>{answer}</p></details>)}</div>
-      </div>
     </div>
   </section>;
 }
@@ -471,6 +501,7 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
       <HowItWorks/>
       <Similarity/>
       <Trust/>
+      <FAQ/>
     </main>
     <Footer/>
   </div>;
