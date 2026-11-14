@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect, type KeyboardEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, useEffect, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, Check, CheckCircle, CaretDown,
@@ -202,7 +202,7 @@ function HowItWorks() {
   const [step, setStep] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const select = (index: number) => { setStep(index); tabs.current[index]?.focus(); };
-  const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+  const onKey = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
     if (event.key === "ArrowRight") {event.preventDefault(); select((index + 1) % 3);}
     if (event.key === "ArrowLeft") {event.preventDefault(); select((index + 2) % 3);}
     if (event.key === "Home") {event.preventDefault(); select(0);}
