@@ -31,6 +31,12 @@ test("signup and login pages exist and explain unconfigured auth", async ({ page
   await page.goto("/signup");
   await expect(page.getByRole("heading", { name: "Get started with Pareto" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  const setupNotice = page.getByRole("status").filter({ hasText: "Supabase sign-in is not configured" });
+  if (await setupNotice.count()) {
+    await expect(setupNotice).toContainText("frontend/.env.local");
+    await expect(setupNotice).toContainText("NEXT_PUBLIC_SUPABASE_");
+    await expect(page.getByRole("button", { name: "Create account" })).toBeDisabled();
+  }
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Log in to Pareto" })).toBeVisible();
 });

@@ -223,3 +223,9 @@
 
 - GitHub reports PR #3 merged externally (not by this session), so further commits to the integration branch no longer trigger `pull_request` CI. Added `integration/release-20261114` to existing checks workflow push branch filters, preserving all other branch triggers including `feat/homepage-v2`.
 - This enables real PostgreSQL migrate, twice-seeded fixtures, integration/Playwright tests and Docker runtime verification of the P2028 fix without touching main, any secrets or Railway.
+
+## 2026-11-14 — Supabase Auth missing configuration and database handoff
+
+- User screenshot showed the signup page in the deliberately disabled unconfigured state. Inspected `frontend/src/components/auth/auth-form.tsx`: its Supabase browser client requires both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Next.js client-side environment injection). Successful Prisma migrations and seeding via `backend/.env` do not imply that `frontend/.env.local` contains these two values. The assistant cannot edit the user's ignored local file.
+- Changed the no-auth notice to name only the *missing variable names*, the exact `frontend/.env.local` path, and the required `pnpm dev` restart; the message contains no keys or credentials. Updated public browser smoke coverage to validate actionable diagnostics when shown, while keeping Supabase OAuth/provider configuration unchanged.
+- User explicitly requested that remaining database branch changes be merged to `main`. PR #3 was already merged externally before this turn; compare `main` to `integration/release-20261114` before creating a new limited follow-up PR. Railway remains deferred.
