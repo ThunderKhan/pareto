@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { useMemo, useRef, useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight, Check, CheckCircle, CaretDown,
@@ -199,36 +199,32 @@ function Problem() {
 }
 
 function HowItWorks() {
-  const [step, setStep] = useState(0);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const select = (index: number) => { setStep(index); tabs.current[index]?.focus(); };
-  const onKey = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
-    if (event.key === "ArrowRight") {event.preventDefault(); select((index + 1) % 3);}
-    if (event.key === "ArrowLeft") {event.preventDefault(); select((index + 2) % 3);}
-    if (event.key === "Home") {event.preventDefault(); select(0);}
-    if (event.key === "End") {event.preventDefault(); select(2);}
-  };
   return <section className="v2-section v2-how" id="how-it-works">
     <div className="v2-container">
-      <div className="v2-section-intro v2-section-intro--center"><Label>HOW IT WORKS</Label><h2>From a hiring brief to <em>a reasoned shortlist.</em></h2><p>Three moments, one continuous workspace. You control when a proposed interpretation becomes a search.</p></div>
-      <div className="v2-steps" role="tablist" aria-label="Recruitment search workflow">
-        {process.map((item, index) => <button key={item.tab} ref={(node) => {tabs.current[index]=node;}} role="tab" type="button" tabIndex={step === index ? 0 : -1} aria-selected={step === index} aria-controls="v2-process-panel" id={"v2-process-tab-" + index} onClick={() => setStep(index)} onKeyDown={(e) => onKey(e, index)}>
-          <span className="v2-step-num">0{index + 1}</span>{item.tab}<ArrowRight size={17} aria-hidden="true"/>
-        </button>)}
+      <div className="v2-section-intro v2-section-intro--center">
+        <Label>HOW IT WORKS</Label>
+        <h2>From a hiring brief to <em className="v2-how-accent">a reasoned shortlist.</em></h2>
+        <p>Three moments, one continuous workspace. You control when a proposed interpretation becomes a search.</p>
       </div>
-      <div className="v2-process-layout">
-        <div className="v2-process-copy" role="tabpanel" id="v2-process-panel" aria-labelledby={"v2-process-tab-" + step} tabIndex={0}>
-          <span className="v2-overline">STEP 0{step + 1} OF 03</span>
-          <div className="v2-process-icon"><SignalArt variant={step === 0 ? "interpret" : step === 1 ? "review" : "verify"}/></div>
-          <h3>{process[step].title}</h3>
-          <p>{process[step].body}</p>
-          <div className="v2-step-controls">
-            <button type="button" onClick={() => setStep((step + 2) % 3)} aria-label="Previous step">←</button>
-            <span>0{step + 1} / 03</span>
-            <button type="button" onClick={() => setStep((step + 1) % 3)} aria-label="Next step">→</button>
+      <div className="v2-story">
+        {process.map((item, index) => <article
+          className={"v2-story-row" + (index === 1 ? " v2-story-row--reverse" : "")}
+          id={"how-it-works-step-" + (index + 1)}
+          key={item.tab}
+          aria-labelledby={"v2-story-title-" + (index + 1)}
+        >
+          <div className="v2-story-copy">
+            <span className="v2-story-step">0{index + 1} / {item.tab}</span>
+            <h3 id={"v2-story-title-" + (index + 1)}>{item.title}</h3>
+            <p>{item.body}</p>
           </div>
-        </div>
-        <div className="v2-process-window"><WorkspaceFrame state={step === 0 ? "describe" : step === 1 ? "review" : "results"} onConfirm={() => select(2)}/></div>
+          <div className="v2-story-media" aria-label={item.tab + " recruitment workspace"}>
+            <WorkspaceFrame
+              state={index === 0 ? "describe" : index === 1 ? "review" : "results"}
+              onConfirm={index === 1 ? () => document.getElementById("how-it-works-step-3")?.scrollIntoView({ block: "start" }) : undefined}
+            />
+          </div>
+        </article>)}
       </div>
     </div>
   </section>;
