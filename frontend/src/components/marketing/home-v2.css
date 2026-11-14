@@ -4,6 +4,29 @@
  * and licensing exceptions in docs/DESIGN-DECISIONS.md.
  * No legacy marketing selectors or authenticated application styles are changed.
  */
+/* STK Earl supplied from the authorized OpenTag reference copy. */
+@font-face {
+  font-family: "Pareto STK Earl";
+  src: url("/fonts/stk-earl-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pareto STK Earl";
+  src: url("/fonts/stk-earl-medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pareto STK Earl Fallback";
+  src: local("Times New Roman");
+  ascent-override: 77.42%;
+  descent-override: 19.36%;
+  line-gap-override: 0%;
+  size-adjust: 124%;
+}
 .v2-page {
   --v2-ink: #020e24;
   --v2-body: #141414;
@@ -13,7 +36,7 @@
   --v2-warm: #f7f5ef;
   --v2-border: #e7e1d8;
   --v2-blue: #467beb;
-  --v2-display: var(--font-pareto-v2-display), Georgia, "Times New Roman", serif;
+  --v2-display: "Pareto STK Earl", "Pareto STK Earl Fallback", Georgia, serif;
   --v2-ui: var(--font-pareto-v2-ui), "Helvetica Neue", Arial, sans-serif;
   --v2-type-inset: 24px;
   --v2-type-body: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
@@ -67,12 +90,16 @@
 .v2-mobile-nav a { padding: 12px 9px; border-radius: 8px; }
 .v2-mobile-nav a:hover { background: var(--v2-warm); }
 .v2-mobile-nav .v2-mobile-primary { display: flex; align-items: center; justify-content: space-between; background: var(--v2-ink); color: #fff; padding: 14px 18px; margin-top: 10px; }
-.v2-hero { position: relative; padding-top: 64px; background: var(--v2-paper); }
+.v2-hero { position: relative; padding-top: 76px; background: var(--v2-paper); }
 .v2-hero-copy { text-align: center; }
-.v2-hero h1 { max-width: 1040px; margin: 18px auto 20px; font-family: var(--v2-display); font-weight: 400; font-size: clamp(2.5rem, calc((100vw - 2 * var(--v2-type-inset)) / 16), 4.5rem); line-height: 1; letter-spacing: -.03em; text-wrap: balance; }
-.v2-hero h1 em { color: #566777; }
-.v2-hero-copy > p { max-width: 620px; margin: 0 auto; font-size: var(--v2-type-body); line-height: 1.5; color: var(--v2-muted); text-wrap: pretty; letter-spacing: -.015em; }
-.v2-hero-actions { margin: 25px auto 45px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; width: 100%; }
+.v2-hero h1 { max-width: 1300px; margin: 0 auto 20px; font-family: var(--v2-display); font-weight: 400; font-size: clamp(2.5rem, calc((100vw - 2 * var(--v2-type-inset)) / 16), 4.5rem); line-height: 1; letter-spacing: -.03em; color: var(--v2-ink); text-wrap: balance; }
+.v2-hero h1 em { color: inherit; }
+.v2-hero-copy > p { max-width: 40em; margin: 0 auto; font-size: var(--v2-type-body); line-height: 1.5; color: var(--v2-muted); text-wrap: balance; letter-spacing: -.015em; }
+.v2-hero-proof { display: inline-flex; max-width: 100%; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 24px; color: #282827; font-size: 13px; font-weight: 500; line-height: normal; }
+.v2-hero-proof-item { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border: 1px solid rgb(60 60 60 / 10%); background: #fff; border-radius: 999px; white-space: nowrap; }
+.v2-hero-proof-item svg { flex: none; color: var(--v2-ink); }
+.v2-hero-proof-divider { display: none; height: 16px; width: 1px; background: rgb(40 40 39 / 15%); }
+.v2-hero-actions { margin: 32px auto 0; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; width: 100%; }
  /* Exact button presentation from opentag-clone/src/pages/home.html (hero actions). */
 .v2-hero-actions .v2-btn { width: 100%; min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; font-family: var(--v2-ui); font-size: 15px; line-height: 22px; font-weight: 500; letter-spacing: -.04em; gap: 0; transition: background-color .2s ease; transform: none; }
 .v2-hero-actions .v2-btn--secondary { background: #10101014; color: var(--v2-ink); }
@@ -80,10 +107,21 @@
 .v2-hero-actions .v2-btn--primary { background: #020e24; color: #fff; }
 .v2-hero-actions .v2-btn--primary:hover { background: rgb(2 14 36 / 85%); transform: none; }
 @media (min-width: 640px) {
+  .v2-hero { padding-top: 96px; }
+  .v2-hero-proof { gap: 12px; padding: 8px 16px 8px 14px; border: 1px solid rgb(60 60 60 / 10%); border-radius: 999px; background: #fff; font-size: 14px; line-height: 17px; }
+  .v2-hero-proof-item { border: 0; border-radius: 0; background: none; padding: 0; }
+  .v2-hero-proof-divider { display: block; }
+  .v2-hero-stage { margin-top: 120px; }
   .v2-hero-actions { flex-direction: row; align-items: center; width: auto; }
   .v2-hero-actions .v2-btn { width: auto; min-height: 42px; padding-inline: 20px; border-radius: 12px; font-size: 16px; }
 }
-.v2-hero-stage { padding-bottom: 100px; }
+@media (min-width: 768px) {
+  .v2-hero { padding-top: 128px; }
+}
+@media (min-width: 1024px) {
+  .v2-hero-stage { margin-top: 136px; }
+}
+.v2-hero-stage { margin-top: 88px; padding-bottom: 100px; }
 .v2-workspace { width: 100%; display: grid; grid-template-columns: 196px minmax(0,1fr); min-width: 0; overflow: hidden; background: white; border: 1px solid #d8dce0; border-radius: 14px; box-shadow: var(--v2-shadow); text-align: left; }
 .v2-hero-stage > .v2-workspace { min-height: 525px; animation: v2-stage-arrive .7s cubic-bezier(.22,1,.36,1) both; }
 .v2-workspace-rail { display: flex; flex-direction: column; padding: 19px 13px; min-width: 0; background: #f9f9f7; border-right: 1px solid #e4e6e7; }
@@ -347,7 +385,6 @@
   .v2-header, .v2-header-inner { min-height: 65px; }
   .v2-desktop-nav, .v2-login { display: none; }
   .v2-menu-toggle { display: flex; }
-  .v2-hero { padding-top: 54px; }
   .v2-hero-stage { padding-bottom: 72px; }
   .v2-section { padding-block: 100px; }
   .v2-section-intro { grid-template-columns: 1fr; gap: 20px; }
@@ -371,8 +408,6 @@
   .v2-faq { gap: 35px; margin-top: 95px; }
 }
 @media (max-width: 767px) {
-  .v2-hero { padding-top: 44px; }
-  .v2-hero-actions { margin-bottom: 45px; }
   .v2-hero-stage { padding-bottom: 63px; }
   .v2-workspace { grid-template-columns: 1fr; }
   .v2-workspace-rail { display: none; }
@@ -415,9 +450,6 @@
   .v2-logo svg { width: 26px; height: 26px; }
   .v2-header-actions { gap: 8px; }
   .v2-header-cta { height: 38px; min-height: 38px; padding-inline: 14px; font-size: 16px; }
-  .v2-hero h1 { margin: 18px auto 16px; }
-  .v2-hero { padding-top: 34px; }
-  .v2-hero-actions { margin-bottom: 30px; }
   .v2-workspace-toolbar { height: 48px; padding-inline: 15px; }
   .v2-workspace-content { padding: 20px 15px; }
   .v2-window-heading h3 { font-size: 19px; }
@@ -470,7 +502,6 @@
   .v2-container { width: calc(100% - 36px); }
   .v2-logo { font-size: 21px; gap: 7px; }
   .v2-header-cta { display: none; }
-  .v2-hero h1 { font-size: 36px; }
   .v2-workspace-content { padding: 15px 11px; }
   .v2-workspace-toolbar { padding-inline: 11px; }
   .v2-criteria-item { grid-template-columns: minmax(64px,.7fr) minmax(0,1.3fr) 12px; padding-inline: 8px; }
