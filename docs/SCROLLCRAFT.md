@@ -115,3 +115,26 @@ Counts are computed by \`c.notice !== null && c.notice <= notice\`. **No LLM, da
 ### Attribution
 
 Source skill © 2026 Nate Herk, MIT licensed: [repository](https://github.com/nateherkai/scroll-craft), [license](https://github.com/nateherkai/scroll-craft/blob/main/LICENSE). The implementation above does **not** vendor the Scrollcraft JS/CSS engine and instead uses custom React/CSS adapted from the skill's design principles. No OpenTag proprietary font, mascot or customer asset has been copied.
+
+## 9. Marketing-focused refinement — `feat/frontend-experience`
+
+This isolated frontend iteration preserves the existing OpenTag-inspired layout and Scrollcraft-inspired devices rather than replacing the page, importing the engine, or editing shared `globals.css`.
+
+### Changes to the verified design
+
+- **Six explicit workflow stages:** Describe → Extract → Review → Retrieve → Explain → Refine. The existing three-stage sticky narrative now uses the same six stages for direct keyboard/touch selection and desktop scroll progression.
+- **Connected manual stage selection:** selecting a stage on desktop moves the scroll timeline to that stage; on mobile and reduced-motion layouts, stage buttons update the visible explanation without forcing scroll.
+- **Truthful product preview:** a pure `preview-data.ts` evaluator checks the sample records for location, experience, individual skills and maximum notice period. It returns explicit matched, failed and unknown states, derives every counter from assessments and exposes a per-candidate expandable evidence breakdown. It never invokes APIs or implies that mock data is an actual applicant.
+- **Original visual treatment retained:** warm `#FFFDF9` canvas, deep `#020E24` primary ink, editorial serif, Inter fallbacks, fine strokes and restrained layered hero. New presentation rules live only in `frontend/src/components/marketing/marketing.css`, leaving Worker 1's protected dashboard and shared CSS untouched.
+- **Interaction/accessibility:** 44px mobile menu hit area, Escape restoration of keyboard focus, outside-click dismissal, status announcements scoped to candidate summary, semantic native disclosure for evidence, and responsive layouts for 320/390/768/1440/1920 widths.
+- **Reduced motion:** the long pinned timeline collapses to a normal-flow stage with manual navigation instead of leaving hundreds of viewport pixels of dead scroll.
+
+### QA and evidence boundary
+
+`frontend/tests/e2e/marketing-experience.spec.ts` defines Playwright checks for navigation/routes, synthetic state changes and criterion details, reduced motion, menu keyboard operation, browser errors, horizontal overflow, and screenshots at five viewport widths plus intermediate story scroll positions.
+
+**Tests are authored, not yet executed in this environment.** The execution container has no external DNS access, Next.js dependencies, or Playwright runtime; GitHub Actions in this repository are manual-only. No screenshots of the running Pareto app have been produced here. Integration must run `pnpm install`, `pnpm check`, `pnpm build` and `pnpm test:e2e` in an environment with dependencies/Chromium before approving the PR. Inspect any emitted screenshots before describing the result as visually verified.
+
+### Cross-worker contract
+
+These files do not import search domain services and do not touch auth, API handlers, dashboard search or database models. Worker 1 should keep this marketing preview separate from production candidate search; candidate statuses in the preview are an illustration, not a schema or production policy contract. Reference-based search is presented as a problem-scope workflow, not claimed as an implemented feature by this branch.
