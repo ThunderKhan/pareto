@@ -235,6 +235,23 @@ test("reference cards and FAQ explain matching with fictional profiles", async (
   await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
 });
 
+test("final CTA shows the original Pareto mascot and two working destinations", async ({ page }) => {
+  await page.goto("/#get-started");
+  const section = page.locator("#get-started");
+  await expect(section.getByRole("heading", { name: "Turn hiring briefs into matches" })).toBeVisible();
+  await expect(section.locator(".v2-close-art, .v2-eyebrow")).toHaveCount(0);
+  const mascot = section.getByRole("img", { name: "Pareto mascot waving and holding a candidate profile" });
+  await expect(mascot).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
+  await expect(mascot).toBeVisible();
+  await expect.poll(() => mascot.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  const actions = section.locator(".v2-close-actions a");
+  await expect(actions).toHaveCount(2);
+  await expect(actions.nth(0)).toHaveText("See how it works");
+  await expect(actions.nth(0)).toHaveAttribute("href", "#how-it-works");
+  await expect(actions.nth(1)).toHaveText("Start searching");
+  await expect(actions.nth(1)).toHaveAttribute("href", "/signup");
+});
+
 test("OpenTag-style FAQ has exact typography, no divider lines and animated independently accessible answers", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/#faq");
@@ -413,7 +430,9 @@ test("reduced motion keeps all content and disables stage entrance", async ({ pa
   expect(animation).toBe("none");
   await expect(page.getByRole("heading", { name: "Why Pareto works" })).toBeVisible();
   await expect(page.locator("#trust .v2-trust-step-button")).toHaveCount(4);
-  await expect(page.getByRole("heading", { name: /search with clarity/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Turn hiring briefs into matches" })).toBeVisible();
+  const mascotAnimation = await page.locator(".v2-close-mascot").evaluate((el) => getComputedStyle(el).animationName);
+  expect(mascotAnimation).toBe("none");
 });
 
 for (const size of [

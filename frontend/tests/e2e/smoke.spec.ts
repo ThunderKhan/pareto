@@ -11,7 +11,7 @@ test("public landing, navigation and health", async ({ page, request }) => {
   await expect(page.locator(".v2-login")).toHaveAttribute("href", "/login");
   await expect(page.locator(".v2-header-cta")).toHaveText("Get started free");
   await expect(page.locator(".v2-header-cta")).toHaveAttribute("href", "/signup");
-  await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
+  await expect(page.locator(".v2-hero-actions").getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
   const health = await request.get("/api/health");
   expect(health.ok()).toBe(true);
   expect(await health.json()).toMatchObject({ status: "ok", phase: "scaffold" });

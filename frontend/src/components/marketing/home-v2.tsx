@@ -490,13 +490,22 @@ function Trust() {
 
 function Footer() {
   return <>
-    <section className="v2-close" id="get-started">
+    <section className="v2-close" id="get-started" aria-labelledby="v2-close-title">
       <div className="v2-container v2-close-inner">
-        <div className="v2-close-art" aria-hidden="true"><SignalArt variant="verify"/></div>
-        <Label>MORE CLARITY. BETTER SEARCH.</Label>
-        <h2>Search with <em>clarity.</em></h2>
-        <p>Start with a brief. Keep the reasoning visible.</p>
-        <Link className="v2-btn v2-btn--primary" href="/signup">Start searching</Link>
+        <Image
+          src="/mascot/pareto-mascot.svg"
+          alt="Pareto mascot waving and holding a candidate profile"
+          width={240}
+          height={225}
+          className="v2-close-mascot"
+          unoptimized
+        />
+        <h2 id="v2-close-title">Turn hiring briefs into matches</h2>
+        <p>Describe who you need in plain English. Review the criteria, then discover candidates with a reason behind every match.</p>
+        <div className="v2-close-actions">
+          <a className="v2-btn v2-btn--secondary" href="#how-it-works">See how it works</a>
+          <Link className="v2-btn v2-btn--primary" href="/signup">Start searching</Link>
+        </div>
       </div>
     </section>
     <footer className="v2-footer"><div className="v2-container v2-footer-inner"><Logo/><p>Recruitment intelligence, with reasons.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#similar">Explore matching</a><Link href="/login">Log in</Link></nav><span>© 2026 Pareto · std::zero</span></div></footer>
