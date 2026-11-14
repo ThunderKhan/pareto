@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { assessPreview, summarizePreview, type CandidateAssessment } from "./preview-data";
+import "./marketing.css";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -20,28 +21,13 @@ import {
   X,
 } from "@phosphor-icons/react";
 
-const candidates = [
-  { id: "A", name: "Candidate A", title: "Senior backend engineer", city: "Hyderabad", years: 7, notice: 15, skills: ["Java", "Spring Boot", "AWS"] },
-  { id: "B", name: "Candidate B", title: "Platform engineer", city: "Hyderabad", years: 8, notice: 60, skills: ["Java", "Spring Boot", "AWS"] },
-  { id: "C", name: "Candidate C", title: "Backend engineer", city: "Hyderabad", years: 7, notice: null, skills: ["Java", "Spring Boot", "AWS"] },
-] as const;
-
 const story = [
-  {
-    eyebrow: "01 / INTERPRET",
-    title: "From intent to something precise.",
-    copy: "Describe the person you need in plain language. A structured proposal makes every assumption visible before the search runs.",
-  },
-  {
-    eyebrow: "02 / CONFIRM",
-    title: "A human stays in control.",
-    copy: "Edit experience, location, skills, and joining time. Pareto never treats an AI interpretation as permission to run an unreviewed search.",
-  },
-  {
-    eyebrow: "03 / EXPLAIN",
-    title: "Know why every result is here.",
-    copy: "See what matched, what failed, and what remains unknown. The evidence comes from candidate records, not an invented model score.",
-  },
+  { eyebrow: "01 / DESCRIBE", title: "Start with a hiring question.", copy: "Write your brief in plain language instead of translating it into a dozen rigid filters." },
+  { eyebrow: "02 / EXTRACT", title: "Make assumptions visible.", copy: "Role, skills, location, experience and joining time become structured, editable criteria." },
+  { eyebrow: "03 / REVIEW", title: "Keep the human in control.", copy: "Correct what the assistant inferred. Confirm the final criteria before searching candidate records." },
+  { eyebrow: "04 / RETRIEVE", title: "Search against attributes.", copy: "The confirmed brief is applied to candidate records. Missing information remains missing evidence." },
+  { eyebrow: "05 / EXPLAIN", title: "See reasons, not just ranks.", copy: "Read the criterion-by-criterion breakdown for each match, near miss and unknown." },
+  { eyebrow: "06 / REFINE", title: "Change the request, not the workflow.", copy: "The authenticated search is designed for conversational refinement and reference-profile discovery; this preview demonstrates notice-period changes only." },
 ] as const;
 
 function useScrollDirection() {
@@ -82,7 +68,7 @@ function useScrollDirection() {
         const travel = Math.max(1, box.height - window.innerHeight);
         const progress = Math.max(0, Math.min(0.999, -box.top / travel));
         narrative.style.setProperty("--narrative-progress", progress.toFixed(3));
-        setActiveStep(Math.min(2, Math.floor(progress * 3)));
+        setActiveStep(Math.min(story.length - 1, Math.floor(progress * story.length)));
       }
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
@@ -99,40 +85,67 @@ function useScrollDirection() {
     };
   }, []);
 
-  return { heroRef, narrativeRef, activeStep, setActiveStep };
+  const selectStep = (step: number) => {
+    setActiveStep(step);
+    const narrative = narrativeRef.current;
+    // Align the pinned story timeline with an explicitly selected stage.
+    if (narrative && window.innerWidth >= 768 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const travel = Math.max(0, narrative.offsetHeight - window.innerHeight);
+      window.scrollTo({
+        top: window.scrollY + narrative.getBoundingClientRect().top + travel * ((step + 0.5) / story.length),
+        behavior: "instant",
+      });
+    }
+  };
+  return { heroRef, narrativeRef, activeStep, selectStep };
 }
 
 function Brand({ light = false }: { light?: boolean }) {
   return (
-    <Link href="/" className={"brand-mark " + (light ? "brand-mark--light" : "")} aria-label="Pareto home">
+    <a href="/" className={"brand-mark " + (light ? "brand-mark--light" : "")} aria-label="Pareto home">
       <span className="brand-glyph" aria-hidden="true"><i /><i /><i /></span>
       <span>pareto<span className="brand-period">.</span></span>
-    </Link>
+    </a>
   );
 }
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     if (!open) return;
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    const outside = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
     window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    window.addEventListener("pointerdown", outside);
+    return () => {
+      window.removeEventListener("keydown", close);
+      window.removeEventListener("pointerdown", outside);
+    };
   }, [open]);
 
   return (
-    <header className="site-header">
+    <header ref={headerRef} className="site-header">
       <div className="site-header__inner container-wide">
         <Brand />
         <nav className="nav-desktop" aria-label="Main navigation">
-          <a href="#approach">How it works</a>
-          <a href="#evidence">Why Pareto</a>
-          <a href="#preview">Explore the product</a>
+          <a href="#approach">The problem</a>
+          <a href="#evidence">How it works</a>
+          <a href="#preview">Live preview</a>
         </nav>
         <div className="nav-actions">
           <a className="nav-login" href="/login">Log in</a>
           <a className="button button--dark nav-cta" href="/signup">Get started <ArrowUpRight size={17} weight="bold" aria-hidden="true" /></a>
           <button
+            ref={toggleRef}
             className="menu-toggle"
             type="button"
             aria-label={open ? "Close navigation" : "Open navigation"}
@@ -146,9 +159,9 @@ function Header() {
       </div>
       {open && (
         <nav id="mobile-navigation" className="mobile-navigation" aria-label="Mobile navigation">
-          <a href="#approach" onClick={() => setOpen(false)}>How it works</a>
-          <a href="#evidence" onClick={() => setOpen(false)}>Why Pareto</a>
-          <a href="#preview" onClick={() => setOpen(false)}>Explore the product</a>
+          <a href="#approach" onClick={() => setOpen(false)}>The problem</a>
+          <a href="#evidence" onClick={() => setOpen(false)}>How it works</a>
+          <a href="#preview" onClick={() => setOpen(false)}>Live preview</a>
           <a href="/login" onClick={() => setOpen(false)}>Log in</a>
           <a className="mobile-navigation__primary" href="/signup" onClick={() => setOpen(false)}>Get started <ArrowRight size={18} /></a>
         </nav>
@@ -160,9 +173,9 @@ function Header() {
 function EvidenceCard() {
   return (
     <div className="hero-scene__evidence" aria-hidden="true">
-      <div className="hero-scene__tiny-head"><span className="status-dot status-dot--green" /> EVIDENCE EXTRACT</div>
-      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Java · Spring Boot · AWS <b>Verified</b></div>
-      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Hyderabad · 7 years <b>Verified</b></div>
+      <div className="hero-scene__tiny-head"><span className="status-dot status-dot--green" /> SYNTHETIC EVIDENCE</div>
+      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Java · Spring Boot · AWS <b>In sample</b></div>
+      <div className="evidence-lines"><CheckCircle size={15} weight="fill" /> Hyderabad · 7 years <b>In sample</b></div>
       <div className="evidence-lines evidence-lines--review"><Question size={15} weight="fill" /> Joining availability <b>Unknown</b></div>
       <div className="evidence-trace">Nothing missing is treated as a match.</div>
     </div>
@@ -207,20 +220,38 @@ function HeroScene() {
   );
 }
 
-function ResultRow({ profile, notice }: { profile: typeof candidates[number]; notice: number }) {
-  const status = profile.notice === null ? "unknown" : profile.notice <= notice ? "match" : "fail";
+function ResultRow({ assessment }: { assessment: CandidateAssessment }) {
+  const { candidate: profile, status, reason, checks } = assessment;
   const Icon = status === "match" ? CheckCircle : status === "fail" ? WarningCircle : Question;
   return (
-    <article className={"demo-result demo-result--" + status}>
+    <article className={"demo-result demo-result--" + status} data-status={status}>
       <div className="demo-result__avatar" aria-hidden="true">{profile.id}</div>
-      <div className="demo-result__identity">
-        <strong>{profile.name}</strong>
-        <span>{profile.title} · {profile.city}</span>
-        <small>{profile.years} years · Java, Spring Boot, AWS</small>
-      </div>
-      <div className={"demo-result__state demo-result__state--" + status}>
-        <span><Icon size={15} weight="fill" />{status === "match" ? "Eligible" : status === "fail" ? "Does not match" : "Needs review"}</span>
-        <small>{profile.notice === null ? "Notice period unknown" : profile.notice + "-day notice"}</small>
+      <div className="demo-result__body">
+        <div className="demo-result__topline">
+          <div className="demo-result__identity">
+            <strong>{profile.name}</strong>
+            <span>{profile.title} · {profile.city ?? "Location not supplied"}</span>
+            <small>{profile.years === null ? "Experience not supplied" : `${profile.years} years`} · {profile.skills.join(", ")}</small>
+          </div>
+          <div className={"demo-result__state demo-result__state--" + status}>
+            <span><Icon size={15} weight="fill" aria-hidden="true" />{status === "match" ? "Eligible" : status === "fail" ? "Does not match" : "Needs review"}</span>
+            <small>{profile.notice === null ? "Notice period unknown" : profile.notice + "-day notice"}</small>
+          </div>
+        </div>
+        <p className="demo-result__reason">{reason}</p>
+        <details className="demo-result__details">
+          <summary>View criterion breakdown</summary>
+          <ul>
+            {checks.map((check) => (
+              <li key={check.label}>
+                <span>{check.label}<small>{check.expected}</small></span>
+                <span className={"criterion-state criterion-state--" + check.state}>
+                  {check.state === "match" ? "Meets" : check.state === "fail" ? "Misses" : "Unknown"} · {check.actual}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
       </div>
     </article>
   );
@@ -228,9 +259,10 @@ function ResultRow({ profile, notice }: { profile: typeof candidates[number]; no
 
 function InteractivePreview() {
   const [notice, setNotice] = useState<30 | 60>(30);
-  const exact = useMemo(() => candidates.filter((c) => c.notice !== null && c.notice <= notice).length, [notice]);
+  const assessments = useMemo(() => assessPreview(notice), [notice]);
+  const summary = useMemo(() => summarizePreview(assessments), [assessments]);
   return (
-    <div className="preview-panel" aria-label="Interactive synthetic candidate matching example">
+    <div className="preview-panel" role="region" aria-label="Interactive synthetic candidate matching example">
       <div className="preview-panel__toolbar">
         <div><span className="preview-panel__status-dot" /> PARETO / SEARCH EXPLORER</div>
         <span>INTERACTIVE PREVIEW · SYNTHETIC DATA</span>
@@ -239,26 +271,31 @@ function InteractivePreview() {
         <div className="preview-panel__aside">
           <div className="preview-panel__aside-title">Active search</div>
           <p>Backend engineers in Hyderabad</p>
-          <div className="preview-panel__filter"><Code size={17} /> Java · Spring Boot · AWS</div>
-          <div className="preview-panel__filter"><SlidersHorizontal size={17} /> 6–10 years experience</div>
+          <div className="preview-panel__filter"><Code size={17} aria-hidden="true" /> Java · Spring Boot · AWS</div>
+          <div className="preview-panel__filter"><SlidersHorizontal size={17} aria-hidden="true" /> 6–10 years experience</div>
           <div className="preview-panel__control">
-            <label id="notice-label">Maximum joining notice</label>
+            <div className="preview-panel__control-label" id="notice-label">Maximum joining notice</div>
             <div className="preview-panel__switch" role="group" aria-labelledby="notice-label">
               <button type="button" aria-pressed={notice === 30} onClick={() => setNotice(30)}>30 days</button>
               <button type="button" aria-pressed={notice === 60} onClick={() => setNotice(60)}>60 days</button>
             </div>
-            <small>Try relaxing one constraint. Counts are calculated from the three example profiles.</small>
+            <small>Change one requirement to inspect the difference. All values come from the three records below.</small>
+          </div>
+          <div className="preview-panel__legend">
+            <span><span className="legend-dot legend-dot--match" />Eligible</span>
+            <span><span className="legend-dot legend-dot--fail" />Excluded</span>
+            <span><span className="legend-dot legend-dot--unknown" />Needs review</span>
           </div>
         </div>
-        <div className="preview-panel__results" aria-live="polite">
-          <div className="preview-panel__summary">
-            <div><span>ELIGIBLE PROFILES</span><strong>{exact}<span> / 3</span></strong></div>
-            <p>{notice === 30 ? "One meets every known required condition." : "A longer joining window admits one additional profile."}</p>
+        <div className="preview-panel__results">
+          <div className="preview-panel__summary" role="status" aria-live="polite" aria-atomic="true">
+            <div><span>ELIGIBLE PROFILES</span><strong data-testid="eligible-count">{summary.eligible}<span> / {summary.total}</span></strong></div>
+            <p>{summary.excluded} excluded · {summary.needsReview} need{summary.needsReview === 1 ? "s" : ""} review. Joining window: {notice} days.</p>
           </div>
           <div className="preview-panel__result-list">
-            {candidates.map((c) => <ResultRow key={c.id} profile={c} notice={notice} />)}
+            {assessments.map((assessment) => <ResultRow key={assessment.candidate.id} assessment={assessment} />)}
           </div>
-          <p className="preview-panel__caution"><ShieldCheck size={15} /> A missing notice period is unknown—not an automatic match. This preview uses invented candidate records.</p>
+          <p className="preview-panel__caution"><ShieldCheck size={15} aria-hidden="true" /> Unknown evidence never becomes an automatic match. This is a local demonstration, not a live candidate search.</p>
         </div>
       </div>
     </div>
@@ -266,7 +303,7 @@ function InteractivePreview() {
 }
 
 export default function ScrollLanding() {
-  const { heroRef, narrativeRef, activeStep, setActiveStep } = useScrollDirection();
+  const { heroRef, narrativeRef, activeStep, selectStep } = useScrollDirection();
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -281,7 +318,7 @@ export default function ScrollLanding() {
               <p className="landing-hero__lede">Turn a hiring brief into a search you can inspect, refine, and trust. Every candidate comes with the evidence behind the match.</p>
               <div className="landing-hero__actions">
                 <a className="button button--dark button--large" href="/signup">Get started <ArrowUpRight size={18} weight="bold" /></a>
-                <a className="text-link" href="#approach">See how it works <ArrowRight size={18} /></a>
+                <a className="text-link" href="#evidence">See how it works <ArrowRight size={18} /></a>
               </div>
               <div className="landing-hero__fineprint"><span className="hero-tiny-dot" /> A human confirms every search. An algorithm explains every result.</div>
             </div>
@@ -307,13 +344,13 @@ export default function ScrollLanding() {
           </div>
         </section>
 
-        <section className="narrative" id="evidence" ref={narrativeRef} aria-label="From intent to explainable results">
+        <section className="narrative" id="evidence" ref={narrativeRef} aria-label="Six stages of explainable candidate search">
           <div className="narrative__sticky">
             <div className="narrative__inner container-wide">
               <div className="narrative__text" aria-live="off">
                 <span className="narrative__micro">THE RECRUITMENT WORKFLOW</span>
                 <div className="narrative__steps" role="group" aria-label="Workflow stages">
-                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} onClick={() => setActiveStep(i)}>{String(i + 1).padStart(2, "0")}</button>)}
+                  {story.map((s, i) => <button key={s.eyebrow} type="button" className={i === activeStep ? "is-active" : ""} aria-current={i === activeStep ? "step" : undefined} aria-label={s.eyebrow + ": " + s.title} onClick={() => selectStep(i)}>{String(i + 1).padStart(2, "0")}</button>)}
                 </div>
                 <p className="narrative__eyebrow" key={story[activeStep].eyebrow}>{story[activeStep].eyebrow}</p>
                 <h2 key={story[activeStep].title}>{story[activeStep].title}</h2>
@@ -329,8 +366,15 @@ export default function ScrollLanding() {
                     ["Experience", "6–10 years"],
                     ["Location", "Hyderabad"],
                     ["Joining", "≤ 30 days"],
-                  ].map(([key, value], i) => <div className={"narrative__art-row " + (activeStep >= 1 && i === 3 ? "is-emphasized" : "")} key={key}><span>{key}</span><strong>{value}</strong><Check size={16} weight="bold" /></div>)}
-                  <div className="narrative__art-foot">{activeStep === 0 ? "AI proposes a structure" : activeStep === 1 ? "Recruiter confirms the filters" : "Evidence is checked against records"} <ArrowRight size={16} /></div>
+                  ].map(([key, value], i) => <div className={"narrative__art-row " + (activeStep >= 2 && i === 3 ? "is-emphasized" : "")} key={key}><span>{key}</span><strong>{value}</strong><Check size={16} weight="bold" /></div>)}
+                  <div className="narrative__art-foot">{[
+                      "A brief begins in natural language",
+                      "The assistant proposes editable criteria",
+                      "Recruiter confirms the final constraints",
+                      "Confirmed criteria are applied to records",
+                      "Each criterion has a visible outcome",
+                      "Search context is ready for refinement",
+                    ][activeStep]} <ArrowRight size={16} /></div>
                 </div>
                 <div className="narrative__art-corner" aria-hidden="true">P / 03</div>
               </div>
@@ -343,19 +387,20 @@ export default function ScrollLanding() {
           <div className="preview-section__inner container-wide">
             <div className="preview-section__head" data-reveal>
               <div><p className="eyebrow">THE DIFFERENCE IS IN THE DETAILS</p><h2>When constraints change,<br /><em>the answer changes.</em></h2></div>
-              <p>Explore a small, fully transparent example. A 30-day notice requirement excludes one qualified person; extending it to 60 days changes the result—without inventing any candidate data.</p>
+              <p>Explore a small, fully transparent example. A 30-day notice requirement excludes one otherwise qualified sample profile; see exactly what changes when the window grows to 60 days.</p>
             </div>
             <div data-reveal><InteractivePreview /></div>
             <p className="preview-section__disclaimer">This is a locally calculated illustration using three synthetic records; it is not connected to live recruitment data or the production matching service.</p>
           </div>
         </section>
 
-        <section className="principles-section container-wide">
+        <section className="principles-section container-wide" id="principles">
           <div className="principles-section__heading" data-reveal><p className="eyebrow">BUILT FOR DECISIONS</p><h2>Less black box.<br /><em>More clarity.</em></h2></div>
           <div className="principles-section__rows">
             <div className="principle-row" data-reveal><span>01</span><h3>Explainable by design</h3><p>Required criteria, preferences and missing information have distinct outcomes.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>02</span><h3>Human-confirmed search</h3><p>You can correct the model&apos;s understanding before any results are returned.</p><ArrowUpRight size={22} /></div>
             <div className="principle-row" data-reveal><span>03</span><h3>Iteration without starting over</h3><p>Refine a search over multiple turns while preserving the context you already established.</p><ArrowUpRight size={22} /></div>
+            <div className="principle-row" data-reveal><span>04</span><h3>Reference-based discovery</h3><p>Planned for the authenticated search workflow: start from a reference profile to explore comparable skills and experience. Not available in this synthetic preview.</p><ArrowUpRight size={22} /></div>
           </div>
         </section>
 
@@ -374,7 +419,7 @@ export default function ScrollLanding() {
         <div className="container-wide site-footer__inner">
           <Brand />
           <span>Built to make candidate search more transparent.</span>
-          <div><a href="#approach">How it works</a><a href="/login">Log in</a><span>© 2026 Pareto</span></div>
+          <div><a href="#evidence">How it works</a><a href="#principles">Our approach</a><a href="/login">Log in</a><span>© 2026 Pareto</span></div>
         </div>
       </footer>
     </>
