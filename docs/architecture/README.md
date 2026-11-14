@@ -1,14 +1,14 @@
-# Architecture — initial direction
+# Architecture index
 
-This is a structural note, **not** the finalized architecture specification.
+**Canonical technical design:** [../ARCHITECTURE.md](../ARCHITECTURE.md).
 
-- `frontend/`: Next.js App Router, React and thin HTTP route handlers.
-- `backend/`: reusable server-side TypeScript modules. Imported by the Next.js app as the `@pareto/backend` workspace package.
-- `backend/prisma/`: initial Prisma PostgreSQL schema and migration configuration.
-- Docker Compose: application container and local development PostgreSQL.
-- Future external services: Supabase Auth (Google OAuth), Supabase Storage, Gemini and Groq.
-- No separate Fastify/FastAPI service, vector database, Redis or message queue at M0.
+The canonical document covers system context, deployment topology, horizontal architectural layers, vertical feature slices, data model, API and state contracts, Supabase/Prisma security boundaries, AI provider routing, Docker, CI/CD, testing and known implementation gaps.
 
-**Security invariants:** keep raw resumes private; validate inputs; never expose provider API keys client-side; enforce authorization independently from authentication.
+This folder is reserved for **focused architecture decision records (ADRs)** and supplemental diagrams as implementation progresses. Do not confuse architectural intent with verified implementation.
 
-Next: write and review the full technical specifications before implementing business workflows.
+- **ADR-001:** modular monolith, one deployable Next.js application and a separate internal TypeScript backend package (recorded in the canonical document).
+- **ADR-002:** PostgreSQL/Prisma and deterministic evaluator.
+- **ADR-003:** Gemini primary, Groq fallback; no OpenAI/xAI.
+- **ADR-004:** explicit human search confirmation and append-only revisions.
+
+When a decision materially changes, add a dated `adr-XXX-topic.md` explaining context, considered alternatives, choice, consequences and verification.
