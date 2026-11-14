@@ -33,7 +33,7 @@ test("preview recomputes every outcome from declared sample records", async ({ p
   await expect(candidateB).toHaveAttribute("data-status", "fail");
   await expect(candidateC).toHaveAttribute("data-status", "unknown");
   await candidateB.getByText("View criterion breakdown").click();
-  await expect(candidateB.getByText("Joining window")).toBeVisible();
+  await expect(candidateB.locator(".demo-result__details li").filter({ hasText: "Joining window" })).toBeVisible();
   await expect(candidateB.getByText("Misses · 60 days")).toBeVisible();
   await panel.getByRole("button", { name: "60 days" }).click();
   await expect(panel.getByTestId("eligible-count")).toContainText("2");
@@ -58,7 +58,8 @@ test("mobile menu supports keyboard, escape and outside-dismissal", async ({ pag
   await expect(menu).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused();
   await toggle.click();
-  await page.locator(".landing-hero h1").click();
+  // Click outside the sticky header/nav at a fixed, visible viewport point.
+  await page.mouse.click(380, 820);
   await expect(menu).toHaveCount(0);
   await toggle.click();
   await menu.getByRole("link", { name: "How it works" }).click();
