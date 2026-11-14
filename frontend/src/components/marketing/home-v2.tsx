@@ -90,8 +90,8 @@ function Header() {
           <a href="#trust">Why Pareto</a>
         </nav>
         <div className="v2-header-actions">
-          <Link className="v2-login" href="/login">Log in</Link>
-          <Link className="v2-btn v2-btn--primary v2-header-cta" href="/signup">Start searching <ArrowUpRight size={16} weight="bold" aria-hidden="true"/></Link>
+          <Link className="v2-login" href="/login">Login</Link>
+          <Link className="v2-btn v2-btn--primary v2-header-cta" href="/signup">Get started free</Link>
           <button ref={menuButton} className="v2-menu-toggle" type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="v2-mobile-nav" onClick={() => setOpen((value) => !value)}>
             {open ? <X size={22} aria-hidden="true" /> : <List size={22} aria-hidden="true" />}
           </button>
@@ -102,8 +102,8 @@ function Header() {
         <a href="#how-it-works" onClick={() => setOpen(false)}>How it works</a>
         <a href="#preview" onClick={() => setOpen(false)}>Explore matching</a>
         <a href="#trust" onClick={() => setOpen(false)}>Why Pareto</a>
-        <Link href="/login" onClick={() => setOpen(false)}>Log in</Link>
-        <Link href="/signup" className="v2-mobile-primary" onClick={() => setOpen(false)}>Start searching <ArrowRight size={17} aria-hidden="true" /></Link>
+        <Link href="/login" onClick={() => setOpen(false)}>Login</Link>
+        <Link href="/signup" className="v2-mobile-primary" onClick={() => setOpen(false)}>Get started free</Link>
       </nav>}
     </header>
   );
