@@ -91,6 +91,8 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
       criteria: withAws.criteria,
     });
     expect(refinedPeers.referenceId).toBe(reference.id);
+    expect(refinedPeers.counts).toEqual({ ELIGIBLE: 21, NEEDS_REVIEW: 5, INELIGIBLE: 21 });
+    expect(refinedPeers.total).toBe(47);
     expect(refinedPeers.results.every(row => row.candidate.id !== reference.id)).toBe(true);
     expect(refinedPeers.criteria.find(rule => rule.field === "skill" && rule.value === "AWS"))
       .toMatchObject({ mode: "required" });

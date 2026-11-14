@@ -99,7 +99,7 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await page.getByRole("button", { name: "Confirm Search" }).click();
   await expect(confirmed.getByRole("heading", { name: "Search results · revision 2" })).toBeVisible();
   await expect(confirmed).toContainText("21 eligible");
-  await expect(confirmed).toContainText("2 need review");
+  await expect(confirmed).toContainText("5 need review");
   await expect(confirmed.getByRole("heading", { name: "Asha Nair", exact: true })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Sign out" }).click();
