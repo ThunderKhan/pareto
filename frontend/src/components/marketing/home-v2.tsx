@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight, Check, CheckCircle, CaretDown,
   List, MagnifyingGlass, ShieldCheck, SlidersHorizontal, WarningCircle,
@@ -372,7 +373,7 @@ function Trust() {
         <ol className="v2-trust-steps" aria-label="Why Pareto works steps">
           {trustSteps.map((item, index) => <li key={item.title} className="v2-trust-step">
             <div className="v2-trust-step-rail">
-              <img className="v2-trust-step-icon" src={item.icon} alt="" width={40} height={40} aria-hidden="true" />
+              <Image className="v2-trust-step-icon" src={item.icon} alt="" width={40} height={40} aria-hidden="true" unoptimized />
               {index < trustSteps.length - 1 && <span className="v2-trust-connector" aria-hidden="true"/>}
             </div>
             <button
@@ -408,7 +409,7 @@ function Trust() {
           }}>
           {trustSteps.map((item, index) => <article key={item.title} className="v2-trust-mobile-card"
             role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${trustSteps.length}: ${item.title}`}>
-            <img src={item.icon} width={40} height={40} alt="" aria-hidden="true"/>
+            <Image src={item.icon} width={40} height={40} alt="" aria-hidden="true" unoptimized/>
             <h3>{item.title}</h3>
             <p>{item.description}</p>
             <div className="v2-trust-mobile-preview"><TrustDemo step={index}/></div>
