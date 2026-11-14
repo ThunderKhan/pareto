@@ -269,19 +269,156 @@ const faqs = [
   ["How does reference-based discovery work?", "It compares skills, experience, location and other meaningful attributes to highlight similarities and differences."],
 ];
 
+const trustSteps = [
+  {
+    title: "Interpret the brief",
+    description: "Pareto turns a natural-language hiring brief into structured requirements, ready for a recruiter to inspect.",
+    icon: "/icons/delegate-62cfd1852df1e0.svg",
+    state: "describe",
+  },
+  {
+    title: "Review before searching",
+    description: "Check the proposed role, skills, experience and joining window. A recruiter confirms what matters before searching.",
+    icon: "/icons/review-d37a7fa1d5ec05.svg",
+    state: "review",
+  },
+  {
+    title: "Explain every result",
+    description: "Understand which criteria are met, missed or still unknown, instead of relying on an unexplained score.",
+    icon: "/icons/automate-516705627f4d66.svg",
+    state: "results",
+  },
+  {
+    title: "Keep searches protected",
+    description: "Candidate retrieval belongs in the signed-in recruiter workspace, not in a public homepage demo.",
+    icon: "/icons/protect-1226f5f4def480.svg",
+    state: "access",
+  },
+] as const;
+
+function TrustDemo({ step }: { step: number }) {
+  const state = trustSteps[step]?.state ?? "describe";
+  if (state === "access") {
+    return <div className="v2-trust-access" aria-label="Protected recruiter workspace">
+      <div className="v2-trust-access-bar"><span className="v2-workspace-mini-icon">p.</span><strong>pareto</strong><span>Recruiter workspace</span></div>
+      <div className="v2-trust-access-content">
+        <div className="v2-trust-access-icon"><ShieldCheck size={34} weight="regular" aria-hidden="true"/></div>
+        <p className="v2-window-overline">RECRUITER ACCESS</p>
+        <h3>Search in your workspace.</h3>
+        <p>Sign in to access protected candidate search. Public examples on this page do not retrieve live profiles.</p>
+        <Link href="/login" className="v2-trust-access-link">Log in to Pareto <ArrowRight size={16} aria-hidden="true"/></Link>
+      </div>
+    </div>;
+  }
+  return <WorkspaceFrame state={state}/>;
+}
+
 function Trust() {
-  return <section className="v2-section v2-trust" id="trust">
+  const [activeStep, setActiveStep] = useState(0);
+  const stepsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const mobileTrack = useRef<HTMLDivElement | null>(null);
+  const [mobileStep, setMobileStep] = useState(0);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    let observer: IntersectionObserver | undefined;
+    const observe = () => {
+      observer?.disconnect();
+      if (!media.matches) return;
+      observer = new IntersectionObserver((entries) => {
+        const visible = entries.filter(entry => entry.isIntersecting);
+        if (!visible.length) return;
+        // When adjacent entries overlap, select the step closest to the viewport's reading band.
+        const center = window.innerHeight * .44;
+        visible.sort((a, b) => Math.abs(a.boundingClientRect.top + a.boundingClientRect.height / 2 - center)
+          - Math.abs(b.boundingClientRect.top + b.boundingClientRect.height / 2 - center));
+        const index = stepsRef.current.indexOf(visible[0].target as HTMLButtonElement);
+        if (index !== -1) setActiveStep(index);
+      }, { rootMargin: "-20% 0px -35% 0px", threshold: .25 });
+      stepsRef.current.forEach(node => { if (node) observer?.observe(node); });
+    };
+    observe();
+    media.addEventListener("change", observe);
+    return () => { observer?.disconnect(); media.removeEventListener("change", observe); };
+  }, []);
+
+  const chooseStep = (index: number) => {
+    setActiveStep(index);
+    const target = stepsRef.current[index];
+    if (target) target.scrollIntoView({
+      block: "center",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  };
+
+  const chooseMobileStep = (index: number) => {
+    setMobileStep(index);
+    const track = mobileTrack.current;
+    const child = track?.children.item(index) as HTMLElement | null;
+    if (track && child) track.scrollTo({
+      left: child.offsetLeft - (track.children.item(0) as HTMLElement).offsetLeft,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  };
+
+  return <section className="v2-section v2-trust" id="trust" aria-labelledby="v2-trust-title">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>CONFIDENCE THROUGH CLARITY</Label><h2>Human-confirmed. <em>Evidence-backed.</em></h2><p>Useful AI should make decisions easier to examine, not harder to question.</p></div>
-      <div className="v2-trust-grid">
-        {[
-          ["01", "Interpret", "AI proposes a structured reading of the hiring brief.", "interpret"],
-          ["02", "Confirm", "A recruiter reviews and approves requirements before retrieval.", "review"],
-          ["03", "Explain", "Each criterion is visibly met, missed or unknown.", "verify"],
-        ].map(([number, title, desc, variant]) => <article key={title} className="v2-trust-item">
-          <div className="v2-trust-num">{number}<SignalArt variant={variant as "interpret" | "review" | "verify"}/></div>
-          <h3>{title}</h3><p>{desc}</p>
-        </article>)}
+      <div className="v2-trust-heading">
+        <Label>WHY PARETO</Label>
+        <h2 id="v2-trust-title">Why Pareto works</h2>
+      </div>
+      <div className="v2-trust-timeline">
+        <ol className="v2-trust-steps" aria-label="Why Pareto works steps">
+          {trustSteps.map((item, index) => <li key={item.title} className="v2-trust-step">
+            <div className="v2-trust-step-rail">
+              <img className="v2-trust-step-icon" src={item.icon} alt="" width={40} height={40} aria-hidden="true" />
+              {index < trustSteps.length - 1 && <span className="v2-trust-connector" aria-hidden="true"/>}
+            </div>
+            <button
+              type="button"
+              ref={node => { stepsRef.current[index] = node; }}
+              className="v2-trust-step-button"
+              aria-current={activeStep === index ? "step" : undefined}
+              aria-controls="v2-trust-demo"
+              onClick={() => chooseStep(index)}
+            >
+              <span className="v2-trust-step-title">{item.title}</span>
+              <span className="v2-trust-step-description">{item.description}</span>
+            </button>
+          </li>)}
+        </ol>
+        <div className="v2-trust-demo-column">
+          <div className="v2-trust-demo-sticky">
+            <div id="v2-trust-demo" className="v2-trust-demo" role="region" aria-label="Selected Pareto workflow example" aria-live="polite">
+              <TrustDemo step={activeStep}/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="v2-trust-mobile" aria-label="Why Pareto works on mobile">
+        <div ref={mobileTrack} className="v2-trust-mobile-track" role="group" aria-roledescription="carousel"
+          aria-label="Pareto capabilities" onScroll={(event) => {
+            const track = event.currentTarget;
+            const first = track.children.item(0) as HTMLElement | null;
+            const second = track.children.item(1) as HTMLElement | null;
+            if (!first || !second) return;
+            const distance = second.offsetLeft - first.offsetLeft;
+            if (distance > 0) setMobileStep(Math.max(0, Math.min(trustSteps.length - 1, Math.round(track.scrollLeft / distance))));
+          }}>
+          {trustSteps.map((item, index) => <article key={item.title} className="v2-trust-mobile-card"
+            role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${trustSteps.length}: ${item.title}`}>
+            <img src={item.icon} width={40} height={40} alt="" aria-hidden="true"/>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+            <div className="v2-trust-mobile-preview"><TrustDemo step={index}/></div>
+          </article>)}
+        </div>
+        <div className="v2-trust-mobile-dots" role="group" aria-label="Choose a capability">
+          {trustSteps.map((item, index) => <button key={item.title} type="button"
+            aria-label={`Show ${item.title}`} aria-current={mobileStep === index ? "true" : undefined}
+            onClick={() => chooseMobileStep(index)}/>)}
+        </div>
       </div>
       <div className="v2-faq">
         <div><Label>QUESTIONS, ANSWERED</Label><h3>Nothing hidden in <em>the fine print.</em></h3></div>
@@ -290,6 +427,7 @@ function Trust() {
     </div>
   </section>;
 }
+
 
 function Footer() {
   return <>
