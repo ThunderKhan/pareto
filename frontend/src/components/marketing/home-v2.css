@@ -405,7 +405,7 @@
 /* The reference screenshot uses a larger desktop editorial treatment than
    the clone's base ot-h2 token; scale optically while keeping its typefaces. */
 @media (min-width: 1024px) {
-  .v2-faq-container { max-width: 1032px; }
+  .v2-faq-container { width: min(calc(100% - 32px), 1032px); }
   .v2-faq h2 { font-size: clamp(3rem, 6vw, 4.5rem); margin-bottom: 39px; }
   .v2-faq-list { gap: 13px; }
   .v2-faq-question { font-size: 22px; line-height: 1.5; padding-block: 16px; }
