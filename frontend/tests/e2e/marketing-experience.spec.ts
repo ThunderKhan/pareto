@@ -102,31 +102,44 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.getByRole("heading", { name: "Log in to Pareto" })).toBeVisible();
 });
 
-test("a single workflow product window changes with accessible tabs", async ({ page }, testInfo) => {
+test("three complete workflow stories alternate text and product UI without tabs", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/#how-it-works");
-  const tabs = page.getByRole("tablist", { name: "Recruitment search workflow" });
-  await expect(tabs.getByRole("tab")).toHaveCount(3);
-  await expect(tabs.getByRole("tab", { name: /describe/i })).toHaveAttribute("aria-selected", "true");
-  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-describe.png") });
-  const review = tabs.getByRole("tab", { name: /review & confirm/i });
-  await review.click();
-  await expect(review).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".v2-process-window")).toContainText("Proposed criteria");
-  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-review.png") });
-  await page.locator(".v2-process-window").getByRole("button", { name: "View results" }).click();
-  await expect(tabs.getByRole("tab", { name: /discover & explain/i })).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".v2-process-window")).toContainText("Shortlist");
-  await review.click();
-  await review.focus();
-  await page.keyboard.press("ArrowRight");
-  const explain = tabs.getByRole("tab", { name: /discover & explain/i });
-  await expect(explain).toBeFocused();
-  await expect(explain).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator(".v2-process-window")).toContainText("Shortlist");
-  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-results.png") });
-  await page.keyboard.press("Home");
-  await expect(tabs.getByRole("tab", { name: /describe/i })).toHaveAttribute("aria-selected", "true");
+
+  const section = page.locator("#how-it-works");
+  const rows = section.locator(".v2-story-row");
+  await expect(rows).toHaveCount(3);
+  await expect(section.getByRole("tablist")).toHaveCount(0);
+  await expect(section.locator(".v2-steps, .v2-step-controls")).toHaveCount(0);
+  await expect(section.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
+  await expect(section.locator(".v2-how-accent")).toHaveText("a reasoned shortlist.");
+  await expect(section.locator(".v2-how-accent")).toHaveCSS("color", "rgb(70, 123, 235)");
+
+  for (const [index, title, detail] of [
+    [0, "Tell Pareto who you need.", "Understanding the brief"],
+    [1, "Check the interpretation.", "Proposed criteria"],
+    [2, "Understand each result.", "Shortlist"],
+  ] as const) {
+    const row = rows.nth(index);
+    await expect(row.getByRole("heading", { name: title })).toBeVisible();
+    await expect(row.locator(".v2-story-media")).toContainText(detail);
+    await expect(row.locator(".v2-workspace")).toHaveCount(1);
+    const geometry = await row.evaluate((node) => {
+      const copy = node.querySelector(".v2-story-copy")!.getBoundingClientRect();
+      const ui = node.querySelector(".v2-story-media")!.getBoundingClientRect();
+      return { copyX: copy.x, uiX: ui.x, gap: Math.abs(copy.x - ui.x) };
+    });
+    expect(geometry.gap).toBeGreaterThan(100);
+    if (index === 1) expect(geometry.uiX).toBeLessThan(geometry.copyX);
+    else expect(geometry.copyX).toBeLessThan(geometry.uiX);
+    await row.screenshot({ path: testInfo.outputPath("workflow-story-" + (index + 1) + "-desktop.png") });
+  }
+
+  await rows.nth(1).getByRole("button", { name: "View results" }).click();
+  await expect(rows.nth(2).getByRole("heading", { name: "Understand each result." })).toBeInViewport();
+  await expect(rows.nth(2).locator(".v2-story-media")).toContainText("Shortlist");
 });
+
 
 test("candidate matching preview recalculates and discloses exact criteria", async ({ page }, testInfo) => {
   await page.goto("/#preview");
@@ -164,23 +177,36 @@ test("reference cards and FAQ explain matching with fictional profiles", async (
   await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
 });
 
-test("mobile walkthrough art never obscures headings or body text", async ({ page }) => {
-  for (const width of [320, 390, 599, 767]) {
+test("workflow stories stack copy before UI without clipping on mobile and tablet", async ({ page }, testInfo) => {
+  for (const width of [320, 390, 599, 767, 900]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/#how-it-works");
-    const icon = page.locator(".v2-process-copy .v2-process-icon");
-    await expect(icon).toBeHidden();
-    const heading = page.locator(".v2-process-copy h3");
-    const copy = page.locator(".v2-process-copy > p");
-    const geometry = await page.evaluate(([headingSelector, copySelector]) => {
-      const h = document.querySelector(headingSelector)!.getBoundingClientRect();
-      const p = document.querySelector(copySelector)!.getBoundingClientRect();
-      return {headingRight:h.right,copyRight:p.right,width:window.innerWidth};
-    }, [".v2-process-copy h3", ".v2-process-copy > p"]);
-    expect(geometry.headingRight).toBeLessThanOrEqual(geometry.width);
-    expect(geometry.copyRight).toBeLessThanOrEqual(geometry.width);
+    const rows = page.locator("#how-it-works .v2-story-row");
+    await expect(rows).toHaveCount(3);
+    for (let index = 0; index < 3; index++) {
+      const row = rows.nth(index);
+      const measurements = await row.evaluate((node) => {
+        const copy = node.querySelector(".v2-story-copy")!.getBoundingClientRect();
+        const ui = node.querySelector(".v2-story-media")!.getBoundingClientRect();
+        const heading = node.querySelector("h3")!.getBoundingClientRect();
+        return { copyTop: copy.top, uiTop: ui.top, headingRight: heading.right, viewport: window.innerWidth,
+          copyRight: copy.right, uiRight: ui.right, rowWidth: node.getBoundingClientRect().width };
+      });
+      expect(measurements.uiTop).toBeGreaterThan(measurements.copyTop);
+      expect(measurements.headingRight).toBeLessThanOrEqual(measurements.viewport + 1);
+      expect(measurements.copyRight).toBeLessThanOrEqual(measurements.viewport + 1);
+      expect(measurements.uiRight).toBeLessThanOrEqual(measurements.viewport + 1);
+      expect(measurements.rowWidth).toBeLessThanOrEqual(measurements.viewport);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    if (width === 390) {
+      await rows.nth(0).screenshot({ path: testInfo.outputPath("workflow-story-1-mobile.png") });
+      await rows.nth(1).screenshot({ path: testInfo.outputPath("workflow-story-2-mobile.png") });
+      await rows.nth(2).screenshot({ path: testInfo.outputPath("workflow-story-3-mobile.png") });
+    }
   }
 });
+
 
 test("OpenTag-inspired hero buttons match measured mobile and desktop styles", async ({ page }) => {
   for (const width of [320, 390, 768, 1440, 1920]) {
