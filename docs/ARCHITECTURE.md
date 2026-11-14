@@ -14,17 +14,17 @@
 
 | You need to understand… | Read |
 | --- | --- |
-| Decisions, principles, and system boundaries | ``1–3 |
-| C4-style system context, deployment, trust boundaries | ``4–5 |
-| **Horizontal architectural layers** and dependency rules | `6 |
-| **Vertical feature slices** and sequence diagrams | ``7–8 |
-| Domain model, relational data, integrity, indexing | `9 |
-| API contracts, errors, states, concurrency | ``10–11 |
-| AI providers, prompts, validation, deterministic ranking | ``12–13 |
-| Authentication, authorization, privacy, document security | `14 |
-| Docker, deployment, database operations, CI/CD | ``15–16 |
-| Observability, reliability, performance, testing | ``17–20 |
-| Risk register, decisions, reference map, execution gates | ``21–24 |
+| Decisions, principles, and system boundaries | Sections 1–3 |
+| C4-style system context, deployment, trust boundaries | Sections 4–5 |
+| **Horizontal architectural layers** and dependency rules | Section 6 |
+| **Vertical feature slices** and sequence diagrams | Sections 7–8 |
+| Domain model, relational data, integrity, indexing | Section 9 |
+| API contracts, errors, states, concurrency | Sections 10–11 |
+| AI providers, prompts, validation, deterministic ranking | Sections 12–13 |
+| Authentication, authorization, privacy, document security | Section 14 |
+| Docker, deployment, database operations, CI/CD | Sections 15–16 |
+| Observability, reliability, performance, testing | Sections 17–20 |
+| Risk register, decisions, reference map, execution gates | Sections 21–24 |
 
 ### Normative vocabulary
 
@@ -889,7 +889,7 @@ Use manual captured test results, simple structured logs and a runbook. A paid A
 | End-to-end | Playwright | Prompt → review/edit → confirm → results → refine → reference search |
 | Deployment | Container and live smoke tests | Docker build, health, DB connectivity, one seeded search |
 
-**Organizer P0 gate:** all six PRD ``ORG-FR-01–06` function in a real demo before optional features consume time. Use deterministic fixtures and actual measurements rather than invented “98% accuracy” claims.
+**Organizer P0 gate:** all six PRD ORG-FR-01 through ORG-FR-06 requirements function in a real demo before optional features consume time. Use deterministic fixtures and actual measurements rather than invented “98% accuracy” claims.
 
 ## 20. Engineering boundaries and evolution strategy
 
