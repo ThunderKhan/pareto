@@ -79,8 +79,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         if (Object.keys(nameUpdates).length > 0) {
           const { error: profileError } = await client.auth.updateUser({ data: nameUpdates });
           if (profileError) {
-            setMessage({ text: "Signed in, but the optional profile names could not be saved. Please try again later.", error: true });
-            return;
+            // Do not strand a successfully authenticated user on the sign-in page
+            // because an optional profile update failed.
+            console.warn("Optional profile name update failed:", profileError.message);
           }
         }
         window.location.assign(safeNext());
