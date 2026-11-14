@@ -23,7 +23,8 @@ We intentionally use **one deployable Next.js application**. The `frontend/src/a
 ```bash
 corepack enable
 pnpm install
-cp .env.example .env
+cp .env.example frontend/.env.local
+cp backend/.env.example backend/.env
 pnpm dev
 ```
 
@@ -41,7 +42,7 @@ This runs the app on :3000 and a local development PostgreSQL service on :5432. 
 
 ## Tooling and future integrations
 
-Next.js, TypeScript, Tailwind v4, shadcn/ui configuration, Phosphor Icons, PostgreSQL, Prisma, Supabase Auth (including future Google OAuth), private Supabase Storage, Zod, Gemini and Groq only, Vitest, Playwright (to be added with E2E specs), Pino, Docker, Railway, and GitHub Actions.
+Next.js, TypeScript, Tailwind v4, shadcn/ui configuration, Phosphor Icons, PostgreSQL, Prisma, Supabase Auth (including future Google OAuth), private Supabase Storage, Zod, Gemini and Groq only, Vitest, Playwright (browser smoke-test scaffold), Pino, Docker, Railway, and GitHub Actions.
 
 Only the foundation is initialized. Configuring OAuth, external providers, uploads, application database models, and full E2E tests requires the next implementation milestones.
 
