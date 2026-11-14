@@ -16,11 +16,11 @@ test("synthetic what-if preview computes from stated records", async ({ page }) 
   // The region is labelled on a div; locate it by its explicit accessible label.
   const panel = page.locator('[aria-label="Interactive synthetic candidate matching example"]');
   await expect(panel).toBeVisible();
-  await expect(panel.locator("[data-testid="eligible-count"]")).toContainText("1");
+  await expect(panel.getByTestId("eligible-count")).toContainText("1");
   const candidateB = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
   await expect(candidateB).toContainText("Excluded");
   await panel.getByRole("button", { name: "60 days" }).click();
-  await expect(panel.locator("[data-testid="eligible-count"]")).toContainText("2");
+  await expect(panel.getByTestId("eligible-count")).toContainText("2");
   await expect(candidateB).toContainText("Eligible");
   await expect(panel.locator(".v2-candidate").filter({ hasText: "Candidate C" })).toContainText("Needs review");
   await panel.getByRole("button", { name: "30 days" }).click();
