@@ -5,6 +5,7 @@ on:
     branches:
       - feat/recruiter-search
       - feat/homepage-v2
+      - integration/release-20261114
   pull_request:
     branches:
       - main

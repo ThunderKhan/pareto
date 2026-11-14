@@ -218,3 +218,8 @@
 - Replaced hundreds of sequential per-candidate upsert/delete/skill writes with four batched statements in a single atomic transaction: insert unique shared skills with `createMany(skipDuplicates)`, remove **only** the specified owner's `demo-v1-<UUID>-` fixtures (FK cascade clears their links), bulk-insert the same 48 candidate IDs, then bulk-insert all 129 skill associations. Retains all previous deterministic data, NULL skill semantics, unrelated owners, and stable reference IDs. Transaction timeout is 60 seconds as a network safety margin, not the primary fix.
 - The ordinary PostgreSQL CI job now calls the seed twice to verify idempotency; a targeted integration assertion checks 48 unique seeded IDs and 129 skill associations after repeated seeding.
 - No database connections/credentials were used by the assistant; user must pull the integration branch and rerun only `pnpm db:seed` locally. Since the old seed failed inside one transaction, the old writes should have rolled back. CI verification pending.
+
+## 2026-11-14 — Verify integration seed fix after external merge
+
+- GitHub reports PR #3 merged externally (not by this session), so further commits to the integration branch no longer trigger `pull_request` CI. Added `integration/release-20261114` to existing checks workflow push branch filters, preserving all other branch triggers including `feat/homepage-v2`.
+- This enables real PostgreSQL migrate, twice-seeded fixtures, integration/Playwright tests and Docker runtime verification of the P2028 fix without touching main, any secrets or Railway.
