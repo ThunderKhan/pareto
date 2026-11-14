@@ -29,7 +29,7 @@ test("public workflow shortlist and similarity remain after evidence panel remov
   await page.getByRole("navigation", { name: "Main navigation" })
     .getByRole("link", { name: "Explore matching" }).click();
   await expect(page).toHaveURL(/#similar$/);
-  await expect(page.locator("#similar")).toContainText("COMPARABLE PROFILES");
+  await expect(page.locator("#similar")).toContainText("Comparable profiles");
 });
 
 

@@ -60,6 +60,44 @@ test("homepage uses loaded, self-hosted typography rather than CSS-only font nam
   await writeFile(testInfo.outputPath("computed-typography.json"), JSON.stringify({ ...metrics, fontResponses, failedFonts }, null, 2));
 });
 
+test("landing page has legible candidate evidence and clear synthetic data disclosure", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator(".v2-hero-stage .v2-stage-disclosure")).toHaveText(
+    "Illustrative workflow · Fictional candidate profiles"
+  );
+  await expect(page.locator("#problem .v2-eyebrow")).toHaveText("The problem");
+  await expect(page.locator("#how-it-works .v2-eyebrow")).toHaveText("Three steps");
+  await expect(page.locator("#similar .v2-overline").first()).toHaveText("Reference profile");
+  await expect(page.locator("#trust .v2-eyebrow")).toHaveText("Evidence first");
+  for (const selector of [".v2-rail-caption", ".v2-query-label",
+    ".v2-criteria-item strong", ".v2-mini-result-state",
+    ".v2-source-meta > span", ".v2-comparison-grid b"]) {
+    const size = await page.locator(selector).first().evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+    expect(size, `legible preview text at ${selector}`).toBeGreaterThanOrEqual(12);
+  }
+  await expect(page.locator(".v2-close-mascot")).toHaveCSS("animation-name", "none");
+});
+
+test("mobile capability pagination has accessible touch targets", async ({ page }) => {
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/#trust");
+    const controls = page.locator(".v2-trust-mobile-dots button");
+    await expect(controls).toHaveCount(4);
+    for (const target of await controls.all()) {
+      const bounds = await target.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.width).toBeGreaterThanOrEqual(44);
+      expect(bounds!.height).toBeGreaterThanOrEqual(44);
+    }
+    await controls.nth(2).click();
+    await expect(controls.nth(2)).toHaveAttribute("aria-current", "true");
+    const documentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(documentWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+  }
+});
+
 test("hero, navigation and public auth destinations are connected", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "Find your next match." })).toBeVisible();
@@ -230,7 +268,7 @@ test("removed interactive evidence section leaves no dead links or duplicated re
   await expect(page.getByRole("navigation", { name: "Footer navigation" }).getByRole("link", { name: "Candidate similarity" })).toHaveAttribute("href", "#similar");
   await matchingLink.click();
   await expect(page).toHaveURL(/#similar$/);
-  await expect(page.locator("#similar")).toContainText("COMPARABLE PROFILES");
+  await expect(page.locator("#similar")).toContainText("Comparable profiles");
   // The separate How It Works shortlist stays available.
   await expect(page.locator("#how-it-works-step-3 .v2-mini-result")).toHaveCount(3);
 });

@@ -135,7 +135,7 @@ function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "descr
     <div className="v2-workspace" aria-label="Pareto candidate search workflow">
       <aside className="v2-workspace-rail" aria-label="Application navigation">
         <div className="v2-workspace-mini-brand"><span className="v2-workspace-mini-icon">p.</span><span>pareto</span><CaretDown size={12} aria-hidden="true" /></div>
-        <p className="v2-rail-caption">WORKSPACE</p>
+        <p className="v2-rail-caption">Workspace</p>
         <div className="v2-rail-item v2-rail-item--selected"><MagnifyingGlass size={16} aria-hidden="true"/> Candidate search</div>
         <div className="v2-rail-item"><SlidersHorizontal size={16} aria-hidden="true" /> Search criteria</div>
         <div className="v2-rail-spacer"/>
@@ -147,7 +147,7 @@ function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "descr
           
         </div>
         <div className="v2-workspace-content">
-          <div className="v2-window-overline">SEARCH / NEW REQUEST</div>
+          <div className="v2-window-overline">Search / new request</div>
           <div className="v2-window-heading">
             <div><h3>{state === "results" ? "A shortlist with reasons." : state === "review" ? "Review the interpretation." : "Describe your ideal candidate."}</h3>
             <p>{state === "results" ? "Matches against the confirmed criteria." : state === "review" ? "Make the requirements explicit before searching." : "Turn a natural-language brief into an editable search."}</p></div>
@@ -155,7 +155,7 @@ function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "descr
           </div>
           {(state === "hero" || state === "describe" || state === "review") && (
             <div className="v2-query" aria-label="Example hiring brief">
-              <div className="v2-query-label"><MagnifyingGlass size={16} aria-hidden="true"/> HIRING BRIEF</div>
+              <div className="v2-query-label"><MagnifyingGlass size={16} aria-hidden="true"/> Hiring brief</div>
               <p>Find <mark>Java backend engineers</mark> in <mark>Hyderabad</mark> with <mark>6–10 years</mark> of experience, <mark>Spring Boot and AWS</mark>, who can join <mark>within 30 days</mark>.</p>
               
             </div>
@@ -188,17 +188,17 @@ function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "descr
 function Problem() {
   return <section id="problem" className="v2-section v2-problem">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>THE PROBLEM</Label><h2>Hiring is more than <em>a list of filters.</em></h2><p>Rigid searches hide trade-offs. A meaningful shortlist should show which details matter, what matched, and where the evidence stops.</p></div>
+      <div className="v2-section-intro"><Label>The problem</Label><h2>Hiring is more than <em>a list of filters.</em></h2><p>Rigid searches hide trade-offs. A meaningful shortlist should show which details matter, what matched, and where the evidence stops.</p></div>
       <div className="v2-contrast">
         <div className="v2-contrast-old">
-          <div className="v2-contrast-kicker">TRADITIONAL FILTERING</div>
+          <div className="v2-contrast-kicker">Traditional filtering</div>
           <h3>Matches a keyword.<br/>Misses the context.</h3>
           <div className="v2-filter-pile"><Chip>Java</Chip><Chip>Hyderabad</Chip><Chip>6+ years</Chip><Chip>Any notice period</Chip></div>
           <div className="v2-opaque-row"><span className="v2-initial">B</span><span>Candidate B <small>“Good match”</small></span><strong aria-label="Unexplained score">?</strong></div>
           
         </div>
         <div className="v2-contrast-new">
-          <div className="v2-contrast-kicker">PARETO&apos;S APPROACH</div>
+          <div className="v2-contrast-kicker">Pareto&apos;s approach</div>
           <h3>Every criterion has <em>a reason.</em></h3>
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Java · Spring Boot · AWS</span><b>Present</b></div>
           <div className="v2-evidence-line"><CheckCircle size={19} aria-hidden="true"/><span>Hyderabad · 8 years</span><b>Present</b></div>
@@ -214,7 +214,7 @@ function HowItWorks() {
   return <section className="v2-section v2-how" id="how-it-works">
     <div className="v2-container">
       <div className="v2-section-intro v2-section-intro--center">
-        <Label>HOW IT WORKS</Label>
+        <Label>Three steps</Label>
         <h2>From a hiring brief to <em className="v2-how-accent">a reasoned shortlist.</em></h2>
         <p>Three moments, one continuous workspace. You control when a proposed interpretation becomes a search.</p>
       </div>
@@ -246,19 +246,19 @@ function Similarity() {
   const others = previewCandidates.slice(1);
   return <section className="v2-section v2-similar" id="similar">
     <div className="v2-container">
-      <div className="v2-section-intro"><Label>REFERENCE-BASED DISCOVERY</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify people with comparable skills, experience and location.</p></div>
+      <div className="v2-section-intro"><Label>Reference-based search</Label><h2>Found someone promising? <em>Find others like them.</em></h2><p>Use a reference profile to identify people with comparable skills, experience and location.</p></div>
       <div className="v2-similar-board">
         <div className="v2-source-person">
-          <div className="v2-overline">REFERENCE PROFILE</div>
+          <div className="v2-overline">Reference profile</div>
           <div className="v2-source-identity"><span className="v2-source-avatar">A</span><div><h3>{comparable.name}</h3><p>{comparable.title}</p></div></div>
           <div className="v2-source-divider"/>
-          <div className="v2-source-meta"><span>LOCATION</span><strong>{comparable.city}</strong></div>
-          <div className="v2-source-meta"><span>EXPERIENCE</span><strong>{comparable.years} years</strong></div>
-          <div className="v2-source-meta"><span>SKILL SET</span><div>{comparable.skills.map((skill) => <Chip key={skill} strong>{skill}</Chip>)}</div></div>
+          <div className="v2-source-meta"><span>Location</span><strong>{comparable.city}</strong></div>
+          <div className="v2-source-meta"><span>Experience</span><strong>{comparable.years} years</strong></div>
+          <div className="v2-source-meta"><span>Skills</span><div>{comparable.skills.map((skill) => <Chip key={skill} strong>{skill}</Chip>)}</div></div>
           <div className="v2-source-footer"><SignalArt variant="interpret"/><span>Reference attributes provide a starting point for human review.</span></div>
         </div>
         <div className="v2-similar-compare">
-          <div className="v2-similar-board-heading"><span className="v2-overline">COMPARABLE PROFILES</span></div>
+          <div className="v2-similar-board-heading"><span className="v2-overline">Comparable profiles</span></div>
           {others.map((candidate) => {
             const common = candidate.skills.filter((skill) => comparable.skills.some((item) => item.toLowerCase() === skill.toLowerCase()));
             const experienceGap = candidate.years === null || comparable.years === null ? null : Math.abs(candidate.years - comparable.years);
@@ -349,7 +349,7 @@ function TrustDemo({ step }: { step: number }) {
       <div className="v2-trust-access-bar"><span className="v2-workspace-mini-icon">p.</span><strong>pareto</strong><span>Recruiter workspace</span></div>
       <div className="v2-trust-access-content">
         <div className="v2-trust-access-icon"><ShieldCheck size={34} weight="regular" aria-hidden="true"/></div>
-        <p className="v2-window-overline">RECRUITER ACCESS</p>
+        <p className="v2-window-overline">Recruiter access</p>
         <h3>Search in your workspace.</h3>
         <p>Sign in to access protected candidate search. Public examples on this page do not retrieve live profiles.</p>
         <Link href="/login" className="v2-trust-access-link">Log in to Pareto <ArrowRight size={16} aria-hidden="true"/></Link>
@@ -439,7 +439,7 @@ function Trust() {
   return <section className="v2-section v2-trust" id="trust" aria-labelledby="v2-trust-title">
     <div className="v2-container">
       <div className="v2-trust-heading">
-        <Label>WHY PARETO</Label>
+        <Label>Evidence first</Label>
         <h2 id="v2-trust-title">Why Pareto works</h2>
       </div>
       <div className="v2-trust-timeline">
@@ -464,7 +464,7 @@ function Trust() {
         </ol>
         <div className="v2-trust-demo-column">
           <div className="v2-trust-demo-sticky">
-            <div id="v2-trust-demo" className="v2-trust-demo" role="region" aria-label="Selected Pareto workflow example" aria-live="polite">
+            <div id="v2-trust-demo" className="v2-trust-demo" role="region" aria-label="Selected Pareto workflow example">
               <TrustDemo step={activeStep}/>
             </div>
           </div>
@@ -525,7 +525,7 @@ function Footer() {
           <div className="v2-footer-brand">
             <Logo/>
             <p>Recruitment intelligence,<br/>with reasons.</p>
-            <span className="v2-footer-copyright">© 2026 Pareto · std::zero.<br/>Built for the Trustume AI Hackathon.</span>
+            <span className="v2-footer-copyright">© 2026 Pareto · std::zero<br/>Built for the Trustume AI Hackathon.</span>
           </div>
           <nav className="v2-footer-navigation" aria-label="Footer navigation">
             <div className="v2-footer-group">
@@ -594,7 +594,7 @@ export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string 
         <div className="v2-container v2-hero-stage">
           
           <WorkspaceFrame state="hero"/>
-          
+          <p className="v2-stage-disclosure">Illustrative workflow · Fictional candidate profiles</p>
         </div>
       </section>
       <Problem/>
