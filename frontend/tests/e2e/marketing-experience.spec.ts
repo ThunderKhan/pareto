@@ -188,8 +188,13 @@ test("hero mascot tracks pointer, walks on hover and respects reduced motion", a
   const leftLeg = mascot.locator(".v2-hero-mascot__leg--left");
   await expect(mascot).toBeVisible();
   await expect(eyes).toHaveAttribute("transform", "translate(0 0)");
-  await page.mouse.move(30, 160);
-  await expect.poll(() => eyes.getAttribute("transform")).not.toBe("translate(0 0)");
+  // A pointer event can precede client hydration on slow CI runners; retry
+  // real pointer movement instead of merely waiting for an unchanged attribute.
+  let attempts = 0;
+  await expect.poll(async () => {
+    await page.mouse.move(30 + (attempts++ % 2) * 30, 160);
+    return eyes.getAttribute("transform");
+  }, { timeout: 8000 }).not.toBe("translate(0 0)");
   await expect(leftLeg).toHaveCSS("animation-name", "none");
   await mascot.hover();
   await expect(leftLeg).toHaveCSS("animation-name", "v2-hero-left-step");
@@ -342,14 +347,27 @@ test("OpenTag-inspired trust timeline changes its sticky demo with accessible co
 
 test("timeline advances its active content when the page is scrolled", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/#trust");
+  // The timeline is independently scroll-driven. Reduced motion disables Lenis,
+  // avoiding a race between hash restoration and wheel smoothing during the test.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
   const steps = page.locator("#trust .v2-trust-step-button");
   await expect(steps).toHaveCount(4);
-  await steps.nth(2).evaluate((node) => node.scrollIntoView({ block: "center", behavior: "instant" }));
+
+  async function moveToReadingLine(index: number) {
+    await steps.nth(index).evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const targetTop = window.scrollY + rect.top + rect.height / 2 - window.innerHeight * .44;
+      window.scrollTo({ top: targetTop, behavior: "instant" });
+      window.dispatchEvent(new Event("scroll"));
+    });
+  }
+
+  await moveToReadingLine(2);
   await expect(steps.nth(2)).toHaveAttribute("aria-current", "step");
   await expect(steps.nth(2)).toHaveCSS("opacity", "1");
   await expect(page.locator("#v2-trust-demo")).toContainText("A shortlist with reasons.");
-  await steps.nth(3).evaluate((node) => node.scrollIntoView({ block: "center", behavior: "instant" }));
+  await moveToReadingLine(3);
   await expect(steps.nth(3)).toHaveAttribute("aria-current", "step");
   await expect(page.locator("#v2-trust-demo")).toContainText("Search in your workspace.");
 });
