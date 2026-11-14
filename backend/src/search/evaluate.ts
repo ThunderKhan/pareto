@@ -1,4 +1,4 @@
-import { normalize, skillKey, type Rule } from "./criteria";
+import { normalize, ruleKey, skillKey, type Rule } from "./criteria";
 
 export const evaluatorVersion = "1";
 export type CandidateProfile = {
@@ -89,5 +89,7 @@ export function referenceCriteria(profile: CandidateProfile): Rule[] {
   for (const value of profile.pastRoles.slice(0, 6)) rules.push({ field: "pastRole", value, mode });
   for (const value of profile.certifications.slice(0, 6)) rules.push({ field: "certification", value, mode });
   for (const value of profile.skills?.slice(0, 20) ?? []) rules.push({ field: "skill", value, mode, exclude: false });
-  return rules;
+  // A profile can list "AWS" and "Amazon Web Services" as separate labels.
+  // Keep only one canonical criterion per field to avoid rejecting the entire draft.
+  return [...new Map(rules.map(rule => [ruleKey(rule), rule])).values()];
 }

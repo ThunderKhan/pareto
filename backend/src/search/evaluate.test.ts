@@ -68,6 +68,15 @@ describe("candidate evaluation", () => {
     expect(applyDelta(narrower, [{ op: "remove", key: "city" }])).toHaveLength(6);
     expect(() => applyDelta(rules, [{ op: "remove", key: "industry" }])).toThrow();
   });
+  it("canonicalizes duplicate aliases in reference-based drafts without merging distinct languages", () => {
+    const reference = referenceCriteria({
+      ...profile, skills: ["AWS", "Amazon Web Services", "Java", "JavaScript", "JS"],
+    });
+    expect(criteriaSchema.safeParse(reference).success).toBe(true);
+    const skills = reference.filter(rule => rule.field === "skill");
+    expect(skills).toHaveLength(3); // AWS, Java and JavaScript
+    expect(skills.filter(rule => rule.field === "skill" && rule.value === "Java")).toHaveLength(1);
+  });
   it("excludes the reference and ranks peers by documented matches", () => {
     const reference = referenceCriteria(profile);
     const peers = rank([profile, { ...profile, id: "2", skills: null }, { ...profile, id: "3" }], reference, profile.id);
