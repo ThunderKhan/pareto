@@ -11,3 +11,11 @@
 **Verification:** Configuration and source files committed through GitHub. Dependencies, build, Docker runtime, and tests must still be verified after installation; do not claim passing results until executed.
 
 **Next:** Finalize specifications, produce a lockfile, verify local build, integrate Supabase and LLM credentials securely.
+
+## 2026-11-14 — M0 documentation: MVP scope
+
+**Action:** Added `docs/MVP.md`, including the mandatory Trustume PS1 acceptance flow, differentiating search diagnostics and what-if features, user journeys, dataset/ingestion plan, agreed Gemini + Groq-only stack, product constraints, and release gates.
+
+**Scope boundary:** This is a product specification, not completed implementation or evidence of passing tests. Detailed API, schema and architecture specifications remain to be written.
+
+**Privacy:** The source repository is currently public, so the original organizer-supplied statement remains uncommitted pending a privacy change.
