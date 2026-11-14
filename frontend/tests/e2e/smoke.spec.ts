@@ -2,10 +2,10 @@ import { expect, test } from "@playwright/test";
 
 test("public landing, navigation and health", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /find the right talent.*know why/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /get started/i }).first()).toHaveAttribute("href", "/signup");
+  await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /start searching/i }).first()).toHaveAttribute("href", "/signup");
   await expect(page.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
-  await expect(page.getByRole("link", { name: "Explore the illustrative search preview" })).toHaveAttribute("href", "#preview");
+  await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
   const health = await request.get("/api/health");
   expect(health.ok()).toBe(true);
   expect(await health.json()).toMatchObject({ status: "ok", phase: "scaffold" });
@@ -16,15 +16,15 @@ test("synthetic what-if preview computes from stated records", async ({ page }) 
   // The region is labelled on a div; locate it by its explicit accessible label.
   const panel = page.locator('[aria-label="Interactive synthetic candidate matching example"]');
   await expect(panel).toBeVisible();
-  await expect(panel.locator(".preview-panel__summary strong")).toContainText("1");
-  const candidateB = panel.locator(".demo-result").filter({ hasText: "Candidate B" });
-  await expect(candidateB).toContainText("Does not match");
+  await expect(panel.getByTestId("eligible-count")).toContainText("1");
+  const candidateB = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
+  await expect(candidateB).toContainText("Excluded");
   await panel.getByRole("button", { name: "60 days" }).click();
-  await expect(panel.locator(".preview-panel__summary strong")).toContainText("2");
+  await expect(panel.getByTestId("eligible-count")).toContainText("2");
   await expect(candidateB).toContainText("Eligible");
-  await expect(panel.locator(".demo-result").filter({ hasText: "Candidate C" })).toContainText("Needs review");
+  await expect(panel.locator(".v2-candidate").filter({ hasText: "Candidate C" })).toContainText("Needs review");
   await panel.getByRole("button", { name: "30 days" }).click();
-  await expect(candidateB).toContainText("Does not match");
+  await expect(candidateB).toContainText("Excluded");
 });
 
 test("signup and login pages exist and explain unconfigured auth", async ({ page }) => {

@@ -1,51 +1,162 @@
 import { expect, test } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
 
-const sizes = [
-  { label: "narrow-mobile", width: 320, height: 700 },
-  { label: "mobile", width: 390, height: 844 },
-  { label: "tablet", width: 768, height: 1024 },
-  { label: "desktop", width: 1440, height: 1000 },
-  { label: "wide-desktop", width: 1920, height: 1080 },
-] as const;
-
-test("landing routes and anchor navigation lead to real destinations", async ({ page }) => {
+test("homepage uses loaded, self-hosted typography rather than CSS-only font names", async ({ page }, testInfo) => {
+  const failedFonts: string[] = [];
+  const fontResponses: string[] = [];
+  page.on("requestfailed", (request) => {
+    if (/\.woff2?(?:\?|$)/.test(request.url())) failedFonts.push(request.url());
+  });
+  page.on("response", (response) => {
+    if (/\.woff2?(?:\?|$)/.test(response.url())) {
+      if (response.ok()) fontResponses.push(response.url());
+      else failedFonts.push(response.url() + " status=" + response.status());
+    }
+  });
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /find the right talent.*know why/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Get started" }).first()).toHaveAttribute("href", "/signup");
+  const metrics = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const get = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!node) throw new Error("Missing typography target " + selector);
+      const computed = getComputedStyle(node);
+      return {
+        fontFamily: computed.fontFamily,
+        fontSize: computed.fontSize,
+        fontWeight: computed.fontWeight,
+        fontStyle: computed.fontStyle,
+        lineHeight: computed.lineHeight,
+        letterSpacing: computed.letterSpacing,
+        fontSynthesis: computed.fontSynthesis,
+      };
+    };
+    return {
+      hero: get(".v2-hero h1"),
+      italicEmphasis: get(".v2-hero h1 em"),
+      section: get(".v2-problem .v2-section-intro h2"),
+      body: get(".v2-hero-copy > p"),
+      nav: get(".v2-desktop-nav"),
+      action: get(".v2-hero-actions .v2-btn"),
+      candidate: get(".v2-window-heading h3"),
+      faces: [...document.fonts].map(({family, style, weight, status}) => ({family, style, weight, status})),
+      mediaFonts: performance.getEntriesByType("resource").map((entry) => entry.name).filter((url) => /\.woff2?(?:\?|$)/.test(url)),
+    };
+  });
+  expect(metrics.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
+  expect(metrics.section.fontFamily).toMatch(/^Bitter(?:,|$)/);
+  expect(metrics.body.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.nav.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.action.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.candidate.fontFamily).toMatch(/^Inter(?:,|$)/);
+  expect(metrics.italicEmphasis.fontStyle).toBe("normal");
+  expect(metrics.hero.fontSynthesis).toBe("none");
+  expect(metrics.faces.some((face) => face.family === "Bitter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.faces.some((face) => face.family === "Inter" && !face.family.includes("Fallback") && face.status === "loaded")).toBe(true);
+  expect(metrics.mediaFonts.length).toBeGreaterThanOrEqual(2);
+  expect(fontResponses.length).toBeGreaterThanOrEqual(2);
+  expect(failedFonts).toEqual([]);
+  expect(metrics.mediaFonts.some((url) => /stkearl/i.test(url))).toBe(false);
+  await writeFile(testInfo.outputPath("computed-typography.json"), JSON.stringify({ ...metrics, fontResponses, failedFonts }, null, 2));
+});
+
+test("hero, navigation and public auth destinations are connected", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1, name: /find the right people.*understand every match/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start searching" }).first()).toHaveAttribute("href", "/signup");
+  await expect(page.getByRole("link", { name: "See how it works" })).toHaveAttribute("href", "#how-it-works");
   await expect(page.getByRole("link", { name: "Log in" }).first()).toHaveAttribute("href", "/login");
+  await expect(page.locator(".v2-hero-stage .v2-criteria-item")).toHaveCount(5);
+  await expect(page.locator(".v2-hero-stage .v2-criteria-item svg")).toHaveCount(5);
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "How it works" }).click();
-  await expect(page).toHaveURL(/#evidence$/);
-  await expect(page.getByRole("region", { name: "Interactive synthetic candidate matching example" })).toHaveCount(1);
+  await expect(page).toHaveURL(/#how-it-works$/);
+  await expect(page.getByRole("heading", { name: /from a hiring brief to.*a reasoned shortlist/i })).toBeVisible();
   await page.goto("/signup");
   await expect(page.getByRole("heading", { name: "Get started with Pareto" })).toBeVisible();
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Log in to Pareto" })).toBeVisible();
 });
 
-test("preview recomputes every outcome from declared sample records", async ({ page }) => {
-  await page.goto("/#preview");
-  const panel = page.getByRole("region", { name: "Interactive synthetic candidate matching example" });
-  const candidateA = panel.locator(".demo-result").filter({ hasText: "Candidate A" });
-  const candidateB = panel.locator(".demo-result").filter({ hasText: "Candidate B" });
-  const candidateC = panel.locator(".demo-result").filter({ hasText: "Candidate C" });
-  await expect(panel.getByTestId("eligible-count")).toContainText("1");
-  await expect(candidateA).toHaveAttribute("data-status", "match");
-  await expect(candidateB).toHaveAttribute("data-status", "fail");
-  await expect(candidateC).toHaveAttribute("data-status", "unknown");
-  await candidateB.getByText("View criterion breakdown").click();
-  await expect(candidateB.locator(".demo-result__details li").filter({ hasText: "Joining window" })).toBeVisible();
-  await expect(candidateB.getByText("Misses · 60 days")).toBeVisible();
-  await panel.getByRole("button", { name: "60 days" }).click();
-  await expect(panel.getByTestId("eligible-count")).toContainText("2");
-  await expect(candidateB).toHaveAttribute("data-status", "match");
-  await expect(candidateB.getByText("Meets · 60 days")).toBeVisible();
-  await expect(candidateC).toHaveAttribute("data-status", "unknown");
-  await panel.getByRole("button", { name: "30 days" }).click();
-  await expect(panel.getByTestId("eligible-count")).toContainText("1");
-  await expect(candidateB).toHaveAttribute("data-status", "fail");
+test("a single workflow product window changes with accessible tabs", async ({ page }, testInfo) => {
+  await page.goto("/#how-it-works");
+  const tabs = page.getByRole("tablist", { name: "Recruitment search workflow" });
+  await expect(tabs.getByRole("tab")).toHaveCount(3);
+  await expect(tabs.getByRole("tab", { name: /describe/i })).toHaveAttribute("aria-selected", "true");
+  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-describe.png") });
+  const review = tabs.getByRole("tab", { name: /review & confirm/i });
+  await review.click();
+  await expect(review).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".v2-process-window")).toContainText("Proposed criteria");
+  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-review.png") });
+  await page.locator(".v2-process-window").getByRole("button", { name: "View illustrated results" }).click();
+  await expect(tabs.getByRole("tab", { name: /discover & explain/i })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".v2-process-window")).toContainText("Illustrative shortlist");
+  await review.click();
+  await review.focus();
+  await page.keyboard.press("ArrowRight");
+  const explain = tabs.getByRole("tab", { name: /discover & explain/i });
+  await expect(explain).toBeFocused();
+  await expect(explain).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".v2-process-window")).toContainText("Illustrative shortlist");
+  await page.locator(".v2-process-window").screenshot({ path: testInfo.outputPath("workflow-results.png") });
+  await page.keyboard.press("Home");
+  await expect(tabs.getByRole("tab", { name: /describe/i })).toHaveAttribute("aria-selected", "true");
 });
 
-test("mobile menu supports keyboard, escape and outside-dismissal", async ({ page }) => {
+test("synthetic preview recalculates and discloses exact criteria", async ({ page }, testInfo) => {
+  await page.goto("/#preview");
+  const panel = page.getByRole("region", { name: "Interactive synthetic candidate matching example" });
+  const one = panel.locator(".v2-candidate").filter({ hasText: "Candidate A" });
+  const two = panel.locator(".v2-candidate").filter({ hasText: "Candidate B" });
+  const three = panel.locator(".v2-candidate").filter({ hasText: "Candidate C" });
+  await expect(panel.getByTestId("eligible-count")).toHaveText("1");
+  await expect(one).toHaveAttribute("data-status", "match");
+  await expect(two).toHaveAttribute("data-status", "fail");
+  await expect(three).toHaveAttribute("data-status", "unknown");
+  await two.getByText("Inspect Candidate B criteria").click();
+  await expect(two.getByText("Misses · 60 days")).toBeVisible();
+  await panel.screenshot({ path: testInfo.outputPath("preview-30-days.png") });
+  await panel.getByRole("button", { name: "60 days" }).click();
+  await expect(panel.getByTestId("eligible-count")).toHaveText("2");
+  await expect(two).toHaveAttribute("data-status", "match");
+  await expect(two.getByText("Meets · 60 days")).toBeVisible();
+  await expect(three).toHaveAttribute("data-status", "unknown");
+  await panel.screenshot({ path: testInfo.outputPath("preview-60-days.png") });
+  await panel.getByRole("button", { name: "30 days" }).click();
+  await expect(panel.getByTestId("eligible-count")).toHaveText("1");
+});
+
+test("reference cards and FAQ tell the truth about the synthetic illustration", async ({ page }, testInfo) => {
+  await page.goto("/#similar");
+  const section = page.locator("#similar");
+  await expect(section.getByRole("heading", { name: /found someone promising.*find others like them/i })).toBeVisible();
+  await expect(section).toContainText("Unknown · needs review");
+  await section.screenshot({ path: testInfo.outputPath("reference-comparison.png") });
+  await page.goto("/#trust");
+  const unknown = page.locator("#trust").getByText("Does an unknown notice period count as a match?");
+  await unknown.click();
+  await expect(page.locator("#trust")).toContainText("Unknown values are marked Needs review");
+  await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
+});
+
+test("mobile walkthrough art never obscures headings or body text", async ({ page }) => {
+  for (const width of [320, 390, 599, 767]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/#how-it-works");
+    const icon = page.locator(".v2-process-copy .v2-process-icon");
+    await expect(icon).toBeHidden();
+    const heading = page.locator(".v2-process-copy h3");
+    const copy = page.locator(".v2-process-copy > p");
+    const geometry = await page.evaluate(([headingSelector, copySelector]) => {
+      const h = document.querySelector(headingSelector)!.getBoundingClientRect();
+      const p = document.querySelector(copySelector)!.getBoundingClientRect();
+      return {headingRight:h.right,copyRight:p.right,width:window.innerWidth};
+    }, [".v2-process-copy h3", ".v2-process-copy > p"]);
+    expect(geometry.headingRight).toBeLessThanOrEqual(geometry.width);
+    expect(geometry.copyRight).toBeLessThanOrEqual(geometry.width);
+  }
+});
+
+test("mobile navigation is usable by keyboard and dismisses appropriately", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const toggle = page.getByRole("button", { name: "Open navigation" });
@@ -56,79 +167,87 @@ test("mobile menu supports keyboard, escape and outside-dismissal", async ({ pag
   await expect(page.getByRole("button", { name: "Close navigation" })).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Escape");
   await expect(menu).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused();
+  await expect(toggle).toBeFocused();
   await toggle.click();
-  // Click outside the sticky header/nav at a fixed, visible viewport point.
   await page.mouse.click(380, 820);
   await expect(menu).toHaveCount(0);
   await toggle.click();
   await menu.getByRole("link", { name: "How it works" }).click();
-  await expect(page).toHaveURL(/#evidence$/);
+  await expect(page).toHaveURL(/#how-it-works$/);
   await expect(menu).toHaveCount(0);
 });
 
-test("workflow tabs remain functional on mobile and keyboard", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/#evidence");
-  const workflow = page.getByRole("group", { name: "Workflow stages" });
-  await expect(workflow.getByRole("button")).toHaveCount(6);
-  const explain = workflow.getByRole("button", { name: /05 \/ explain/i });
-  await explain.focus();
-  await page.keyboard.press("Enter");
-  await expect(explain).toHaveAttribute("aria-current", "step");
-  await expect(page.getByRole("heading", { name: "See reasons, not just ranks." })).toBeVisible();
-});
-
-test("reduced motion eliminates pinned dead scroll and preserves content", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
+test("reduced motion keeps all content and disables stage entrance", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const story = page.locator(".narrative");
-  const geometry = await story.evaluate((element) => {
-    const styles = getComputedStyle(element);
-    const sticky = element.querySelector(".narrative__sticky")!;
-    return { height: element.getBoundingClientRect().height, position: getComputedStyle(sticky).position, animation: getComputedStyle(element.querySelector("h2")!).animationName, styleHeight: styles.height };
-  });
-  expect(geometry.position).not.toBe("sticky");
-  expect(geometry.height).toBeLessThan(1900);
-  expect(geometry.animation).toBe("none");
-  await expect(page.locator(".approach-section h2")).toBeVisible();
-  await expect(page.locator(".preview-section h2")).toBeVisible();
-  await story.getByRole("button", { name: /06 \/ refine/i }).click();
-  await expect(story.getByRole("heading", { name: "Change the request, not the workflow." })).toBeVisible();
+  const animation = await page.locator(".v2-hero-stage > .v2-workspace").evaluate((el) => getComputedStyle(el).animationName);
+  expect(animation).toBe("none");
+  await expect(page.getByRole("heading", { name: /human-confirmed.*evidence-backed/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /search with clarity/i })).toBeVisible();
 });
 
-for (const size of sizes) {
-  test(`responsive journey and overflow at ${size.label}`, async ({ page }, testInfo) => {
-    const runtimeErrors: string[] = [];
-    page.on("pageerror", (error) => runtimeErrors.push(error.message));
+for (const size of [
+  { name: "320", width: 320, height: 700 },
+  { name: "390", width: 390, height: 844 },
+  { name: "768", width: 768, height: 1024 },
+  { name: "1440", width: 1440, height: 900 },
+  { name: "1920", width: 1920, height: 1080 },
+]) {
+  test("responsive visual journey at " + size.name + "px", async ({ page }, testInfo) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width: size.width, height: size.height });
     await page.goto("/");
-    await expect(page.locator(".landing-hero h1")).toBeVisible();
-    await expect(page.locator(".approach-section h2")).toBeVisible();
-    await expect(page.locator(".preview-section h2")).toBeVisible();
-    const anchors = ["approach", "evidence", "preview", "principles"] as const;
-    await page.screenshot({ path: testInfo.outputPath(`${size.label}-hero.png`) });
+    const typography = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const style = (selector: string) => {
+        const el = document.querySelector(selector);
+        if (!el) throw new Error("Missing typography element " + selector);
+        const value = getComputedStyle(el);
+        return {
+          fontFamily: value.fontFamily,
+          fontSize: value.fontSize,
+          fontWeight: value.fontWeight,
+          lineHeight: value.lineHeight,
+          letterSpacing: value.letterSpacing,
+          fontStyle: value.fontStyle,
+          rect: { width: Math.round(el.getBoundingClientRect().width), height: Math.round(el.getBoundingClientRect().height) },
+        };
+      };
+      return {
+        viewport: window.innerWidth,
+        hero: style(".v2-hero h1"),
+        displayEmphasis: style(".v2-hero h1 em"),
+        section: style(".v2-problem .v2-section-intro h2"),
+        lead: style(".v2-hero-copy > p"),
+        navigation: style(".v2-header-cta"),
+        product: style(".v2-window-heading h3"),
+        fonts: [...document.fonts].filter((font) => font.status === "loaded").map((font) => ({family: font.family, weight: font.weight, style: font.style})),
+      };
+    });
+    expect(typography.hero.fontFamily).toMatch(/^Bitter(?:,|$)/);
+    expect(typography.lead.fontFamily).toMatch(/^Inter(?:,|$)/);
+    await writeFile(testInfo.outputPath(size.name + "-computed-typography.json"), JSON.stringify(typography, null, 2));
+    const anchors = ["hero", "problem", "how-it-works", "preview", "similar", "trust", "get-started"];
     for (const anchor of anchors) {
-      await page.locator(`#${anchor}`).scrollIntoViewIfNeeded();
-      await page.screenshot({ path: testInfo.outputPath(`${size.label}-${anchor}.png`) });
-      const overflow = await page.evaluate(() => ({
-        doc: document.documentElement.scrollWidth,
-        viewport: document.documentElement.clientWidth,
-      }));
-      expect(overflow.doc, `Horizontal overflow at ${size.label}/${anchor}`).toBeLessThanOrEqual(overflow.viewport + 1);
+      const node = anchor === "hero" ? page.locator(".v2-hero") : page.locator("#" + anchor);
+      const top = anchor === "hero" ? 0 : await node.evaluate((el) => window.scrollY + el.getBoundingClientRect().top - 85);
+      await page.evaluate((value) => window.scrollTo({ top: Math.max(0, value), behavior: "instant" }), top);
+      await page.screenshot({ path: testInfo.outputPath(size.name + "-" + anchor + ".png") });
+      const x = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: document.documentElement.clientWidth }));
+      expect(x.content, size.name + "px overflow at " + anchor).toBeLessThanOrEqual(x.viewport + 1);
     }
-    if (size.width >= 768) {
-      const geometry = await page.locator(".narrative").evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        return { start: window.scrollY + rect.top, span: Math.max(0, rect.height - window.innerHeight) };
-      });
-      for (const fraction of [0.14, 0.51, 0.87]) {
-        await page.evaluate((target) => window.scrollTo({ top: target, behavior: "instant" }), geometry.start + geometry.span * fraction);
-        await page.waitForTimeout(80);
-        await page.screenshot({ path: testInfo.outputPath(`${size.label}-story-${Math.round(fraction * 100)}.png`) });
-      }
+    if (size.width === 1440 || size.width === 390) {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      await page.screenshot({ path: testInfo.outputPath(size.name + "-full-page.png"), fullPage: true });
     }
-    expect(runtimeErrors).toEqual([]);
+    // Intermediate scroll positions: no long pinned sequences or dead scroll.
+    for (const section of ["problem", "how-it-works", "preview"]) {
+      const y = await page.locator("#" + section).evaluate((el) => window.scrollY + el.getBoundingClientRect().top + el.getBoundingClientRect().height * .5);
+      await page.evaluate((value) => window.scrollTo({ top: value, behavior: "instant" }), y);
+      await page.screenshot({ path: testInfo.outputPath(size.name + "-mid-" + section + ".png") });
+    }
+    expect(errors).toEqual([]);
   });
 }
