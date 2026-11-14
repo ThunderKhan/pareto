@@ -117,7 +117,7 @@ function Chip({ children, strong = false }: { children: React.ReactNode; strong?
   return <span className={"v2-chip" + (strong ? " v2-chip--strong" : "")}>{children}</span>;
 }
 
-function WorkspaceFrame({ state = "hero" }: { state?: "hero" | "describe" | "review" | "results" }) {
+function WorkspaceFrame({ state = "hero", onConfirm }: { state?: "hero" | "describe" | "review" | "results"; onConfirm?: () => void }) {
   const sample = assessPreview(30);
   return (
     <div className="v2-workspace" aria-label="Illustrative Pareto recruiter workspace with synthetic sample data">
@@ -150,11 +150,11 @@ function WorkspaceFrame({ state = "hero" }: { state?: "hero" | "describe" | "rev
           )}
           {(state === "hero" || state === "review") && (
             <div className="v2-criteria" aria-label="Proposed structured criteria">
-              <div className="v2-block-title"><span>Proposed criteria <small>Editable before confirmation</small></span><span className="v2-state-pill">Needs review</span></div>
+              <div className="v2-block-title"><span>Proposed criteria <small>Proposed for recruiter review</small></span><span className="v2-state-pill">Needs review</span></div>
               <div className="v2-criteria-grid">
                 {facets.map(([label, value]) => <div className="v2-criteria-item" key={label}><span>{label}</span><strong>{value}</strong><Check size={14} aria-hidden="true"/></div>)}
               </div>
-              <div className="v2-criteria-bottom"><ShieldCheck size={17} aria-hidden="true"/> Recruiter confirmation required <span className="v2-mock-action">Confirm search <ArrowRight size={14} aria-hidden="true"/></span></div>
+              <div className="v2-criteria-bottom"><ShieldCheck size={17} aria-hidden="true"/> Recruiter confirmation required {onConfirm && state === "review" ? <button type="button" className="v2-mock-action" onClick={onConfirm}>View illustrated results <ArrowRight size={14} aria-hidden="true"/></button> : <a href="#how-it-works" className="v2-mock-action">Explore workflow <ArrowRight size={14} aria-hidden="true"/></a>}</div>
             </div>
           )}
           {state === "describe" && <div className="v2-prompt-next"><SignalArt variant="interpret"/><p><strong>Understanding the brief</strong><span>Role, location, skills and joining requirements can be extracted for review.</span></p></div>}
@@ -228,7 +228,7 @@ function HowItWorks() {
             <button type="button" onClick={() => setStep((step + 1) % 3)} aria-label="Next step">→</button>
           </div>
         </div>
-        <div className="v2-process-window"><WorkspaceFrame state={step === 0 ? "describe" : step === 1 ? "review" : "results"}/></div>
+        <div className="v2-process-window"><WorkspaceFrame state={step === 0 ? "describe" : step === 1 ? "review" : "results"} onConfirm={() => select(2)}/></div>
       </div>
     </div>
   </section>;
