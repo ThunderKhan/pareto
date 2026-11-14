@@ -76,7 +76,7 @@ test("hero, navigation and public auth destinations are connected", async ({ pag
   await expect(page.locator(".v2-hero-accent")).toHaveText("every match.");
   await expect(page.locator(".v2-hero-accent")).toHaveCSS("color", "rgb(70, 123, 235)");
   await expect(page.locator(".v2-hero-proof-item svg").first()).toHaveCSS("color", "rgb(70, 123, 235)");
-  await expect(page.locator(".v2-hero-proof-item").first()).toHaveCSS("border-top-color", "rgb(219, 231, 251)");
+  await expect(page.locator(".v2-hero-proof")).toHaveCSS("border-top-color", "rgb(219, 231, 251)");
   await expect(page.locator(".v2-hero-stage .v2-rail-item--selected")).toHaveCSS("background-color", "rgb(238, 244, 255)");
   await expect(page.locator(".v2-hero-stage .v2-rail-item--selected svg")).toHaveCSS("color", "rgb(70, 123, 235)");
   await expect(page.locator(".v2-hero-stage .v2-query mark").first()).toHaveCSS("background-color", "rgb(231, 239, 255)");
