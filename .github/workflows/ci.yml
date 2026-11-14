@@ -5,6 +5,7 @@ on:
     branches:
       - feat/recruiter-search
       - feat/homepage-v2
+      - main
       - integration/release-20261114
   pull_request:
     branches:
@@ -59,8 +60,8 @@ jobs:
         run: pnpm --filter @pareto/frontend exec playwright install --with-deps chromium
       - name: Playwright browser tests
         run: pnpm test:e2e
-      - name: Upload synthetic homepage screenshots and Playwright diagnostics
-        if: always() && github.ref_name == 'feat/homepage-v2'
+      - name: Upload homepage screenshots and Playwright diagnostics
+        if: always() && (github.ref_name == 'feat/homepage-v2' || github.ref_name == 'main')
         uses: actions/upload-artifact@v4
         with:
           name: pareto-homepage-v2-browser-evidence
