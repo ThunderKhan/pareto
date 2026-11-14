@@ -123,7 +123,7 @@ for (const size of sizes) {
         return { start: window.scrollY + rect.top, span: Math.max(0, rect.height - window.innerHeight) };
       });
       for (const fraction of [0.14, 0.51, 0.87]) {
-        await page.evaluate((target) => window.scrollTo(0, target), geometry.start + geometry.span * fraction);
+        await page.evaluate((target) => window.scrollTo({ top: target, behavior: "instant" }), geometry.start + geometry.span * fraction);
         await page.waitForTimeout(80);
         await page.screenshot({ path: testInfo.outputPath(`${size.label}-story-${Math.round(fraction * 100)}.png`) });
       }
