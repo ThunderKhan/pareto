@@ -372,8 +372,8 @@ function Footer() {
   </>;
 }
 
-export default function HomepageV2() {
-  return <div className="v2-page">
+export default function HomepageV2({ fontClasses = "" }: { fontClasses?: string }) {
+  return <div className={"v2-page " + fontClasses}>
     <a href="#v2-main" className="v2-skip">Skip to content</a>
     <Header/>
     <main id="v2-main">
