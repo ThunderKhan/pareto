@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, Check, CheckCircle, CaretDown,
+  ArrowRight, ArrowUpRight, CheckCircle, CaretDown,
   List, MagnifyingGlass, Question, ShieldCheck, SlidersHorizontal,
   WarningCircle, X,
 } from "@phosphor-icons/react";
@@ -28,7 +28,6 @@ const process = [
   },
 ] as const;
 
-const brief = "Find Java backend engineers in Hyderabad with 6–10 years of experience, Spring Boot and AWS, who can join within 30 days.";
 const facets = [
   ["Role", "Backend engineer"],
   ["Location", "Hyderabad"],
