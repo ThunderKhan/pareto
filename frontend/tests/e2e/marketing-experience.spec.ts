@@ -180,7 +180,7 @@ test("OpenTag-inspired trust timeline changes its sticky demo with accessible co
   await steps.nth(3).click();
   await expect(steps.nth(3)).toHaveAttribute("aria-current", "step");
   await expect(section.locator("#v2-trust-demo")).toContainText("Search in your workspace.");
-  await expect(section.locator(".v2-trust-access-link")).toHaveAttribute("href", "/login");
+  await expect(section.locator("#v2-trust-demo .v2-trust-access-link")).toHaveAttribute("href", "/login");
   await section.locator(".v2-trust-timeline").screenshot({ path: testInfo.outputPath("trust-timeline-desktop.png") });
 });
 
