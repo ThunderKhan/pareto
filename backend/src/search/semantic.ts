@@ -1,5 +1,7 @@
 import { database } from "./db";
 import { aiProcessLimiter } from "../ai/providers/budgets";
+import { resolveGeminiEmbeddingCredential } from "../ai/providers/byok";
+import { recordAiAttempt } from "../ai/observability/durable";
 import { durableQuotaEnabled, reserveDurableAiAttempt } from "../ai/providers/durable-quota";
 import { BoundedAsyncCache, privateCacheKey } from "./bounded-cache";
 import { recordSearchTiming } from "./performance";
@@ -14,9 +16,9 @@ const queryEmbeddings = new BoundedAsyncCache<number[]>(128, 5 * 60_000);
 
 /** Direct Gemini REST adapter, no extra SDK or third-party vector service.
  * The configured Gemini key is used only server-side. */
-export const geminiEmbed: Embedder = async (text, task) => {
+export const geminiEmbed = async (text: string, task: EmbeddingTask, keyOverride?: string): Promise<number[]> => {
   if (process.env.AI_ENABLED === "false") throw new Error("AI inference is disabled.");
-  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const key = keyOverride ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!key) throw new Error("Gemini embedding key is not configured.");
   if (!text.trim() || text.length > 6000) throw new Error("Embedding input is empty or oversized.");
   const response = await fetch(
@@ -60,7 +62,23 @@ async function embeddingForOwner(
     const started = Date.now();
     try {
       if (durableQuotaEnabled()) await reserveDurableAiAttempt(ownerId);
-      return await embed(text, task);
+      // Resolve the actual key *after* owner quota admission; never silently
+      // use the platform Gemini credential when a BYOK recruiter selected Groq.
+      const credential = await resolveGeminiEmbeddingCredential(ownerId);
+      try {
+        const vector = await geminiEmbed(text, task, credential.key);
+        await recordAiAttempt({ userId: ownerId,
+          taskId: task === "RETRIEVAL_QUERY" ? "embedding.query.v1" : "embedding.document.v1",
+          provider: "Gemini", modelId: EMBEDDING_MODEL,
+          credentialSource: credential.source, outcome: "ok", latencyMs: Date.now() - started });
+        return vector;
+      } catch (error) {
+        await recordAiAttempt({ userId: ownerId,
+          taskId: task === "RETRIEVAL_QUERY" ? "embedding.query.v1" : "embedding.document.v1",
+          provider: "Gemini", modelId: EMBEDDING_MODEL,
+          credentialSource: credential.source, outcome: "NETWORK", latencyMs: Date.now() - started });
+        throw error;
+      }
     } finally {
       recordSearchTiming("embedding.provider", Date.now() - started);
       release();
@@ -155,9 +173,6 @@ export async function rankWithSemantic(
   // Opt-in: never block the interactive results path on a network embedding by default.
   // Semantics remain a secondary tie-breaker, never evidence of eligibility.
   if (process.env.AI_ENABLED === "false" || process.env.PARETO_SEMANTIC_SEARCH !== "1") return hybridRank(candidates, rules, new Map(), referenceId);
-  if (embed === geminiEmbed && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    return hybridRank(candidates, rules, new Map(), referenceId);
-  }
   const db = database();
   try {
     const rows = await db.$queryRaw<Array<{ candidateId: string; contentHash: string }>>`
