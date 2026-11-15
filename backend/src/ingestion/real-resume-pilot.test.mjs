@@ -56,8 +56,15 @@ describe.skipIf(!url)("real synthetic PDF resume ingestion via PostgreSQL worker
    const imported=await resumeImport(owner,documentId);
    expect(imported.candidate).toMatchObject({
     displayName:profile.name,roleTitle:profile.title,city:profile.city,
-    experienceMonths:profile.experience*12,noticePeriodDays:profile.notice,
    });
+   // Import summary intentionally exposes only basic candidate metadata.
+   // Validate numerical fields against their owner-scoped persisted record.
+   const stored=await db.candidate.findFirstOrThrow({
+    where:{ownerId:owner,sourceDocumentId:documentId},
+    select:{experienceMonths:true,noticePeriodDays:true},
+   });
+   expect(stored).toEqual({experienceMonths:profile.experience*12,
+    noticePeriodDays:profile.notice});
    expect(imported.ingestionJob).toMatchObject({status:"READY",attempts:1});
    const evidence=await db.resumeEvidence.findMany({where:{documentId}});
    expect(evidence.length).toBeGreaterThanOrEqual(profile.skills.length+4);
