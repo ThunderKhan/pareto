@@ -1,151 +1,253 @@
+<div align="center">
+
+<img src="frontend/public/brand/pareto-mark.svg" alt="Pareto mascot" width="112" height="112" />
+
 # Pareto
 
-**Pareto** is the std::zero recruitment intelligence prototype for Trustume AI Hackathon 2026, Problem Statement 1 — AI-Powered Natural Language Candidate Search & Find Candidates Like Me.
+### Recruitment intelligence, grounded in evidence.
 
-> The protected workspace supports confirmed PostgreSQL search, match evidence, conversational refinement, and reference-based search. Live AI and sign-in require configured provider accounts.
+**Describe the person you need. Review the requirements. Understand every match.**
 
-## Recruiter workspace on `main`
+A natural-language candidate search workspace that turns hiring intent into editable, explainable decisions — without letting an LLM invent candidates or decide eligibility.
 
-The protected recruiter experience now includes:
+[![CI](https://github.com/ThunderKhan/pareto/actions/workflows/ci.yml/badge.svg)](https://github.com/ThunderKhan/pareto/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-16-111111?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma_7-336791?logo=postgresql&logoColor=white)
+![Supabase](https://img.shields.io/badge/Auth-Supabase-3FCF8E?logo=supabase&logoColor=white)
+![Gemini + Groq](https://img.shields.io/badge/AI-Gemini_%2B_Groq-467BEB)
 
-- `/dashboard`: Pareto-branded workspace overview and collapsible/mobile sidebar.
-- `/dashboard/search`: conversational composer, AI-extracted criteria, mandatory human confirmation, explainable candidate results, and follow-up refinement.
-- `/dashboard/candidates`: search and inspect recruiter-owned candidate records, then start reference-based similarity search.
-- `/dashboard/profile`: edit first and last names via Supabase, view account email, and update password.
-- `/dashboard/search` confirmed results: on-demand Search health, editable What-if simulator, and per-candidate Near-match explanations. All three use deterministic owner-scoped backend analyses and are preview-only: only Confirm Search persists criteria.
-- Recent confirmed search sessions are retrieved from PostgreSQL with owner checks. The orb animation reflects real request activity and never adds artificial thinking delays.
+**Trustume AI Hackathon 2026 · Problem Statement 1 · Team \`std::zero\`**
 
-The supplied sidebar and morphing-orb component concepts were adapted to Pareto's existing typography, colors, Phosphor icons, and API flows. Full chat transcripts, PDF ingestion, bulk import, and hosted deployment are **not** implemented by this UI work.
+[**Live demo**](https://try-pareto.vercel.app) · [**How it works**](#how-it-works) · [**Features**](#features) · [**Quick start**](#quick-start) · [**Architecture**](#architecture) · [**Documentation**](#documentation)
 
-**AI engineering implementation roadmap:** [End-to-end AI Engineering Plan](docs/AI-ENGINEERING-IMPLEMENTATION-PLAN.md) — task modules, versioned prompts, prompt-injection security, provider budgets, evidence checks, evals and demo-release gates. This is a **planned workstream**, not a completed runtime system.
+</div>
 
-## Workspace
+---
 
-- `frontend/`: Next.js App Router, TypeScript, Tailwind CSS, API route handlers and UI.
-- `backend/`: reusable server-side TypeScript modules, validation, logging, Prisma schema, and tests.
-- `docs/`: project references, architecture notes, and engineering log.
+## Why Pareto?
 
-We intentionally use **one deployable Next.js application**. The `frontend/src/app/api` routes invoke services in the `@pareto/backend` workspace package. This maintains the requested frontend/backend separation without introducing another web server.
+Recruiters rarely think in Boolean filters. They think in hiring briefs:
 
-## Architecture and confirmation boundary
+> *Find senior Java developers in Hyderabad with 6–10 years of experience, Spring Boot experience, and a notice period under 30 days.*
 
-Pareto is one Next.js application with a separate reusable TypeScript backend package. The recruiter signs in with **Supabase Auth**; server-side requests resolve the authenticated user and scope Prisma candidate and search queries to that user's ID in **PostgreSQL**. Gemini (primary) and Groq (fallback) can translate a hiring brief into validated, **editable** criteria, but do not generate candidate records or scores. The recruiter explicitly confirms a draft before the deterministic matcher retrieves and ranks real seeded candidate rows and explains each MATCH, FAIL, and UNKNOWN. Confirmed sessions persist revisions for conversational follow-ups, and reference-profile searches rank other candidates by documented attributes.
+Traditional keyword search loses the intent. Pure LLM ranking introduces a different problem: persuasive answers without reliable evidence.
 
-### Private resume imports and human review
+**Pareto separates interpretation from decision-making.** An AI model helps translate the brief into structured requirements. A recruiter reviews those requirements. Only then does the backend query candidate records and explain which facts matched, failed, or were unavailable.
 
-The recruiter workspace now has **Candidates → Import resumes** (`/dashboard/candidates/import`). Authenticated users can upload PDF (4 MiB), DOCX (2 MiB) or TXT (512 KiB), follow durable queue stages, schedule batches, inspect exact source evidence and processing attempts, and explicitly approve, correct or reject extracted profiles with versioned audit history. This is an evidence-and-review UI, **not** an assurance of AI accuracy or a live configured Storage/provider integration.
+## How it works
 
-For a dedicated Pareto Supabase project (never an unrelated VSPH/IET database): configure a **private** `pareto-private-resumes` Storage bucket and server-only credentials per [resume ingestion runbook](docs/RESUME-INGESTION.md); apply the repo's versioned migrations; configure AI model keys if you want extraction; run the web server **and** an independently supervised background worker:
+\`\`\`text
+  Natural-language hiring brief
+                │
+                ▼
+       Gemini / Groq gateway
+     Interpret and validate intent
+                │
+                ▼
+      Editable criteria review
+        Recruiter confirms
+                │
+                ▼
+     PostgreSQL candidate search
+       Deterministic evaluation
+                │
+                ▼
+    Eligible / Needs verification
+            / Ineligible
+                │
+                ▼
+      Evidence + near matches
+       What-if / Pareto Frontier
+                │
+                ▼
+       Follow-up refinement
+         Saved search revision
+\`\`\`
 
-```bash
-pnpm install --frozen-lockfile
-pnpm db:generate
-pnpm db:deploy
-pnpm --filter @pareto/backend storage:setup  # only after verifying the correct private Supabase project
-pnpm --filter @pareto/backend ingest:worker  # separate long-running process (not a web request)
-```
+**The confirmation boundary matters:** a generated draft never silently becomes a candidate search. The model interprets language; the application owns retrieval, eligibility, and the audit trail.
 
-A stopped worker leaves jobs truthfully `QUEUED`; absence of model credentials yields review/failure states, never fabricated candidate completions. See [durable queue runbook](docs/RESUME-BATCH-PROCESSING.md) and [review/quality audit](docs/INGESTION-QUALITY-AUDIT.md). The authenticated full flow requires dedicated real test credentials; CI's signed-out browser checks cannot prove production readiness.
+## Features
 
-**Demo data:** 48 deterministic synthetic candidate records; no applicant/resume uploads. Only the public marketing preview is illustrative client-side sample data, clearly labelled as such. Missing credentials never unlock the protected workspace.
-## Requirements
+| Capability | What it does |
+| --- | --- |
+| **Natural-language search** | Extracts role, skills, experience, location, notice period and other constraints from a hiring brief. |
+| **Review before search** | Presents an editable criteria draft and waits for explicit recruiter confirmation. |
+| **Explainable matching** | Distinguishes **MATCH**, **FAIL** and **UNKNOWN** with candidate-specific evidence. Missing information is not treated as a pass. |
+| **Conversational refinement** | Carries confirmed constraints forward, applies requested changes and saves revision history. |
+| **Find candidates like me** | Starts a new similarity search from an existing candidate profile, excluding the reference candidate. |
+| **Pareto Frontier + what-if analysis** | Explores trade-offs, near matches and how changed constraints affect a cohort without silently modifying the saved search. |
+| **Recruiter workspace** | Protected candidate library, recent searches, profile settings and in-app notifications. |
+| **Resume import and review** | PDF/DOCX/TXT upload, a durable processing queue, extracted-source evidence and human approve/correct/reject flows. **Requires separately configured private Storage and a running ingestion worker.** |
 
-- Node.js **22.18+**
-- pnpm **10.x** (Corepack recommended)
-- Docker + Docker Compose (optional for local Postgres)
+The initial demo database contains **48 deterministic, fictional candidate records**, not real applicants. Candidate counts depend on the exact criteria and seed data; they are never fabricated by the model.
 
-## Windows / PowerShell local setup (recommended)
+## Architecture
 
-Use **PowerShell** in the repository root. Install Node.js **22.18+**, Docker Desktop with its Linux/WSL2 engine running, and Git first. Docker Compose provides only local PostgreSQL in this route; the Next.js app runs on Windows. Ensure TCP ports **5432** (PostgreSQL) and **3000** (Next.js) are free.
+Pareto uses a **pnpm monorepo** with one Next.js web application and a separate reusable TypeScript backend package. There is no second standalone HTTP backend server.
 
-```powershell
+\`\`\`text
+Browser
+  │
+  ├── Supabase Auth (recruiter identity / session)
+  │
+  ▼
+Next.js 16 · React 19 · App Router
+  │
+  ├── Server-rendered recruiter workspace
+  ├── /api/v1/* authenticated API handlers
+  │      │
+  │      ▼
+  │   @pareto/backend
+  │      ├── Criteria parsing + validation (Zod)
+  │      ├── Gemini → Groq fallback gateway
+  │      ├── Deterministic search / evidence / frontier
+  │      ├── Prisma 7 → PostgreSQL
+  │      └── Optional durable resume ingestion queue
+  │                     └── Separate worker + private Storage
+  │
+  └── Audit-friendly search revision history
+\`\`\`
+
+### Production topology
+
+- **[Vercel](https://try-pareto.vercel.app)** serves the Next.js frontend and Supabase authentication flow.
+- **[Railway](https://pareto-production.up.railway.app)** runs the existing application/API service and remains an independent fallback URL.
+- In Vercel's production configuration, authenticated \`/api/v1/*\` requests are forwarded through an **allowlisted server-side rewrite** to Railway. Railway performs AI calls, matching, and database writes.
+- **Supabase PostgreSQL** holds recruiter-scoped candidate records, saved searches, revisions and operational data.
+
+This split is intentional, not a claim that the entire backend runs as Vercel functions. See [the Vercel–Railway deployment guide](docs/VERCEL-RAILWAY-FRONTEND.md).
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Interface | **Next.js 16**, **React 19**, TypeScript, Tailwind CSS 4, Phosphor Icons |
+| Motion and visual system | Lenis, Paper Design shaders, custom Pareto SVG assets |
+| Authentication | Supabase Auth, \`@supabase/ssr\`, protected server routes |
+| Application API | Next.js Route Handlers, reusable \`@pareto/backend\` TypeScript package |
+| Data | PostgreSQL, **Prisma 7**, Prisma PostgreSQL adapter |
+| AI | Google **Gemini** (primary), **Groq** (fallback), Zod-validated outputs |
+| Resume processing | PDF.js, Mammoth, private Supabase Storage, durable queue/worker |
+| Quality | Vitest, Playwright, ESLint, TypeScript, GitHub Actions |
+| Delivery | Docker, Railway, Vercel, pnpm workspaces |
+
+## Quick start
+
+**Requirements:** Node.js **22.18+**, pnpm **10.15.1**, Git, and a PostgreSQL database (Docker Compose is available for local development).
+
+\`\`\`powershell
 git clone https://github.com/ThunderKhan/pareto.git
 cd pareto
-git switch main
-git pull --ff-only origin main
-node --version
+
 corepack enable
 corepack prepare pnpm@10.15.1 --activate
-pnpm --version
 pnpm install --frozen-lockfile
-if (-not (Test-Path .\frontend\.env.local)) { Copy-Item .\frontend\.env.example .\frontend\.env.local }
-if (-not (Test-Path .\backend\.env)) { Copy-Item .\backend\.env.example .\backend\.env }
+
+Copy-Item frontend/.env.example frontend/.env.local
+Copy-Item backend/.env.example backend/.env
+
+# Optional: start the local PostgreSQL container
 docker compose up -d db
-docker compose ps
+
+# Configure the database connection in both local env files first
 pnpm db:generate
 pnpm db:deploy
 pnpm dev
-```
+\`\`\`
 
-Visit **http://localhost:3000**. Keep the `pnpm dev` terminal running. If you already have a local checkout, preserve uncommitted changes before running `git switch main` and `git pull --ff-only origin main`.
+Open **http://localhost:3000**.
 
-### Two separate local environment files
+### Enable the real recruiter demo
 
-| File | Read by | What belongs there |
-| --- | --- | --- |
-| `frontend/.env.local` | Next.js web server and browser build | The existing **local** `DATABASE_URL`; later, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and optional **server-only** Gemini/Groq key + model pairs. |
-| `backend/.env` | Prisma migration and seed commands | The same local `DATABASE_URL`; optional `DIRECT_DATABASE_URL`; after creating a confirmed Supabase demo recruiter, `DEMO_OWNER_ID` equal to their exact UUID. |
-| Root `.env` | Full-app **Docker Compose** only | Copy `.env.example` when choosing the alternative full-container app. It is **not needed** for the PowerShell/dev-server route above. |
+1. Configure the same **dedicated Pareto database** in \`frontend/.env.local\` and \`backend/.env\`. Apply the checked-in migrations with \`pnpm db:deploy\`.
+2. Set \`NEXT_PUBLIC_SUPABASE_URL\` and \`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY\` in \`frontend/.env.local\`. Create a confirmed Supabase Auth test recruiter.
+3. Set \`DEMO_OWNER_ID\` to that recruiter's actual Supabase UUID in \`backend/.env\`, then run \`pnpm db:seed\` to insert **48 synthetic candidates owned by that recruiter**.
+4. For natural-language interpretation, set at least one **server-only provider key and supported model ID**: \`GOOGLE_GENERATIVE_AI_API_KEY\` + \`GEMINI_MODEL\`, and/or \`GROQ_API_KEY\` + \`GROQ_MODEL\`. Restart the dev server.
 
-**Important:** The Compose database is accessible from Windows as `localhost:5432`, while the Compose app connects through `db:5432` internally. Do **not** replace the local Windows `DATABASE_URL` host with `db`. Do not set a Supabase URL as the Prisma database URL. Public `NEXT_PUBLIC_*` values are shipped to browsers; never place database passwords, Supabase secret/service-role keys or AI API keys under `NEXT_PUBLIC_*`. The checked-in examples contain no working credentials.
+Manual criteria search and reference matching work without an AI provider, but still require real authentication and seeded PostgreSQL data. The import queue is **not** an automatically running worker: configure the private bucket, secret credentials and \`pnpm ingest:worker\` separately if testing ingestion.
 
-### What you can inspect without any live accounts
+See [Supabase database setup](docs/SUPABASE-DATABASE-SETUP.md), [release setup](docs/RELEASE-SETUP.md) and [resume ingestion](docs/RESUME-INGESTION.md) for the full runbooks.
 
-The homepage, scrolling marketing preview, signup/login **layouts**, and `GET /api/health` work with empty Supabase and AI settings. Authentication controls explain they are unavailable. `/dashboard` and `/dashboard/search` redirect to login; candidate APIs return **401**. PostgreSQL can be migrated without an Auth account, but **do not expect a working recruiter search** until a real Supabase user exists and their UUID owns the seeded records.
+## Try a search
 
-To unlock the full local demo: create a **dedicated** Pareto Supabase project, enable email/password login, verify a test recruiter's email and copy their UUID from Supabase Auth; add the public Supabase URL/key to `frontend/.env.local`. Add at least one verified Gemini/Groq **key + model** pair there for natural-language extraction/refinement. Set `DEMO_OWNER_ID` to the recruiter's UUID in `backend/.env`, then (from repo root) run `pnpm db:seed` to populate 48 **synthetic** candidates scoped to that user. Restart `pnpm dev` after editing environment files. See the [dedicated Supabase PostgreSQL setup and SQL Editor fallback](docs/SUPABASE-DATABASE-SETUP.md), [secure live setup](docs/RELEASE-SETUP.md), and the [demo script](docs/DEMO-SCRIPT.md). Manual criteria and reference searches need Auth + seeded PostgreSQL but no model key.
+Start with a brief such as:
 
-### Pulling an update that adds account settings and notifications
+> Find senior Java developers in Hyderabad with 6 to 10 years of experience. They must know Java and be able to join within 30 days.
 
-The 15 November feedback introduced PostgreSQL tables for recruiter settings, workspace memberships and in-app notifications. **`pnpm install`, `pnpm db:generate`, and `pnpm dev` do not apply migrations.** If an existing local checkout can load search history but account/notifications return a schema error, update the **correct Pareto database** before reopening those pages.
+1. **Extract criteria** and inspect the draft.
+2. Edit any fields the model interpreted incorrectly.
+3. **Confirm Search** to retrieve real rows from the demo database.
+4. Expand match evidence; inspect **UNKNOWN** attributes and near matches.
+5. Ask a follow-up such as *“Also require Spring Boot and AWS, but keep everything else.”*
+6. Open a candidate profile to try **Find candidates like this one**.
 
-```powershell
-# Stop the running Next.js dev server (Ctrl+C) and use the repo root.
-# First check backend/.env and frontend/.env.local target the SAME Pareto database.
-# Do not run this against IET Grid, VSPH, or any unrelated database.
-docker compose up -d db   # Only if you use the local Compose PostgreSQL service
-pnpm db:generate
-pnpm db:deploy
-pnpm dev
-```
+The [live demonstration script](docs/DEMO-SCRIPT.md) contains repeatable scenarios and expected results for the unmodified seed.
 
-A missing table/column now returns a descriptive 503 (`SCHEMA_NOT_READY`) rather than an unexplained 500. If the schema has already been deployed and the error continues, check that the server and Prisma migration commands use the same database connection.
+## Trust by design
 
-### Focused verification and troubleshooting
+- **Human-in-the-loop:** extracted requirements need explicit confirmation before search.
+- **Evidence over eloquence:** eligibility and counts come from validated candidate facts, not LLM-generated rankings.
+- **Missing data stays unknown:** \`UNKNOWN\` is not silently converted into \`MATCH\`.
+- **Owner isolation:** recruiters access their own candidates, searches and revisions.
+- **Server-only credentials:** database passwords, AI API keys and Supabase private keys are never placed in \`NEXT_PUBLIC_*\`.
+- **Failure transparency:** disabled AI providers, missing schema and paused ingestion have explicit failure/queued states instead of fabricated successes.
 
-```powershell
-# In a second PowerShell terminal, from the repository root:
-docker compose ps
-docker compose exec db pg_isready -U pareto -d pareto
-pnpm check
-pnpm --filter @pareto/frontend exec playwright install chromium
-pnpm test:e2e
-```
+> **Scope note:** Private resume processing requires a configured worker and Storage. Offline ingestion benchmarks are not proof of production throughput. The seeded demo profiles are synthetic.
 
-The browser suite now builds and starts the **production** app for local runs, just as CI does. **Stop `pnpm dev` first** so port 3000 is free; otherwise Playwright will refuse to reuse the development server. This prevents cross-origin HMR failures from being mistaken for broken click handlers. For manual UI exploration, keep using `pnpm dev` and `http://localhost:3000`; `127.0.0.1` is permitted as an additional development origin.
+## Project structure
 
-`pnpm check` without `PARETO_TEST_DATABASE_URL` skips the backend PostgreSQL integration tests (the release CI covers those with disposable data). Without `PARETO_E2E_EMAIL`/`PARETO_E2E_PASSWORD`, Playwright intentionally skips the authenticated journey; ordinary public and signed-out browser tests still run. Never point integration tests at another project's database. If Docker says port 5432 is already allocated, stop the conflicting local PostgreSQL instance before trying again. If `pnpm dev` says port 3000 is occupied, close the other Next.js/Compose web process instead of silently switching demo origins.
+\`\`\`text
+pareto/
+├── frontend/
+│   ├── src/app/            # Pages, auth callbacks and API routes
+│   ├── src/components/     # Recruiter workspace and marketing UI
+│   ├── public/brand/       # Pareto SVG branding
+│   └── tests/e2e/          # Browser and security tests
+├── backend/
+│   ├── src/ai/             # Gateway, tasks, prompts, validation
+│   ├── src/search/         # Criteria, matching, frontier, retrieval
+│   ├── src/ingestion/      # Parsing, queue, worker, human review
+│   ├── prisma/             # Schema, migrations and synthetic seed
+│   └── evals/              # Controlled quality/evaluation datasets
+├── docs/                   # Product, architecture and runbooks
+├── .github/workflows/      # CI
+├── Dockerfile
+├── compose.yaml
+└── pnpm-workspace.yaml
+\`\`\`
 
-### Alternative: entire app through local Docker Compose
+## Verification
 
-Do this **instead** of the `pnpm dev` web process, not concurrently:
+\`\`\`powershell
+pnpm check          # Lint, typecheck and backend tests
+pnpm test:e2e       # Playwright browser suite (Chromium required)
+pnpm build          # Production Next.js build
+\`\`\`
 
-```powershell
-if (-not (Test-Path .\.env)) { Copy-Item .\.env.example .\.env }
-docker compose up --build
-# After a real demo recruiter exists: set DEMO_OWNER_ID in root .env, then run
-# docker compose run --rm migrate pnpm db:seed
-```
+Some checks require dedicated disposable database or authenticated test credentials. A passing public CI run does **not** by itself verify live third-party AI calls or the complete signed-in hosted journey.
 
-Compose creates a local Postgres service and applies migrations before launching the web app. You must **rebuild** the web image after editing build-time `NEXT_PUBLIC_*` settings. Do not run `docker compose down -v` unless you intentionally want to delete local demo data.
+## Documentation
 
-**Railway is deferred by explicit decision.** Keep the existing [deployment procedure](docs/DEPLOYMENT.md) for later; do not connect, provision, or deploy until separately authorized. The integration remains in [draft PR #3](https://github.com/ThunderKhan/pareto/pull/3), not merged to `main`.
-## Stack
+| Read | For |
+| --- | --- |
+| [Product requirements](docs/PRD.md) | Problem scope and organizer requirements |
+| [Architecture](docs/ARCHITECTURE.md) | System boundaries and data flow |
+| [Design system](docs/DESIGN.md) | UI language, interactions and visual decisions |
+| [Demo script](docs/DEMO-SCRIPT.md) | Judge-facing end-to-end walkthrough |
+| [Deployment](docs/VERCEL-RAILWAY-FRONTEND.md) | Vercel frontend + Railway API configuration |
+| [Resume ingestion](docs/RESUME-INGESTION.md) | Private Storage, worker and human review |
+| [AI evaluation](docs/AI-BYOK-USAGE-BENCHMARK.md) | Provider credentials, accounting and measured boundaries |
+| [Documentation index](docs/README.md) | All technical references |
 
-Next.js App Router, TypeScript, Tailwind CSS, Phosphor Icons, PostgreSQL, Prisma 7, Supabase Auth, Gemini and Groq, Zod, Pino, Vitest, Playwright, Docker and pnpm.
+---
 
-See [`docs/SCROLLCRAFT.md`](docs/SCROLLCRAFT.md) for the source skill, creative brief, motion score and verification plan. See [`docs/MVP.md`](docs/MVP.md) for product scope, [`docs/PRD.md`](docs/PRD.md) for organizer-priority requirements, [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the technical system design, [`docs/DESIGN.md`](docs/DESIGN.md) for the OpenTag-derived UI system and landing/auth/dashboard journey, [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the build and release sequence, and [`docs/README.md`](docs/README.md) for the documentation index. **Never commit API keys, actual resumes, or private applicant data.**
+<div align="center">
 
-## Hackathon submission
+**Built by team \`std::zero\` for Trustume AI Hackathon 2026.**
 
-This personal development repository is separate from the organizer-assigned `ai-hackathon-trustume/std-zero` repository. Final tested milestones and presentation materials must reach the assigned repository before the official deadline.
+**Explain the match. Keep the human in control.**
+
+[Live demo](https://try-pareto.vercel.app) · [Source](https://github.com/ThunderKhan/pareto)
+
+</div>
