@@ -11,11 +11,13 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    // The CI job builds the release first. Verify that release instead of using a
-    // development HMR server (which rejects browser-origin dev assets on some hosts).
-    command: process.env.CI ? "pnpm start" : "pnpm dev",
+    // Always test the production build. Dev HMR can reject loopback-origin assets
+    // and leave React unhydrated on Windows, making every click-dependent test fail.
+    // CI builds in a separate step; local runs build automatically for correctness.
+    command: process.env.CI ? "pnpm start" : "pnpm build && pnpm start",
     url: "http://127.0.0.1:3000/api/health",
-    reuseExistingServer: !process.env.CI,
+    // Never silently reuse an unrelated `pnpm dev` process at port 3000.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

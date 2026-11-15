@@ -76,6 +76,22 @@ The homepage, scrolling marketing preview, signup/login **layouts**, and `GET /a
 
 To unlock the full local demo: create a **dedicated** Pareto Supabase project, enable email/password login, verify a test recruiter's email and copy their UUID from Supabase Auth; add the public Supabase URL/key to `frontend/.env.local`. Add at least one verified Gemini/Groq **key + model** pair there for natural-language extraction/refinement. Set `DEMO_OWNER_ID` to the recruiter's UUID in `backend/.env`, then (from repo root) run `pnpm db:seed` to populate 48 **synthetic** candidates scoped to that user. Restart `pnpm dev` after editing environment files. See the [dedicated Supabase PostgreSQL setup and SQL Editor fallback](docs/SUPABASE-DATABASE-SETUP.md), [secure live setup](docs/RELEASE-SETUP.md), and the [demo script](docs/DEMO-SCRIPT.md). Manual criteria and reference searches need Auth + seeded PostgreSQL but no model key.
 
+### Pulling an update that adds account settings and notifications
+
+The 15 November feedback introduced PostgreSQL tables for recruiter settings, workspace memberships and in-app notifications. **`pnpm install`, `pnpm db:generate`, and `pnpm dev` do not apply migrations.** If an existing local checkout can load search history but account/notifications return a schema error, update the **correct Pareto database** before reopening those pages.
+
+```powershell
+# Stop the running Next.js dev server (Ctrl+C) and use the repo root.
+# First check backend/.env and frontend/.env.local target the SAME Pareto database.
+# Do not run this against IET Grid, VSPH, or any unrelated database.
+docker compose up -d db   # Only if you use the local Compose PostgreSQL service
+pnpm db:generate
+pnpm db:deploy
+pnpm dev
+```
+
+A missing table/column now returns a descriptive 503 (`SCHEMA_NOT_READY`) rather than an unexplained 500. If the schema has already been deployed and the error continues, check that the server and Prisma migration commands use the same database connection.
+
 ### Focused verification and troubleshooting
 
 ```powershell
@@ -86,6 +102,8 @@ pnpm check
 pnpm --filter @pareto/frontend exec playwright install chromium
 pnpm test:e2e
 ```
+
+The browser suite now builds and starts the **production** app for local runs, just as CI does. **Stop `pnpm dev` first** so port 3000 is free; otherwise Playwright will refuse to reuse the development server. This prevents cross-origin HMR failures from being mistaken for broken click handlers. For manual UI exploration, keep using `pnpm dev` and `http://localhost:3000`; `127.0.0.1` is permitted as an additional development origin.
 
 `pnpm check` without `PARETO_TEST_DATABASE_URL` skips the backend PostgreSQL integration tests (the release CI covers those with disposable data). Without `PARETO_E2E_EMAIL`/`PARETO_E2E_PASSWORD`, Playwright intentionally skips the authenticated journey; ordinary public and signed-out browser tests still run. Never point integration tests at another project's database. If Docker says port 5432 is already allocated, stop the conflicting local PostgreSQL instance before trying again. If `pnpm dev` says port 3000 is occupied, close the other Next.js/Compose web process instead of silently switching demo origins.
 

@@ -37,6 +37,16 @@ export function accountError(error: unknown) {
   if (error instanceof z.ZodError) {
     return accountJson({ error: error.issues.map(issue => issue.message).join(" ") }, 422);
   }
+  // Newly introduced settings / notification models require the 2026-11-15 migration.
+  // Prisma P2021/P2022 mean a table/column is missing, not that sign-in failed.
+  const code = error && typeof error === "object" && "code" in error ? error.code : null;
+  if (code === "P2021" || code === "P2022") {
+    console.error("Pareto account schema is outdated. Apply the pending Prisma migrations.");
+    return accountJson({
+      code: "SCHEMA_NOT_READY",
+      error: "Account settings need a database upgrade. Apply the pending Pareto migrations.",
+    }, 503);
+  }
   // Internal/database errors must never reveal credentials or SQL to a client.
   console.error("Recruiter account request failed");
   return accountJson({ error: "The account service is unavailable. Try again later." }, 500);

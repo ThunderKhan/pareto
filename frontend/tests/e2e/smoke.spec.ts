@@ -85,6 +85,12 @@ test("all public pages use the concise Pareto title", async ({ page }) => {
 });
 
 test("theme preference initializes from saved choice without changing public page styling", async ({ page }) => {
+  const hydrationErrors: string[] = [];
+  page.on("console", message => {
+    if (message.type() === "error" && /hydration|hydrated but|server rendered HTML didn't match/i.test(message.text())) {
+      hydrationErrors.push(message.text());
+    }
+  });
   await page.goto("/login");
   await page.evaluate(() => window.localStorage.setItem("pareto-theme", "dark"));
   await page.reload();
@@ -92,6 +98,8 @@ test("theme preference initializes from saved choice without changing public pag
   await page.evaluate(() => window.localStorage.setItem("pareto-theme", "light"));
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-pareto-effective-theme", "light");
+  await page.waitForLoadState("networkidle");
+  expect(hydrationErrors).toEqual([]);
 });
 
 test("signed-out visitors cannot search or read candidate data", async ({ page, request }) => {

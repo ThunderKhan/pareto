@@ -7,6 +7,16 @@ import { Bell } from "@phosphor-icons/react";
 type Notice = { id: string; title: string; createdAt: string; readAt: string | null; sessionId: string };
 type Inbox = { items: Notice[]; unread: number };
 
+async function describeFailure(response: Response, fallback: string): Promise<string> {
+  try {
+    const body: unknown = await response.json();
+    if (body && typeof body === "object" && "error" in body && typeof body.error === "string") {
+      return body.error;
+    }
+  } catch { /* An unavailable service may not return JSON. */ }
+  return fallback;
+}
+
 export default function NotificationsMenu() {
   const [inbox, setInbox] = useState<Inbox | null>(null);
   const [error, setError] = useState("");
@@ -15,7 +25,7 @@ export default function NotificationsMenu() {
   const load = useCallback(async () => {
     try {
       const response = await fetch("/api/v1/notifications", { cache: "no-store" });
-      if (!response.ok) throw new Error("Notifications are unavailable.");
+      if (!response.ok) throw new Error(await describeFailure(response, "Notifications are unavailable."));
       setInbox(await response.json() as Inbox);
       setError("");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load notifications."); }
@@ -35,7 +45,7 @@ export default function NotificationsMenu() {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });
-      if (!response.ok) throw new Error("Notifications could not be updated.");
+      if (!response.ok) throw new Error(await describeFailure(response, "Notifications could not be updated."));
       setInbox(await response.json() as Inbox);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Update failed."); }
     finally { setWorking(false); }

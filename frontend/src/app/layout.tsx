@@ -12,8 +12,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased">
+        {/* The pre-hydration theme script intentionally updates html attributes from localStorage. */}
         <Script id="pareto-theme-init" strategy="beforeInteractive">{`
           (() => {
             try {
