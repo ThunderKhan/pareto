@@ -8,6 +8,8 @@ export type AiSelectionMode = "PLATFORM" | "BYOK";
 const providers = ["Gemini", "Groq"] as const;
 const keyPattern = /^[\x21-\x7e]{12,256}$/;
 const modelPattern = /^[a-zA-Z0-9_./:-]{1,120}$/;
+const missingTables = (error: unknown) => error !== null && typeof error === "object" &&
+  "code" in error && (error.code === "P2021" || error.code === "P2022");
 
 /** Dedicated 32-byte, 64-character hex encryption master secret, server-side ONLY.
  * Requires the same key on API + dedicated workers. This is not a Supabase
@@ -120,9 +122,18 @@ export async function selectAiMode(userId: string, mode: AiSelectionMode) {
 export async function resolveAiProviders(userId?: string, override?: JsonProvider[]): Promise<JsonProvider[]> {
   if (override !== undefined) return override;
   if (!userId) return availableProviders();
-  const pref = await database().aiUserPreference.findUnique({
-    where: { userId }, select: { mode: true },
-  });
+  let pref: { mode: string } | null;
+  try {
+    pref = await database().aiUserPreference.findUnique({
+      where: { userId }, select: { mode: true },
+    });
+  } catch (error) {
+    // Before the additive migration exists no recruiter can have selected BYOK.
+    // Preserve legacy platform routing during a rolling migration, but do NOT
+    // hide actual DB/network failures which could mask a user's BYOK choice.
+    if (missingTables(error)) return availableProviders();
+    throw error;
+  }
   if (pref?.mode !== "BYOK") return availableProviders();
   const records = await database().aiUserCredential.findMany({ where: { userId } });
   const selected = providers.flatMap(provider => {
@@ -140,9 +151,13 @@ export async function resolveAiProviders(userId?: string, override?: JsonProvide
 
 /** Embeddings must obey the same user-selected billing source as text models. */
 export async function resolveGeminiEmbeddingCredential(userId: string) {
-  const pref = await database().aiUserPreference.findUnique({
+  let pref: { mode: string } | null;
+  try { pref = await database().aiUserPreference.findUnique({
     where: { userId }, select: { mode: true },
-  });
+  }); } catch (error) {
+    if (!missingTables(error)) throw error;
+    pref = null;
+  }
   if (pref?.mode === "BYOK") {
     const row = await database().aiUserCredential.findUnique({
       where: { userId_provider: { userId, provider: "Gemini" } },
