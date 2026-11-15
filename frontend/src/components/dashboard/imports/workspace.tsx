@@ -10,6 +10,7 @@ import {
   type Batch, type ImportJob, type ResumeDocument,
 } from "./api";
 import "./imports.css";
+import "./continuity-phase3.css";
 
 type Upload = { id: string; file: File; status: "selected" | "invalid" | "uploading" | "accepted" | "duplicate" | "failed" | "uncertain";
   note: string; documentId?: string };
@@ -189,6 +190,15 @@ export default function ResumeImports() {
     });
   }
 
+  // Tasks derive from the latest owner-scoped persisted records, never from timers.
+  const processing = documents.filter(doc => doc.ingestionJob &&
+    ["QUEUED", "RUNNING", "RETRY_SCHEDULED"].includes(doc.ingestionJob.status));
+  const reviewable = documents.filter(doc => doc.ingestionJob &&
+    ["READY", "NEEDS_REVIEW"].includes(doc.ingestionJob.status) &&
+    doc.reviewState !== "HUMAN_VERIFIED" && doc.errorCode !== "HUMAN_REJECTED");
+  const investigate = documents.filter(doc =>
+    doc.ingestionJob?.status === "FAILED_PERMANENT" || (!doc.ingestionJob && doc.status === "FAILED"));
+  const rejected = documents.filter(doc => doc.errorCode === "HUMAN_REJECTED");
   const counts = jobs.reduce<Record<string,number>>((total,job) => {
     total[job.status] = (total[job.status] ?? 0) + 1;
     return total;
@@ -228,8 +238,45 @@ export default function ResumeImports() {
     </section>
 
     {error && <p role="alert" className="import-alert">{error} {error.includes("Sign in") && <Link href="/login?next=/dashboard/candidates/import">Sign in</Link>}</p>}
-    {notice && <p role="status" className="import-success">{notice}</p>}
-    <section className="import-section" aria-label="Import history">
+    {notice && <p role="status" className="import-success">{notice}
+      <a href="#import-history" className="import-link">View queue and outcomes</a>
+    </p>}
+    {!initialLoading && (reviewable.length > 0 || investigate.length > 0 || processing.length > 0 || rejected.length > 0) &&
+      <section className="import-section import-continuity" aria-label="Resume import next steps" data-testid="import-next-steps">
+        <div className="import-section__title"><div>
+          <span className="import-kicker">YOUR WORK QUEUE</span>
+          <h2>Continue where you left off.</h2>
+          <p className="import-muted">Latest 50 owned imports. Status refreshes while this page is visible.</p>
+        </div></div>
+        <div className="import-continuity__counts">
+          <p><strong>{reviewable.length}</strong> need source review</p>
+          <p><strong>{processing.length}</strong> processing or scheduled</p>
+          <p><strong>{investigate.length}</strong> need failure inspection</p>
+          {rejected.length > 0 && <p><strong>{rejected.length}</strong> rejected by a reviewer</p>}
+        </div>
+        {reviewable.length > 0 && <div className="import-continuity__section">
+          <h3>Needs your decision</h3>
+          <ul>{reviewable.slice(0, 5).map(doc => <li key={doc.id}>
+            <div><strong>{doc.fileName}</strong>
+              <small>{humanStatus(doc)} · source verification required</small></div>
+            <button type="button" onClick={() => setSelectedDocument(doc.id)}>Review source</button>
+          </li>)}</ul>
+          {reviewable.length > 5 && <p className="import-muted">{reviewable.length - 5} more reviewable records appear in Recent imports.</p>}
+        </div>}
+        {investigate.length > 0 && <div className="import-continuity__section">
+          <h3>Investigate failures</h3>
+          <ul>{investigate.slice(0, 3).map(doc => <li key={doc.id}>
+            <div><strong>{doc.fileName}</strong><small>{humanStatus(doc)}</small></div>
+            <button type="button" onClick={() => setSelectedDocument(doc.id)}>Inspect failure</button>
+          </li>)}</ul>
+        </div>}
+        {processing.length > 0 && <p className="import-continuity__processing">
+          <span className="import-continuity__dot" aria-hidden="true"/>
+          {processing.length} import{processing.length === 1 ? "" : "s"} queued, running or awaiting retry. No artificial progress is shown; view the actual stages below.
+        </p>}
+        {rejected.length > 0 && <p className="import-muted">{rejected.length} profile{rejected.length === 1 ? " was" : "s were"} rejected by a reviewer. Rejection does not create an outstanding approval task.</p>}
+      </section>}
+    <section className="import-section" id="import-history" aria-label="Import history">
       <div className="import-section__title"><div><h2>Recent imports</h2>
         <p className="import-muted">Latest 50 owned records. Queue states refresh while this page is visible.</p></div>
         <button className="import-button import-button--quiet" type="button" disabled={initialLoading}
@@ -257,12 +304,14 @@ export default function ResumeImports() {
                   {doc.candidate.displayName} <ArrowRight size={12} aria-hidden="true"/></Link>}
               </td>
               <td><span className="import-chip" data-status={doc.ingestionJob?.status ?? doc.status}>{humanStatus(doc)}</span>
-                {doc.ingestionJob && <small>Attempt {doc.ingestionJob.attempts}/{doc.ingestionJob.maxAttempts}</small>}
+                {doc.ingestionJob && <small>Attempt {doc.ingestionJob.attempts}/{doc.ingestionJob.maxAttempts}
+                  {doc.ingestionJob.status === "RUNNING" && " · stage " + doc.ingestionJob.stage.replaceAll("_", " ").toLowerCase()}
+                </small>}
                 {doc.ingestionJob?.status === "QUEUED" && nowish(doc.createdAt) &&
                   <small>Processing has not started. Check the background worker.</small>}
                 {!doc.ingestionJob && doc.status === "FAILED" && <small>Reupload the same file to repair storage/queue failure.</small>}
               </td>
-              <td>{doc.reviewState === "HUMAN_VERIFIED" ? "Human verified" : doc.reviewState === "NEEDS_REVIEW" ? "Needs review" : "Unreviewed"}</td>
+              <td>{doc.errorCode === "HUMAN_REJECTED" ? "Human rejected" : doc.reviewState === "HUMAN_VERIFIED" ? "Human verified" : doc.reviewState === "NEEDS_REVIEW" ? "Needs review" : "Unreviewed"}</td>
               <td><div className="import-row-actions">
                 <button type="button" className="import-link import-link--button" onClick={() => setSelectedDocument(doc.id)}>Details / review</button>
                 {canCancel(doc) && <button type="button" className="import-link import-link--button"
