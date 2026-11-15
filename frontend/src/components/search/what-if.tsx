@@ -5,16 +5,47 @@ import Link from "next/link";
 import { criteriaSchema, type Rule } from "@pareto/backend/search";
 import type { simulateSearch } from "@pareto/backend/search/server";
 import CriteriaEditor from "./criteria-editor";
-import { CountTiles, EvidenceList, PreviewError, RuleSummaryList, previewError, previewRequest, ruleSummary, statusLabel } from "./search-insights-shared";
+import { CountTiles, EvidenceList, PreviewError, ReloadSearch, RuleSummaryList, type Counts, previewError, previewRequest, ruleSummary, statusLabel } from "./search-insights-shared";
 
 type Report = Awaited<ReturnType<typeof simulateSearch>>;
 type ImpactGroup = Report["groups"]["newlyEligible"];
 const impactGroups: { key: keyof Report["groups"]; title: string }[] = [
   { key: "newlyEligible", title: "Newly eligible" },
   { key: "noLongerEligible", title: "No longer eligible" },
-  { key: "stillIneligible", title: "Still ineligible" },
-  { key: "stillNeedsReview", title: "Still needs review" },
+  { key: "stillIneligible", title: "Ineligible in preview" },
+  { key: "stillNeedsReview", title: "Needs review in preview" },
 ];
+
+const statuses = ["ELIGIBLE", "NEEDS_REVIEW", "INELIGIBLE"] as const;
+
+/** All nine movements are server-measured, including review-to-fail and fail-to-review. */
+function TransitionMatrix({ transitions, total }: {
+  transitions: Report["transitions"]; total: number;
+}) {
+  return <section className="insight-transitions" aria-label="All candidate transitions">
+    <div className="insight-transition-head">
+      <h4>All candidate transitions</h4>
+      <p>Current evidence → hypothetical evidence · {total} evaluated records</p>
+    </div>
+    <p className="insight-hint">The complete cohort is counted here, including movements between Needs review and Ineligible. The lists below show capped examples.</p>
+    <div className="insight-transition-scroll">
+      <table aria-label="Complete candidate status transitions">
+        <caption>Current status by preview status · candidate counts</caption>
+        <thead><tr><th scope="col">Current ↓ · Preview →</th>
+          {statuses.map(status => <th scope="col" key={status}>{statusLabel[status]}</th>)}
+        </tr></thead>
+        <tbody>{statuses.map(from => <tr key={from}>
+          <th scope="row">{statusLabel[from]}</th>
+          {statuses.map(to => <td key={to} className={from === to ? "insight-transition-unchanged" : "insight-transition-changed"}>
+            <strong>{transitions[from][to]}</strong>
+            <span>{from === to ? "Unchanged" : "Changed status"}</span>
+          </td>)}
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <p className="insight-hint">Net gains can conceal both additions and losses. Inspect the affected candidates before confirming.</p>
+  </section>;
+}
 
 function CandidateImpacts({ group, title }: { group: ImpactGroup; title: string }) {
   return <details className="insight-impact-group" open={title === "Newly eligible" || title === "No longer eligible"}>
@@ -38,8 +69,8 @@ function CandidateImpacts({ group, title }: { group: ImpactGroup; title: string 
   </details>;
 }
 
-export default function WhatIfPanel({ sessionId, version, criteria, onReview }: {
-  sessionId: string; version: number; criteria: Rule[];
+export default function WhatIfPanel({ sessionId, version, criteria, currentCounts, onReview }: {
+  sessionId: string; version: number; criteria: Rule[]; currentCounts: Counts;
   onReview: (criteria: Rule[], warnings: string[]) => void;
 }) {
   const [scenario, setScenario] = useState<Rule[] | null>(null);
@@ -116,7 +147,7 @@ export default function WhatIfPanel({ sessionId, version, criteria, onReview }: 
         <section className="insight-pane" aria-label="Current search">
           <h4>Current search · revision {version}</h4>
           <RuleSummaryList rules={criteria}/>
-          {report && <CountTiles counts={report.original.counts} total={report.totalCandidates}/>}
+          <CountTiles counts={report?.original.counts ?? currentCounts} total={report?.totalCandidates}/>
         </section>
         <section className="insight-pane" aria-label="What-if search preview">
           <h4>What-if search · preview</h4>
@@ -137,6 +168,7 @@ export default function WhatIfPanel({ sessionId, version, criteria, onReview }: 
       {error !== null && typeof error !== "string" && <div role="alert" className="insight-error">
         <p>{previewError(error)}</p>
         {error instanceof PreviewError && error.status === 401 && <Link href="/login">Sign in</Link>}
+        <ReloadSearch status={error instanceof PreviewError ? error.status : null}/>
         <button type="button" onClick={() => void simulate()}>Retry</button>
       </div>}
       {report && <>
@@ -144,6 +176,7 @@ export default function WhatIfPanel({ sessionId, version, criteria, onReview }: 
           <h4>Measured impact</h4>
           <p>Exact matches: <strong>{report.original.counts.ELIGIBLE} → {report.proposed.counts.ELIGIBLE}</strong> · Net {report.delta.exactMatches > 0 ? "+" : ""}{report.delta.exactMatches}</p>
           <p>Needs review: {report.original.counts.NEEDS_REVIEW} → {report.proposed.counts.NEEDS_REVIEW} · Net {report.delta.needsReview > 0 ? "+" : ""}{report.delta.needsReview}</p>
+          <p>Newly eligible: {report.groups.newlyEligible.count} · No longer eligible: {report.groups.noLongerEligible.count} (distinct from net change).</p>
           {report.totalCandidates === 0 && <p>No candidate records are available to evaluate.</p>}
           {report.referenceId && <p>The reference profile is excluded from every count and impact group.</p>}
           <h4>Changed requirements</h4>
@@ -154,11 +187,13 @@ export default function WhatIfPanel({ sessionId, version, criteria, onReview }: 
           {report.proposed.remainingRequiredCount === 0 && <p className="insight-caution">No mandatory criteria remain; eligibility does not imply hiring suitability.</p>}
           {report.warnings.map(warning => <p key={warning} className="insight-caution">{warning}</p>)}
         </section>
+        <TransitionMatrix transitions={report.transitions} total={report.totalCandidates}/>
         <section aria-label="Candidate eligibility changes">
-          <h4>Candidate transitions</h4>
+          <h4>Candidate evidence · sampled records</h4>
           {impactGroups.map(item => <CandidateImpacts key={item.key}
             title={item.title} group={report.groups[item.key]}/>)}
         </section>
+        <p className="insight-hint">The two non-eligible example groups can contain candidates who moved into those statuses, not only candidates who stayed there.</p>
         <p className="insight-hint">{report.limitations}</p>
         <div className="insight-actions">
           <button type="button" className="insight-action" onClick={review}>Apply for review</button>
