@@ -1,0 +1,64 @@
+/* Round 03 #02: separate entering and exiting states. These are compositor-only
+   opacity/transform animations, never layout-affecting width changes. */
+@keyframes pareto-picker-in {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes pareto-picker-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 9px, 0) scale(.99); }
+}
+.pareto-reference-picker {
+  transform-origin: bottom left;
+  animation: pareto-picker-in 250ms cubic-bezier(.22,1,.36,1) both;
+  will-change: transform, opacity;
+}
+.pareto-reference-picker--closing {
+  pointer-events: none;
+  animation: pareto-picker-out 220ms ease-in both;
+}
+@keyframes pareto-drawer-in {
+  from { opacity: .88; transform: translate3d(48px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes pareto-drawer-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: .88; transform: translate3d(48px, 0, 0); }
+}
+@keyframes pareto-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pareto-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+.pareto-draft-backdrop {
+  animation: pareto-overlay-in 280ms ease-out both;
+}
+.pareto-draft-dialog {
+  animation: pareto-drawer-in 280ms cubic-bezier(.22,1,.36,1) both;
+  will-change: transform, opacity;
+}
+.pareto-draft-layer--closing { pointer-events: none; }
+.pareto-draft-layer--closing .pareto-draft-dialog {
+  animation: pareto-drawer-out 230ms ease-in both;
+}
+.pareto-draft-layer--closing .pareto-draft-backdrop {
+  animation: pareto-overlay-out 230ms ease-in both;
+}
+@media (max-width: 600px) {
+  @keyframes pareto-drawer-in {
+    from { opacity: .9; transform: translate3d(100%, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes pareto-drawer-out {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: .9; transform: translate3d(100%, 0, 0); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-reference-picker,
+  .pareto-reference-picker--closing,
+  .pareto-draft-dialog,
+  .pareto-draft-backdrop,
+  .pareto-draft-layer--closing .pareto-draft-dialog,
+  .pareto-draft-layer--closing .pareto-draft-backdrop {
+    animation: none !important;
+    will-change: auto;
+  }
+}

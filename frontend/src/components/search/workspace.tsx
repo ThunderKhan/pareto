@@ -13,6 +13,7 @@ import NearMatchExplanation from "./near-match";
 import "./search.css";
 import "./insights.css";
 import "./round-02.css";
+import "./round-03-motion.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -70,6 +71,10 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   const [lookupBusy, setLookupBusy] = useState(false);
   const [lookupError, setLookupError] = useState("");
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [referenceClosing, setReferenceClosing] = useState(false);
+  const referenceCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draftClosing, setDraftClosing] = useState(false);
   const referenceTriggerRef = useRef<HTMLButtonElement>(null);
   const referenceInputRef = useRef<HTMLInputElement>(null);
   const referencePanelRef = useRef<HTMLElement>(null);
@@ -85,6 +90,46 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   const [busyLabel, setBusyLabel] = useState("Working…");
   const isDraftOpen = Boolean(draft);
   const composerText = results ? followup : prompt;
+  const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Exit animations keep overlays mounted until they finish; all timers are
+  // cancelled on unmount or when a new panel is opened.
+  useEffect(() => () => {
+    if (referenceCloseTimer.current !== null) clearTimeout(referenceCloseTimer.current);
+    if (draftCloseTimer.current !== null) clearTimeout(draftCloseTimer.current);
+  }, []);
+
+  function closeReference() {
+    if (referenceCloseTimer.current !== null) return;
+    if (prefersReducedMotion()) {
+      setReferenceOpen(false);
+      setReferenceClosing(false);
+      return;
+    }
+    setReferenceClosing(true);
+    referenceCloseTimer.current = setTimeout(() => {
+      referenceCloseTimer.current = null;
+      setReferenceOpen(false);
+      setReferenceClosing(false);
+    }, 220);
+  }
+
+  function closeDraft() {
+    if (draftCloseTimer.current !== null) return;
+    // Closing an unconfirmed draft must never leave a ghost user request.
+    if (!results) setLastRequest("");
+    if (prefersReducedMotion()) {
+      setDraft(undefined);
+      setDraftClosing(false);
+      return;
+    }
+    setDraftClosing(true);
+    draftCloseTimer.current = setTimeout(() => {
+      draftCloseTimer.current = null;
+      setDraft(undefined);
+      setDraftClosing(false);
+    }, 230);
+  }
 
   // Keep the same textarea mounted while the session moves from centered to active.
   useEffect(() => {
@@ -126,12 +171,12 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     const outside = (event: PointerEvent) => {
       if (referencePanelRef.current?.contains(event.target as Node) ||
           referenceTriggerRef.current?.contains(event.target as Node)) return;
-      setReferenceOpen(false);
+      closeReference();
     };
     const escape = (event: globalThis.KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
-      setReferenceOpen(false);
+      closeReference();
       referenceTriggerRef.current?.focus();
     };
     document.addEventListener("pointerdown", outside);
@@ -146,7 +191,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     const dialog = draftDialogRef.current;
     dialog?.querySelector<HTMLElement>(".search-rule__fields select, .search-editor__add, .pareto-draft-close")?.focus();
     const keys = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); setDraft(undefined); setLastRequest(""); return; }
+      if (event.key === "Escape") { event.preventDefault(); if (!busy) closeDraft(); return; }
       if (event.key !== "Tab" || !dialog) return;
       const nodes = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -189,19 +234,31 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   }
 
   function openDraft(criteria: Rule[], warnings: string[] = [], options: Partial<Draft> = {}) {
+    if (draftCloseTimer.current !== null) {
+      clearTimeout(draftCloseTimer.current);
+      draftCloseTimer.current = null;
+    }
+    if (referenceCloseTimer.current !== null) {
+      clearTimeout(referenceCloseTimer.current);
+      referenceCloseTimer.current = null;
+    }
+    setDraftClosing(false);
+    setReferenceClosing(false);
     setReferenceOpen(false);
     setDraft({ criteria: criteria.map(rule => ({ ...rule })), warnings, requestId: crypto.randomUUID(), ...options });
   }
 
   function discardDraft() {
-    setDraft(undefined);
-    // Unconfirmed reference/interpretation requests should not leave an orphaned
-    // user turn implying that a candidate search was already run.
-    if (!results) setLastRequest("");
+    if (!busy) closeDraft();
   }
 
   function toggleReference() {
-    if (referenceOpen) { setReferenceOpen(false); return; }
+    if (referenceOpen) { closeReference(); return; }
+    if (referenceCloseTimer.current !== null) {
+      clearTimeout(referenceCloseTimer.current);
+      referenceCloseTimer.current = null;
+    }
+    setReferenceClosing(false);
     setDraft(undefined);
     setLookupName("");
     setLookup(undefined);
@@ -262,7 +319,20 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         sessionId: draft.active?.sessionId, expectedVersion: draft.active?.version,
         referenceId: draft.reference?.id,
       });
-      setDraft(undefined); setResults(data); setOffset(0);
+      // Keep the review visible for its closing transition, while updating
+      // the newly confirmed search underneath. The saved revision is already real.
+      setResults(data); setOffset(0);
+      if (prefersReducedMotion()) {
+        setDraft(undefined);
+      } else {
+        setDraftClosing(true);
+        if (draftCloseTimer.current !== null) clearTimeout(draftCloseTimer.current);
+        draftCloseTimer.current = setTimeout(() => {
+          draftCloseTimer.current = null;
+          setDraft(undefined);
+          setDraftClosing(false);
+        }, 230);
+      }
       setFollowup(""); setPrompt(""); setLastRequest("");
       window.history.replaceState(null, "", "?session=" + encodeURIComponent(data.sessionId));
       window.dispatchEvent(new Event("pareto:search-confirmed"));
@@ -368,12 +438,13 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       </div>}
     </div>
     <div className="pareto-chat__composer-dock">
-      {referenceOpen && <section id="pareto-reference-picker" className="pareto-reference-picker" role="dialog"
+      {referenceOpen && <section id="pareto-reference-picker"
+        className={"pareto-reference-picker" + (referenceClosing ? " pareto-reference-picker--closing" : "")} role="dialog"
         aria-label="Find a reference candidate" ref={referencePanelRef}>
         <header className="pareto-reference-picker__header">
           <h2>Find a reference candidate</h2>
           <button type="button" onClick={() => {
-            setReferenceOpen(false); referenceTriggerRef.current?.focus();
+            closeReference(); referenceTriggerRef.current?.focus();
           }} aria-label="Close reference picker"><X size={18} aria-hidden="true"/></button>
         </header>
         <label className="pareto-reference-picker__search" htmlFor="reference-name">
@@ -431,7 +502,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       </div>
     </form>
     </div>
-    {draft && <div className="pareto-draft-layer">
+    {draft && <div className={"pareto-draft-layer" + (draftClosing ? " pareto-draft-layer--closing" : "")}>
       <button type="button" tabIndex={-1} className="pareto-draft-backdrop"
         aria-label="Dismiss criteria review" onClick={discardDraft}/>
       <section className="pareto-draft-dialog" ref={draftDialogRef} role="dialog"
