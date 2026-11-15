@@ -12,7 +12,9 @@
     "./ingestion/server": "./src/ingestion/service.ts",
     "./ingestion/parse": "./src/ingestion/parse.ts",
     "./ingestion/storage": "./src/ingestion/storage.ts",
-    "./ingestion/extract": "./src/ingestion/extract.ts"
+    "./ingestion/extract": "./src/ingestion/extract.ts",
+    "./ingestion/queue": "./src/ingestion/queue.ts",
+    "./ingestion/runner": "./src/ingestion/runner.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -21,7 +23,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts"
+    "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts",
+    "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",
@@ -31,7 +34,8 @@
     "pg": "^8.16.0",
     "@supabase/supabase-js": "2.119.0",
     "mammoth": "1.13.0",
-    "pdfjs-dist": "5.4.449"
+    "pdfjs-dist": "5.4.449",
+    "tsx": "4.20.6"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
