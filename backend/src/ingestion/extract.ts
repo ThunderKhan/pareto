@@ -60,11 +60,18 @@ function locate(quote: string, parsed: ParsedResume): Omit<VerifiedEvidence, "fi
   if (query.length < 2 || query.length > 350) return null;
   let offset = 0;
   for (const page of parsed.pages) {
+    // Exact offsets are trustworthy only for an unmodified substring.
+    const rawIndex = page.text.toLocaleLowerCase().indexOf(quote.toLocaleLowerCase());
+    if (rawIndex >= 0) return {
+      quote: page.text.slice(rawIndex, rawIndex + quote.length),
+      pageNumber: page.number,
+      sourceStart: offset + rawIndex, sourceEnd: offset + rawIndex + quote.length,
+    };
     const text = compact(page.text);
     const index = text.toLocaleLowerCase().indexOf(query.toLocaleLowerCase());
     if (index >= 0) return {
       quote: text.slice(index, index + query.length), pageNumber: page.number,
-      sourceStart: offset + index, sourceEnd: offset + index + query.length,
+      sourceStart: null, sourceEnd: null,
     };
     offset += page.text.length + 1;
   }
