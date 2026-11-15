@@ -16,7 +16,7 @@
 @keyframes pareto-orb-pulse { 0%,100% { filter: brightness(.92); transform: scale(.96); } 50% { filter: brightness(1.2); transform: scale(1.04); } }
 .pareto-chat__request { align-self: end; width: min(100%,670px); }
 .pareto-chat__request p { font-size: 14px; line-height: 1.6; padding: 15px 19px; margin: 5px 0 0; border-radius: 15px 15px 4px 15px; background: #edf3fd; color: #213b5a; }
-.pareto-chat__caption { display: block; margin: 0; color: #5880bd; font-size: 10px !important; letter-spacing: .12em; text-transform: uppercase; font-weight: 750; }
+.pareto-chat__caption { display: block; margin: 0; color: #365f9c; font-size: 10px !important; letter-spacing: .12em; text-transform: uppercase; font-weight: 750; }
 .pareto-chat__processing { display: flex; align-items: center; gap: 14px; color: #465d7b; font-size: 13px; }
 .pareto-chat__notice { padding: 13px 16px; border-left: 2px solid #467beb; background: #f5f8fd; border-radius: 0 8px 8px 0; font-size: 13px; color: #3a536f; margin: 0; }
 .pareto-chat__draft, .pareto-chat__results, .pareto-chat__reference { border-color: #dfe7f1; box-shadow: 0 4px 24px #0b204709; }
@@ -55,7 +55,7 @@
 .pareto-chat__send { background: #020e24; color: #fff; border: 0; padding: 10px 14px; border-radius: 9px; display: inline-flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 650; }
 .pareto-chat__send:hover:not(:disabled) { background: #194a89; }
 .pareto-chat__composer button:disabled { opacity: .5; cursor: not-allowed; }
-.pareto-chat__footnote { color: #8190a4; text-align: center; font-size: 11px; display: flex; align-items: center; gap: 7px; justify-content: center; margin: 12px 0; }
+.pareto-chat__footnote { color: #64758b; text-align: center; font-size: 11px; display: flex; align-items: center; gap: 7px; justify-content: center; margin: 12px 0; }
 @media (max-width: 780px) { .pareto-chat__candidate-grid { grid-template-columns: 1fr; } .pareto-chat__results-head { align-items: start; flex-direction: column; } }
 @media (max-width: 560px) {
  .pareto-chat__composer { padding: 12px; bottom: 4px; }
