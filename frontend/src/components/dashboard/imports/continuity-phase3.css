@@ -1,0 +1,23 @@
+/* Phase 3: resume import continuity using Pareto's landing page ivory, navy, serif and hairline system. */
+.import-continuity .import-section__title h2 { font-size: clamp(26px,2.8vw,36px); margin-top: 8px; }
+.import-continuity__counts { display: flex; flex-wrap: wrap; gap: 10px 24px; padding: 16px 0; border-block: 1px solid var(--ws-edge); }
+.import-continuity__counts p { display: flex; align-items: baseline; gap: 6px; margin: 0; color: var(--ws-muted); font-size: 12px; line-height: 1.6; }
+.import-continuity__counts strong { font: 400 25px/1.1 var(--ws-display); color: var(--ws-ink); font-variant-numeric: tabular-nums; }
+.import-continuity__section { padding: 19px 0 4px; }
+.import-continuity__section h3 { font: 400 22px/1.2 var(--ws-display); margin: 0 0 7px; }
+.import-continuity__section ul { margin: 0; padding: 0; list-style: none; }
+.import-continuity__section li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 18px; padding: 11px 0; border-bottom: 1px solid var(--ws-edge); }
+.import-continuity__section li > div { min-width: 0; flex: 1 1 180px; }
+.import-continuity__section strong { display: block; color: var(--ws-ink); font-size: 12px; overflow-wrap: anywhere; }
+.import-continuity__section small { display: block; color: var(--ws-muted); margin-top: 4px; font-size: 11px; line-height: 1.6; }
+.import-continuity__section button { min-height: 43px; border: 1px solid var(--ws-edge); color: var(--ws-ink); border-radius: 10px; background: transparent; padding: 8px 13px; font-size: 12px; font-weight: 650; }
+.import-continuity__section button:hover:not(:disabled) { background: var(--ws-panel); }
+.import-continuity__processing { display: flex; gap: 10px; align-items: center; padding-top: 14px; color: var(--ws-muted); font-size: 12px; line-height: 1.6; margin: 0 0 10px; }
+.import-continuity__dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ws-blue); }
+.import-review-complete { display: grid; gap: 5px; border-left: 0; border-block: 1px solid var(--ws-edge); border-radius: 0; background: transparent; color: var(--ws-text); padding-inline: 0; }
+.import-review-complete strong { color: var(--ws-success); font-size: 13px; }
+.import-review-complete span { font-size: 12px; line-height: 1.6; }
+.import-review-complete a { color: var(--ws-ink); font-size: 12px; font-weight: 650; text-decoration: underline; }
+.import-success > .import-link { margin-left: 10px; }
+#import-history { scroll-margin-top: 24px; }
+@media(max-width:650px) { .import-continuity__counts { gap: 8px 17px; } .import-continuity__section li { align-items: flex-start; } }
