@@ -24,5 +24,11 @@ export async function GET(request: Request) {
     },
   });
   const { error } = await supabase.auth.exchangeCodeForSession(code);
-  return NextResponse.redirect(new URL(error ? "/login?error=callback" : destination, url.origin));
+  if (error) return NextResponse.redirect(new URL("/login?error=callback", url.origin));
+  const assurance = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assurance.error) return NextResponse.redirect(new URL("/login?error=callback", url.origin));
+  if (assurance.data.nextLevel === "aal2" && assurance.data.currentLevel !== "aal2") {
+    return NextResponse.redirect(new URL("/mfa?next=" + encodeURIComponent(destination), url.origin));
+  }
+  return NextResponse.redirect(new URL(destination, url.origin));
 }

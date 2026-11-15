@@ -71,7 +71,14 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       } else {
         const { error } = await client.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
-        window.location.assign(safeNext());
+        const assurance = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assurance.error) throw assurance.error;
+        const next = safeNext();
+        if (assurance.data.nextLevel === "aal2" && assurance.data.currentLevel !== "aal2") {
+          window.location.assign("/mfa?next=" + encodeURIComponent(next));
+        } else {
+          window.location.assign(next);
+        }
       }
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : "Authentication could not be completed. Try again.", error: true });
