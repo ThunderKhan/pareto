@@ -18,7 +18,7 @@
 | #08 | Yes | Duplicate “My profile” item removed; bottom account menu preserved |
 | #09 | Implemented in repository; external verification pending | Persisted job title/workspace/membership role, TOTP MFA, current session/other-session revocation, theme, actual in-app notification preferences |
 
-**#10 (Parito avatar):** Not included in this authorized 1–9 pass.
+**#10 (Parito avatar):** Implemented in the Frontend 03 follow-up. Shared Parito mascot avatar appears in the sidebar account control and on the profile page; live signed-in visual verification is still pending.
 
 ## Important account-settings design constraints
 
@@ -67,3 +67,12 @@ Existing CI runs migrations and seeds PostgreSQL, builds Prisma types, runs lint
 The optional real recruiter test remains credential-dependent and is not equivalent to standard CI. A clean code build does not prove live Supabase MFA, database deployment, or actual browser theme contrast. Review those in the deployment environment.
 
 **Design principle:** The landing page is the visual reference, not a new redesign target.
+
+## Frontend 03 follow-up — feedback #10
+
+- Reused `frontend/public/mascot/pareto-mascot.svg` without generating new artwork or changing the landing page.
+- Replaced the recruiter's initials in the bottom account control with a reusable mascot component and showed the same avatar beside the account settings heading.
+- Added light/dark framing, mobile sizing, and a face-focused crop; kept the accessible identity name and email in the account menu.
+- Added an authenticated Playwright assertion for both placements and a public mascot asset smoke test.
+- Candidate initials in search results and the library were left unchanged; those belong to other people, not the logged-in recruiter.
+- Live Supabase, MFA, database migration, and signed-in browser-appearance checks remain external verification tasks.

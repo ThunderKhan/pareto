@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
 import NotificationsMenu from "./notifications-menu";
+import ParitoAvatar from "./parito-avatar";
 import "./workspace-tokens.css";
 import "./workspace-dark.css";
 import "./dashboard.css";
@@ -25,11 +26,6 @@ const navigation = [
   { label: "AI candidate search", href: "/dashboard/search", Icon: MagnifyingGlass },
   { label: "Candidates", href: "/dashboard/candidates", Icon: UsersThree },
 ];
-
-function initials(user: RecruiterIdentity) {
-  return [user.firstName, user.lastName].filter(Boolean).map(value => value[0]?.toUpperCase()).join("") ||
-    user.email.slice(0, 2).toUpperCase();
-}
 
 function identityName(user: RecruiterIdentity) {
   return [user.firstName, user.lastName].filter(Boolean).join(" ") || "Recruiter";
@@ -112,7 +108,7 @@ export default function DashboardShell({ children, user }: {
       </div>
       <details className="pareto-account">
         <summary aria-label={"Account menu for " + identityName(user)}>
-          <span className="pareto-avatar" aria-hidden="true">{initials(user)}</span>
+          <ParitoAvatar />
           <span className="pareto-account__identity">
             <strong>{identityName(user)}</strong>
             <small title={user.email}>{user.email}</small>

@@ -147,3 +147,9 @@ html[data-pareto-effective-theme="dark"] .pareto-app ::selection {
 .pareto-app .pareto-theme-option:hover:not(:disabled) { border-color: var(--ws-blue); }
 .pareto-app .pareto-theme-option:disabled { cursor: not-allowed; opacity: .55; }
 @media(max-width:520px) { .pareto-theme-options { grid-template-columns: 1fr; } }
+
+/* Keep Parito legible against the intentional dark workspace surfaces. */
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar {
+  background: #29466e;
+  border-color: #6484b7;
+}

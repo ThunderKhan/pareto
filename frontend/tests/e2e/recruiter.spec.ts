@@ -23,8 +23,11 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 25000 });
+  await expect(page.locator(".pareto-account .pareto-avatar img")).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
   await page.goto("/dashboard/profile");
   await expect(page.getByRole("heading", { name: "Your profile." })).toBeVisible();
+  await expect(page.locator(".pareto-profile-intro .pareto-avatar img")).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
+  await expect(page.locator(".pareto-profile-intro .pareto-avatar")).toBeVisible();
   await expect(page.getByLabel("Account email")).toHaveValue(email);
   await page.goto("/dashboard");
   await page.getByRole("link", { name: /start candidate search/i }).click();
