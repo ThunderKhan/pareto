@@ -1,0 +1,164 @@
+/* Pareto recruiter workspace. Inspired by the supplied sidebar structure,
+   rebuilt as real navigation using the Pareto identity. */
+.pareto-app {
+  --ws-ink: #020e24;
+  --ws-muted: #687785;
+  --ws-edge: #e4e8ef;
+  --ws-blue: #467beb;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  min-height: 100dvh;
+  background: #fffdf9;
+  color: var(--ws-ink);
+}
+.pareto-app--collapsed { grid-template-columns: 78px minmax(0,1fr); }
+.pareto-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-width: 0;
+  padding: 20px 14px 13px;
+  border-right: 1px solid var(--ws-edge);
+  background: #fff;
+  z-index: 30;
+}
+.pareto-sidebar__header, .pareto-topbar, .pareto-topbar__left, .pareto-topbar__right {
+  display: flex; align-items: center;
+}
+.pareto-sidebar__header { gap: 8px; justify-content: space-between; min-height: 40px; padding: 0 8px; }
+.pareto-sidebar__brand { display: inline-flex; align-items: center; min-width: 0; gap: 9px;
+  font: 400 28px/1 var(--pareto-display); letter-spacing: -.055em; white-space: nowrap; }
+.pareto-sidebar__brand img { flex: none; }
+.pareto-brand-dot { color: var(--ws-blue); }
+.pareto-sidebar__toggle, .pareto-topbar__menu {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none; border: 0; border-radius: 9px; padding: 8px; color: #657386; background: transparent;
+}
+.pareto-sidebar__toggle:hover, .pareto-topbar__menu:hover { background: #eff3fa; color: var(--ws-ink); }
+.pareto-sidebar__toggle--mobile, .pareto-topbar__menu { display: none; }
+.pareto-sidebar__body { display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 34px 0 16px; overflow-y: auto; }
+.pareto-nav__eyebrow { margin: 0 13px 12px; font-size: 10px; font-weight: 700; color: #8c98a6; letter-spacing: .13em; }
+.pareto-nav { display: grid; gap: 5px; }
+.pareto-nav__link { display: flex; align-items: center; gap: 12px; padding: 11px 13px;
+  border-radius: 10px; font-size: 13px; font-weight: 560; color: #526172; transition: background .16s ease, color .16s ease; }
+.pareto-nav__link svg { flex: none; }
+.pareto-nav__link:hover { background: #f2f5f9; color: var(--ws-ink); }
+.pareto-nav__link--active { background: #edf3ff; color: #2057b0; }
+.pareto-nav__note { margin-top: auto; display: flex; gap: 8px; padding: 22px 12px 2px; font-size: 12px; line-height: 1.55; color: #8390a0; }
+.pareto-nav__note-dot { width: 8px; height: 8px; background: #467beb; border-radius: 50%; margin-top: 5px; flex: none; }
+.pareto-nav__note p { margin: 0; }
+.pareto-account { position: relative; border-top: 1px solid var(--ws-edge); padding-top: 12px; }
+.pareto-account summary { list-style: none; cursor: pointer; padding: 8px; display: flex; align-items: center; gap: 11px;
+  border-radius: 10px; min-height: 54px; }
+.pareto-account summary::-webkit-details-marker { display: none; }
+.pareto-account summary:hover { background: #f2f5f9; }
+.pareto-avatar { display: grid; place-items: center; width: 37px; height: 37px; flex: none;
+  background: #dfeafe; color: #174a9d; border: 1px solid #c6d7ef; border-radius: 12px; font-weight: 750; font-size: 12px; }
+.pareto-account__identity { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.pareto-account__identity strong { font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pareto-account__identity small { font-size: 11px; color: #778491; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pareto-account__caret { flex: none; color: #6a7789; transition: transform .2s ease; }
+.pareto-account[open] .pareto-account__caret { transform: rotate(180deg); }
+.pareto-account__actions { position: absolute; z-index: 35; bottom: calc(100% + 6px); left: 4px; right: 4px;
+  border: 1px solid var(--ws-edge); background: #fff; box-shadow: 0 14px 34px #07162a1a; padding: 7px; border-radius: 12px; }
+.pareto-account__actions a, .pareto-account__actions button {
+  display: flex; align-items: center; width: 100%; gap: 10px; padding: 11px; border-radius: 8px;
+  font-size: 13px; text-align: left; color: #445365; background: transparent;
+}
+.pareto-account__actions a:hover, .pareto-account__actions button:hover { background: #f2f5fa; color: var(--ws-ink); }
+.pareto-account__actions button { border: 0; }
+.pareto-account__actions p { padding: 4px 10px; color: #9b2929; font-size: 12px; }
+.pareto-app--collapsed .pareto-sidebar__brand > span,
+.pareto-app--collapsed .pareto-nav__eyebrow,
+.pareto-app--collapsed .pareto-nav__link > span,
+.pareto-app--collapsed .pareto-nav__note,
+.pareto-app--collapsed .pareto-account__identity,
+.pareto-app--collapsed .pareto-account__caret { display: none; }
+.pareto-app--collapsed .pareto-sidebar__header { flex-direction: column; padding-inline: 0; gap: 10px; }
+.pareto-app--collapsed .pareto-sidebar__toggle--desktop { display: inline-flex; }
+.pareto-app--collapsed .pareto-nav__link { justify-content: center; }
+.pareto-app--collapsed .pareto-account summary { justify-content: center; padding: 4px; }
+.pareto-app--collapsed .pareto-account__actions { left: 0; right: auto; width: 205px; }
+.pareto-app__body { min-width: 0; display: flex; flex-direction: column; }
+.pareto-topbar { position: sticky; top: 0; z-index: 20; min-height: 68px; gap: 16px;
+  justify-content: space-between; background: #fffdf9ed; backdrop-filter: blur(18px); border-bottom: 1px solid var(--ws-edge);
+  padding: 12px clamp(20px, 4vw, 58px); }
+.pareto-topbar__left, .pareto-topbar__right { gap: 12px; min-width: 0; }
+.pareto-topbar__left { font-size: 13px; color: #8793a2; }
+.pareto-topbar__left strong { font-size: 13px; color: #283e59; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.pareto-topbar__slash { color: #c5cdd8; }
+.pareto-topbar__private { font-size: 12px; color: #8793a2; white-space: nowrap; }
+.pareto-topbar__action { display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border-radius: 9px; background: #020e24; color: #fff; padding: 10px 13px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.pareto-topbar__action:hover { background: #184276; }
+.pareto-main { width: min(100%, 1190px); margin: 0 auto; padding: clamp(26px, 5vh, 62px) clamp(20px, 4vw, 58px) 70px; }
+.pareto-page-eyebrow { color: #467beb; font-size: 11px; font-weight: 750; letter-spacing: .1em; margin: 0 0 12px; text-transform: uppercase; }
+.pareto-page-title { font: 400 clamp(2.5rem, 4.3vw, 4.2rem)/1.06 var(--pareto-display); letter-spacing: -.05em; margin: 0; }
+.pareto-page-lede { max-width: 680px; font-size: clamp(14px, 1.25vw, 17px); line-height: 1.6; color: #697581; margin: 14px 0 0; }
+.pareto-overview-hero { background: #edf3ff; border: 1px solid #dce5f4; border-radius: 18px;
+  padding: clamp(25px, 4vw, 48px); margin-top: 35px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; align-items: center; }
+.pareto-overview-hero h2 { font: 400 clamp(2rem, 3.1vw, 3rem)/1.13 var(--pareto-display); letter-spacing: -.045em; max-width: 520px; margin: 0 0 12px; }
+.pareto-overview-hero p { color: #5c6b7e; max-width: 510px; font-size: 14px; line-height: 1.6; margin: 0; }
+.pareto-overview-hero a { display: inline-flex; gap: 9px; align-items: center; justify-content: center;
+  color: #fff; background: #020e24; padding: 13px 18px; border-radius: 10px; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.pareto-overview-hero a:hover { background: #184276; }
+.pareto-overview-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-top: 20px; }
+.pareto-overview-link { border: 1px solid var(--ws-edge); border-radius: 15px; padding: 27px; background: white; display: grid; gap: 10px; }
+.pareto-overview-link svg { color: #4578d8; }
+.pareto-overview-link h3 { font-size: 17px; font-weight: 650; }
+.pareto-overview-link p { color: #73808f; font-size: 13px; line-height: 1.55; margin: 0; }
+.pareto-overview-link:hover { border-color: #aabfe3; box-shadow: 0 6px 24px #0a20400d; }
+.pareto-profile-card { margin-top: 32px; padding: clamp(22px, 3vw, 38px); background: white; border: 1px solid var(--ws-edge); border-radius: 17px; max-width: 740px; }
+.pareto-profile-card h2 { font-size: 19px; font-weight: 650; margin: 0 0 6px; }
+.pareto-profile-card p { color: #687785; font-size: 13px; line-height: 1.65; margin: 0 0 22px; }
+.pareto-profile-form { display: grid; gap: 19px; }
+.pareto-profile-two { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px; }
+.pareto-profile-form label { display: grid; gap: 8px; min-width: 0; font-size: 13px; color: #354357; font-weight: 650; }
+.pareto-profile-form input { min-width: 0; width: 100%; min-height: 46px; padding: 11px 13px; border: 1px solid #bfccda; border-radius: 10px; font-size: 15px; background: white; color: #020e24; }
+.pareto-profile-form input:focus { outline: 2px solid #467beb; outline-offset: 1px; }
+.pareto-profile-form input:disabled { color: #617086; background: #f6f8fb; cursor: not-allowed; }
+.pareto-profile-form button { justify-self: start; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; border: 0; border-radius: 9px; background: #020e24; color: #fff; padding: 11px 20px; font-weight: 650; font-size: 13px; }
+.pareto-profile-form button:hover:not(:disabled) { background: #21436b; }
+.pareto-profile-form button:disabled { opacity: .55; cursor: not-allowed; }
+.pareto-profile-message { padding: 11px 13px; border-radius: 9px; background: #ecf6f2; color: #186049; font-size: 13px; }
+.pareto-profile-message--error { background: #fff1f1; color: #9b2727; }
+.pareto-profile-separator { border: 0; border-top: 1px solid var(--ws-edge); margin: 30px 0; }
+.pareto-profile-security { margin-top: 18px; padding-top: 27px; border-top: 1px solid var(--ws-edge); }
+.pareto-profile-security p { margin-bottom: 17px; }
+.pareto-app a:focus-visible, .pareto-app button:focus-visible,
+.pareto-app summary:focus-visible { outline: 2px solid #467beb; outline-offset: 3px; }
+.pareto-sidebar-backdrop { display: none; }
+@media (max-width: 1000px) {
+ .pareto-topbar__private { display: none; }
+}
+@media (max-width: 880px) {
+ .pareto-app, .pareto-app--collapsed { display: block; }
+ .pareto-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: min(290px,88vw);
+   height: 100dvh; transform: translateX(-103%); box-shadow: 0 10px 40px #07152926; transition: transform .22s ease; }
+ .pareto-sidebar--open { transform: translateX(0); }
+ .pareto-sidebar-backdrop { display: block; position: fixed; z-index: 29; inset: 0; border: 0; background: #020e2466; }
+ .pareto-sidebar__toggle--mobile, .pareto-topbar__menu { display: inline-flex; }
+ .pareto-sidebar__toggle--desktop { display: none; }
+ .pareto-app--collapsed .pareto-sidebar__brand > span, .pareto-app--collapsed .pareto-nav__eyebrow,
+ .pareto-app--collapsed .pareto-nav__link > span, .pareto-app--collapsed .pareto-nav__note,
+ .pareto-app--collapsed .pareto-account__identity, .pareto-app--collapsed .pareto-account__caret { display: initial; }
+ .pareto-app--collapsed .pareto-sidebar__header { flex-direction: row; padding-inline: 8px; }
+ .pareto-app--collapsed .pareto-nav__link { justify-content: start; }
+ .pareto-app--collapsed .pareto-account summary { justify-content: start; padding: 8px; }
+ .pareto-topbar { min-height: 58px; padding: 9px 18px; }
+}
+@media (max-width: 600px) {
+ .pareto-topbar__crumb, .pareto-topbar__slash { display: none; }
+ .pareto-topbar__action { font-size: 0; gap: 0; padding: 10px; }
+ .pareto-topbar__action svg { width: 19px; height: 19px; }
+ .pareto-overview-hero { grid-template-columns: 1fr; }
+ .pareto-overview-grid { grid-template-columns: 1fr; }
+ .pareto-profile-two { grid-template-columns: 1fr; }
+ .pareto-profile-form input { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+ .pareto-app *, .pareto-app *::before, .pareto-app *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
