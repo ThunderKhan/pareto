@@ -1,7 +1,7 @@
 import { AiFailure, classifyHttpStatus, classifyProviderError } from "../contracts/errors";
 
-export type JsonProvider = ((system: string, input: string, timeoutMs?: number, maxOutputTokens?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq" };
-type ProviderConfig = Readonly<{ name: "Gemini" | "Groq"; key: string; model: string }>;
+export type JsonProvider = ((system: string, input: string, timeoutMs?: number, maxOutputTokens?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq"; providerSource?: "platform" | "byok"; modelId?: string };
+export type ProviderConfig = Readonly<{ name: "Gemini" | "Groq"; key: string; model: string; source?: "platform" | "byok" }>;
 
 function configured(): ProviderConfig[] {
   const values: Array<{ name: ProviderConfig["name"]; key?: string; model?: string }> = [
@@ -62,7 +62,7 @@ function unwrap(payload: unknown, isGemini: boolean): unknown {
   catch { throw new AiFailure("OUTPUT_INVALID", false); }
 }
 
-function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
+export function providerCall({ name, key, model, source = "platform" }: ProviderConfig): JsonProvider {
   const call: JsonProvider = async (system, input, timeoutMs = 9000, maxOutputTokens = 2600) => {
     // Task output budgets are bounded independently of model suggestions.
     const tokenLimit = Number.isInteger(maxOutputTokens) && maxOutputTokens >= 256 && maxOutputTokens <= 6144
@@ -102,5 +102,7 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
     return { raw: unwrap(doc, isGemini), provider: name, modelId: model, inputTokens, outputTokens };
   };
   call.providerName = name;
+  call.providerSource = source;
+  call.modelId = model;
   return call;
 }
