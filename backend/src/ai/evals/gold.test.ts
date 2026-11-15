@@ -7,7 +7,7 @@ import { criteriaSchema, type Rule } from "../../search/criteria";
 type SearchCase = { id: string; prompt: string; proposal: { criteria: unknown[]; warnings: string[] } };
 type RefinementCase = { id: string; prompt: string; current: Rule[]; proposal: { operations: unknown[]; warnings: string[] } };
 function load<T>(name: string): T[] {
-  return readFileSync(new URL(`../../../evals/datasets/\${name}.jsonl`, import.meta.url), "utf8")
+  return readFileSync(new URL(`../../../evals/datasets/${name}.jsonl`, import.meta.url), "utf8")
     .split("\n").filter(Boolean).map(line => JSON.parse(line) as T);
 }
 describe("synthetic, OFFLINE model proposal contract corpus", () => {
@@ -20,7 +20,7 @@ describe("synthetic, OFFLINE model proposal contract corpus", () => {
     expect(new Set(refinements.map(c => c.id)).size).toBe(refinements.length);
   });
   for (const sample of requests) {
-    it(`validates \${sample.id}`, async () => {
+    it(`validates ${sample.id}`, async () => {
       const model = async () => ({ raw: sample.proposal, provider: "Gemini" });
       const draft = await proposeSearchDraft(sample.prompt, [model], sample.id);
       expect(draft.criteria).toEqual(criteriaSchema.parse(sample.proposal.criteria));
