@@ -68,7 +68,7 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
 
   useEffect(() => {
     const controller = new AbortController();
-    void load(controller.signal);
+    void Promise.resolve().then(() => { if (!controller.signal.aborted) return load(controller.signal); });
     return () => controller.abort();
   }, [load]);
 

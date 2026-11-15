@@ -16,7 +16,7 @@ export default function ImportMetricsPanel() {
   }, [days]);
   useEffect(() => {
     const controller = new AbortController();
-    void load(controller.signal);
+    void Promise.resolve().then(() => { if (!controller.signal.aborted) return load(controller.signal); });
     return () => controller.abort();
   }, [load]);
   return <details className="import-section import-metrics" data-testid="import-metrics">
