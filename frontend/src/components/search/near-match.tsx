@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Rule } from "@pareto/backend/search";
 import type { counterfactualFor } from "@pareto/backend/search/server";
-import { actualText, EvidenceList, PreviewError, previewError, previewRequest, ruleSummary, statusLabel } from "./search-insights-shared";
+import { actualText, EvidenceList, PreviewError, ReloadSearch, exactBoundaryChange, previewError, previewRequest, ruleSummary, statusLabel } from "./search-insights-shared";
 
 type Report = Awaited<ReturnType<typeof counterfactualFor>>;
 
@@ -67,20 +67,32 @@ export default function NearMatchExplanation({ sessionId, version, candidateId, 
       {Boolean(error) && <div role="alert" className="insight-error">
         <p>{previewError(error)}</p>
         {error instanceof PreviewError && error.status === 401 && <Link href="/login">Sign in</Link>}
+        <ReloadSearch status={error instanceof PreviewError ? error.status : null}/>
         <button type="button" onClick={() => void load()}>Retry</button>
       </div>}
       {report && !loading && <>
         <p><strong>Known mismatches: {report.knownRequiredFailures}</strong> · Unverified requirements: {report.missingEvidence.length}</p>
-        <p>Before: <strong>{statusLabel[report.before.eligibility]}</strong> → After preview: <strong>{statusLabel[report.after.eligibility]}</strong></p>
+        <p className="insight-outcome" aria-label="Eligibility before and after preview">
+          Current <strong>{statusLabel[report.before.eligibility]}</strong>
+          <span aria-hidden="true">→</span>
+          Proposed <strong>{statusLabel[report.after.eligibility]}</strong>
+        </p>
+        {report.after.eligibility === "NEEDS_REVIEW" &&
+          <p className="insight-caution">This candidate still needs verification. Missing evidence has not been resolved by changing the search.</p>}
         {report.before.eligibility === "ELIGIBLE" && <p>Already meets the documented mandatory requirements.</p>}
         {report.changes.length > 0 && <section aria-label="Documented requirement gaps">
           <h5>Documented gaps and proposed changes</h5>
-          <ul>{report.changes.map(change => <li key={change.key}>
+          <ul className="insight-gap-list">{report.changes.map(change => <li key={change.key}>
             <strong>{ruleSummary(change.before)}</strong>
-            <p>Candidate record · {change.evidence.field}: {actualText(change.evidence.actual)}
-              {change.evidence.field === "noticePeriodDays" ? " days" : change.evidence.field === "experienceMonths" ? " months" : ""}</p>
+            <div className="insight-gap-facts">
+              <span>Candidate record</span>
+              <b>{actualText(change.evidence.actual)}{change.evidence.actual != null &&
+                (change.evidence.field === "noticePeriodDays" ? " days" :
+                 change.evidence.field === "experienceMonths" ? " months" : "")}</b>
+              <small>{change.evidence.field} · Structured record</small>
+            </div>
             <p>{change.evidence.reason}</p>
-            <p><strong>Proposed requirement:</strong> {ruleSummary(change.after)}</p>
+            <p><strong>{exactBoundaryChange(change.before, change.after) ?? "Proposed requirement: " + ruleSummary(change.after)}</strong></p>
             <p><strong>Trade-off:</strong> {change.tradeOff}</p>
             {change.kind === "MAKE_PREFERRED" && <p className="insight-caution">This makes a requirement preferred. It does not establish that the candidate has the missing skill or attribute.</p>}
           </li>)}</ul>
