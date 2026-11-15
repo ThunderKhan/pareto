@@ -38,7 +38,6 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
   const [conflict, setConflict] = useState(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true); setError("");
     try {
       const [info, state, history, auditLog] = await Promise.all([
         requestJSON<ImportDetail>("/" + id, undefined, signal),
@@ -50,6 +49,7 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
         requestJSON<{events: AuditEvent[]}>("/" + id + "/audit", undefined, signal),
       ]);
       if (signal?.aborted) return;
+      setError("");
       setDetail(info); setReview(state); setJob(history.job); setAudit(auditLog.events);
       setDraft(state.profile ? { ...state.profile,
         skills: state.profile.skills ? [...state.profile.skills] : null,
@@ -159,13 +159,13 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
         <p className="import-muted">Source evidence and reviewer actions are limited to your account.</p>
       </div>
       <div className="import-actions">
-        <button type="button" className="import-button import-button--quiet" disabled={loading || busy} onClick={() => void load()}>Refresh details</button>
+        <button type="button" className="import-button import-button--quiet" disabled={loading || busy} onClick={() => { setLoading(true); void load(); }}>Refresh details</button>
         <button type="button" className="import-button import-button--quiet" onClick={onClose}>Close</button>
       </div>
     </header>
     {loading && <p role="status">Loading private import details…</p>}
     {error && <p role="alert" className="import-alert">{error} {conflict && "Your edits were not saved. Reload and compare with the current version."}</p>}
-    {conflict && <button type="button" className="import-button" onClick={() => void load()}>Reload current review version</button>}
+    {conflict && <button type="button" className="import-button" onClick={() => { setLoading(true); void load(); }}>Reload current review version</button>}
     {message && <p role="status" className="import-success">{message}</p>}
     {detail && review && <>
       <div className="import-detail__overview">

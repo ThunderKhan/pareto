@@ -6,11 +6,11 @@ import { errorText, metricText, requestJSON, type ImportMetrics } from "./api";
 export default function ImportMetricsPanel() {
   const [days, setDays] = useState<1|7|30|90>(30);
   const [data, setData] = useState<ImportMetrics | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async (signal?: AbortSignal) => {
-    setBusy(true); setError("");
-    try { setData(await requestJSON<ImportMetrics>("/metrics?days=" + days, undefined, signal)); }
+    try { const value = await requestJSON<ImportMetrics>("/metrics?days=" + days, undefined, signal);
+      if (signal?.aborted) return; setData(value); setError(""); }
     catch (cause) { if (!(cause instanceof Error && cause.name === "AbortError")) setError(errorText(cause)); }
     finally { if (!signal?.aborted) setBusy(false); }
   }, [days]);
@@ -23,10 +23,10 @@ export default function ImportMetricsPanel() {
     <summary>Processing insights <span className="import-muted">Measured operations, not candidate quality scores</span></summary>
     <div className="import-section__body">
       <div className="import-actions">
-        <label>Time window <select value={days} onChange={event => setDays(Number(event.target.value) as 1|7|30|90)}>
+        <label>Time window <select value={days} onChange={event => { setBusy(true); setDays(Number(event.target.value) as 1|7|30|90); }}>
           {[1,7,30,90].map(value => <option key={value} value={value}>Last {value} day{value === 1 ? "" : "s"}</option>)}
         </select></label>
-        <button type="button" className="import-button import-button--quiet" disabled={busy} onClick={() => void load()}>Refresh metrics</button>
+        <button type="button" className="import-button import-button--quiet" disabled={busy} onClick={() => { setBusy(true); void load(); }}>Refresh metrics</button>
       </div>
       {busy && <p role="status">Loading measured processing data…</p>}
       {error && <p role="alert" className="import-alert">{error}</p>}
