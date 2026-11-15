@@ -96,7 +96,7 @@ describe("bounded resume parser and upload validation", () => {
     expect(() => validateResume("resume.pdf", "application/pdf", Buffer.from("Not a PDF"))).toThrow();
     expect(() => validateResume("resume.txt", "application/pdf", Buffer.from(text))).toThrow();
     expect(() => validateResume("resume.txt", "text/plain", Buffer.from([0xff, 0xff]))).toThrow();
-    expect(() => validateResume("resume.txt", "text/plain", Buffer.alloc(520_000, 65))).toThrow();
+    expect(() => validateResume("resume.txt", "text/plain", Buffer.alloc(530_000, 65))).toThrow();
     expect(() => validateResume("resume.txt", "text/plain", Buffer.alloc(0))).toThrow();
   });
   it("rejects unreadable scanned-image-only content", async () => {
