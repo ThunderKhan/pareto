@@ -23,6 +23,10 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 25000 });
+  await page.goto("/dashboard/profile");
+  await expect(page.getByRole("heading", { name: "Your profile." })).toBeVisible();
+  await expect(page.getByLabel("Account email")).toHaveValue(email);
+  await page.goto("/dashboard");
   await page.getByRole("link", { name: /start candidate search/i }).click();
   // The request context attached to this browser shares the actual Supabase cookies.
   // The isolated Playwright test request fixture would always be unauthorized, even
