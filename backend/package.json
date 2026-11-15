@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./search": "./src/search/criteria.ts",
     "./search/server": "./src/search/service.ts",
-    "./search/interpret": "./src/search/interpret.ts"
+    "./search/interpret": "./src/search/interpret.ts",
+    "./account/server": "./src/account/service.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
