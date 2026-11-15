@@ -8,10 +8,12 @@ import CriteriaEditor, { labels } from "./criteria-editor";
 import SearchOrb from "./search-orb";
 import ParitoAvatar from "@/components/dashboard/parito-avatar";
 import SearchHealthPanel from "./search-health";
+import ParetoFrontier from "./pareto-frontier";
 import WhatIfPanel from "./what-if";
 import NearMatchExplanation from "./near-match";
 import "./search.css";
 import "./insights.css";
+import "./frontier.css";
 import "./round-02.css";
 import "./round-03-motion.css";
 import "./conversation-layout.css";
@@ -400,6 +402,9 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         {results.referenceId && <p>Similarity counts equally weighted preferred profile criteria. Missing evidence earns zero credit.</p>}
         <details><summary>Confirmed criteria</summary><ul>{results.criteria.map(rule =>
           <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul></details>
+        <ParetoFrontier key={"frontier:" + results.sessionId + ":" + results.version}
+          sessionId={results.sessionId} version={results.version}
+          onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
         <div className="insight-panels" aria-label="Search analysis tools">
           <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
             sessionId={results.sessionId} version={results.version}
