@@ -235,7 +235,7 @@
 .v2-hero-actions .v2-btn--primary:hover { background: rgb(2 14 36 / 85%); transform: none; }
 @media (min-width: 640px) {
   .v2-hero-actions { flex-direction: row; align-items: center; width: auto; }
-  .v2-hero-actions .v2-btn { width: auto; min-height: 42px; padding-inline: 20px; border-radius: 12px; font-size: 16px; }
+  .v2-hero-actions .v2-btn { width: auto; min-height: 44px; padding-inline: 20px; border-radius: 12px; font-size: 16px; }
 }
 @media (max-width: 1023px) {
   .v2-hero { padding-top: 54px; }

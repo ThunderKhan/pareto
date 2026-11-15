@@ -86,3 +86,11 @@
 @media (prefers-reduced-motion: reduce) {
   .pareto-app :is(.pareto-nav__link, .pareto-overview-history__item, .pareto-candidates__row, .pareto-profile-form button) { transition: none; }
 }
+
+/* Existing dark-theme E2E visual contract: the account panel remains raised. */
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-profile-card {
+  background: var(--ws-surface);
+  padding-inline: clamp(16px, 2.2vw, 28px);
+  border: 1px solid var(--ws-edge);
+  border-radius: 14px;
+}
