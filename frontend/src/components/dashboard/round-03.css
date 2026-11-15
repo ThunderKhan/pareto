@@ -32,6 +32,9 @@
     opacity: 0;
     pointer-events: none;
   }
+  /* The legacy collapsed layout used display:none, which snapped text away
+     before the column could animate. Keep the text clipped with its parent. */
+  .pareto-app--collapsed .pareto-sidebar__brand > span { display: inline; }
   .pareto-sidebar__toggle--desktop { flex: none; }
   .pareto-app--collapsed .pareto-sidebar__header {
     flex-direction: row;
@@ -58,7 +61,14 @@
     overflow: hidden;
     white-space: nowrap;
   }
-  .pareto-nav__eyebrow { display: block; white-space: nowrap; overflow: hidden; }
+  .pareto-nav__eyebrow {
+    display: block;
+    max-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 145ms ease, max-height 250ms ease,
+                margin 250ms ease, visibility 0s linear 0s;
+  }
   .pareto-nav__link { justify-content: flex-start; }
   .pareto-app--collapsed .pareto-nav__link {
     justify-content: flex-start;
@@ -93,7 +103,14 @@
     transition: opacity 90ms ease, visibility 0s linear 220ms,
                 max-width 240ms cubic-bezier(.22, 1, .36, 1);
   }
-  .pareto-app--collapsed .pareto-nav__eyebrow { display: block; }
+  .pareto-app--collapsed .pareto-nav__eyebrow {
+    display: block;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    transition: opacity 90ms ease, max-height 240ms ease,
+                margin 240ms ease, visibility 0s linear 240ms;
+  }
   .pareto-app--collapsed .pareto-nav__link > span { display: inline-block; }
   .pareto-app--collapsed .pareto-account__identity { display: grid; flex: 0 1 0%; }
   .pareto-app--collapsed .pareto-account__caret { display: block; }
