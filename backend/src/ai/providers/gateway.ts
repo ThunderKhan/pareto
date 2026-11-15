@@ -39,7 +39,12 @@ export async function proposeStructured<T extends object>(
       const response = await provider(system, input, Math.min(9000, remaining));
       let proposal: T;
       try { proposal = validate(response.raw); }
-      catch { throw new AiFailure("OUTPUT_INVALID", false); }
+      catch (error) {
+        // Preserve a deliberately classified semantic rejection; only unknown
+        // validation exceptions become generic malformed-output failures.
+        if (error instanceof AiFailure) throw error;
+        throw new AiFailure("OUTPUT_INVALID", false);
+      }
       if (provider.providerName) providerCircuitBreaker.onSuccess(provider.providerName);
       recordSafeUsage({
         taskId, requestId, provider: response.provider === "Groq" ? "Groq" : "Gemini",
