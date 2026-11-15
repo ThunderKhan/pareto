@@ -35,7 +35,7 @@ describe("semantic retrieval invariants", () => {
     const rules = [{ field: "industry", mode: "preferred", value: "Fintech" }] as const;
     const results = hybridRank(candidates, [...rules], new Map([["a", -0.2], ["b", 0.95]]));
     expect(results.map(item => item.candidate.id)).toEqual(["b", "a"]);
-    expect((results[0] as { retrieval: { semanticSimilarity: number | null } }).retrieval.semanticSimilarity).toBe(0.95);
+    expect((results[0] as unknown as { retrieval: { semanticSimilarity: number | null } }).retrieval.semanticSimilarity).toBe(0.95);
     expect(results[0].preferenceMet).toBe(1);
   });
 
