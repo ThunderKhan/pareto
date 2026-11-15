@@ -3,7 +3,7 @@ import { applyDelta, criteriaSchema, deltaSchema, ruleKey, type Rule } from "../
 import { proposeStructured } from "../providers/gateway";
 import type { JsonProvider } from "../providers/http";
 import { searchRefinePromptV1 } from "../prompts/search-refine.v1";
-import { isolatedUserData, validateSearchRequest } from "../safety/policy";
+import { isolatedUserData, validateSearchRequest, rejectProtectedRuleValues } from "../safety/policy";
 import { AiFailure } from "../contracts/errors";
 
 const responseSchema = z.strictObject({
@@ -25,6 +25,7 @@ export async function proposeRefinementDraft(prompt: string, current: Rule[], pr
     try {
       const delta = deltaSchema.parse(result.operations);
       const next = applyDelta(prior, delta);
+      rejectProtectedRuleValues(next);
       const touched = new Set(delta.map(op => op.op === "remove" ? op.key : ruleKey(op.rule)));
       for (const rule of prior) {
         const key = ruleKey(rule);
