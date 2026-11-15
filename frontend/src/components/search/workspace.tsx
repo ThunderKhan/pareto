@@ -172,8 +172,9 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       (after ? describe(after) + " (" + after.mode + ")" : "Removed")] : [];
   });
   const similarityOnly = Boolean(results?.referenceId) && results?.criteria.every(rule => rule.mode === "preferred");
+  const conversationStarted = Boolean(results || draft || lastRequest || busy || referenceOpen || alert || message || initialSession || initialReference);
 
-  return <div className="pareto-chat" aria-busy={busy}>
+  return <div className={"pareto-chat " + (conversationStarted ? "pareto-chat--active" : "pareto-chat--fresh")} aria-busy={busy}>
     <div className="pareto-chat__timeline">
       {!results && !draft && !lastRequest && <div className="pareto-chat__empty">
         <SearchOrb />

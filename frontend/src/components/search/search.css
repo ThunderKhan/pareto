@@ -66,3 +66,44 @@
  .pareto-chat__suggestions { display: grid; }
 }
 @media (prefers-reduced-motion: reduce) { .pareto-search-orb--working { animation: none; } }
+
+
+/* Feedback 03: one compositor, two actual layout states. Keep the input mounted.
+   Fresh conversations are centered; after the first submission, only the
+   results timeline scrolls while the composer remains at the bottom. */
+.pareto-app--search { height: 100dvh; min-height: 0; overflow: hidden; }
+.pareto-app--search .pareto-app__body { height: 100dvh; min-height: 0; overflow: hidden; }
+.pareto-app--search .pareto-topbar { flex: 0 0 auto; }
+.pareto-main--search { flex: 1 1 auto; display: flex; flex-direction: column;
+  min-width: 0; min-height: 0; height: auto; width: 100%;
+  padding: 18px clamp(18px,4vw,56px) 17px; }
+.pareto-chat { flex: 1 1 auto; min-height: 0; height: 100%; width: 100%;
+  margin: 0; max-width: 1060px; align-self: center; overflow: hidden; }
+.pareto-chat--fresh { justify-content: center; gap: clamp(23px, 4vh, 40px); }
+.pareto-chat--fresh .pareto-chat__timeline { flex: 0 0 auto; min-height: 0;
+  overflow: visible; padding: 0; }
+.pareto-chat--fresh .pareto-chat__empty { margin: 0; padding: 0 8px;
+  gap: 12px; }
+.pareto-chat__empty h2 { margin: 12px 0 0; }
+.pareto-chat--fresh .pareto-chat__composer { position: relative; bottom: auto; width: 100%;
+  max-width: 850px; align-self: center; }
+.pareto-chat--active { gap: 0; }
+.pareto-chat--active .pareto-chat__timeline { flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  overscroll-behavior: contain; scrollbar-gutter: stable; padding: 18px 8px 24px; }
+.pareto-chat--active .pareto-chat__composer { flex: 0 0 auto; position: relative; bottom: auto; }
+.pareto-chat__composer { transition: box-shadow .2s ease, border-color .2s ease; }
+@media (max-height: 620px) {
+  .pareto-chat--fresh { gap: 13px; }
+  .pareto-chat--fresh .pareto-search-orb { width: 46px; height: 46px; }
+  .pareto-chat--fresh .pareto-search-orb i { transform: rotate(calc(var(--dot) * 30deg)) translateX(14px); }
+  .pareto-chat__empty h2 { font-size: clamp(1.7rem,4vw,2.6rem); }
+  .pareto-chat__composer textarea { min-height: 42px; }
+}
+@media (max-width: 560px) {
+  .pareto-main--search { padding: 12px 12px 8px; }
+  .pareto-chat--active .pareto-chat__timeline { padding: 10px 3px 12px; }
+  .pareto-chat__composer { bottom: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-chat__composer { transition: none; }
+}

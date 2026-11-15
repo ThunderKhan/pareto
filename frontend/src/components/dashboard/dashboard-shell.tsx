@@ -70,7 +70,7 @@ export default function DashboardShell({ children, user }: {
     navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
     navigation[0];
 
-  return <div className={"pareto-app" + (collapsed ? " pareto-app--collapsed" : "")}>
+  return <div className={"pareto-app" + (collapsed ? " pareto-app--collapsed" : "") + (path === "/dashboard/search" ? " pareto-app--search" : "")}>
     {mobileOpen && <button className="pareto-sidebar-backdrop" type="button"
       onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
     <aside id="pareto-navigation" className={"pareto-sidebar" + (mobileOpen ? " pareto-sidebar--open" : "")}
