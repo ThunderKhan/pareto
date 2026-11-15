@@ -43,7 +43,7 @@ export async function proposeStructured<T extends object>(
       return { ...proposal, provider: response.provider };
     } catch (error) {
       last = classifyProviderError(error);
-      recordSafeUsage({ taskId, requestId, provider: index === 0 ? "Gemini" : "Groq",
+      recordSafeUsage({ taskId, requestId, provider: provider.providerName ?? (index === 0 ? "Gemini" : "Groq"),
         outcome: last.code, latencyMs: Date.now() - attemptStarted });
       if (!canFallback(last.code) || index === selected.length - 1) break;
     } finally { release(); }
