@@ -1,5 +1,6 @@
 import { z } from "@pareto/backend/search";
-import { resumeImport, retryResume, IngestionError } from "@pareto/backend/ingestion/server";
+import { resumeImport, IngestionError } from "@pareto/backend/ingestion/server";
+import { retryQueuedDocument, cancelQueuedDocument, JobConflict } from "@pareto/backend/ingestion/queue";
 import { StorageFailure } from "@pareto/backend/ingestion/storage";
 import { recruiter } from "@/lib/auth";
 import { logger } from "@pareto/backend";
@@ -11,6 +12,7 @@ const json = (value: unknown, status = 200) => Response.json(value,
   { status, headers: { "Cache-Control": "private, no-store" } });
 
 function errorResponse(error: unknown) {
+  if (error instanceof JobConflict) return json({ code: error.code, error: error.message }, error.status);
   if (error instanceof IngestionError) return json({ code: error.code, error: error.message }, error.status);
   if (error instanceof StorageFailure) return json({ code: error.code, error: error.message }, 503);
   if (error instanceof z.ZodError) return json({ error: "Invalid resume import ID." }, 422);
@@ -35,7 +37,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     let decoded: unknown;
     try { decoded = JSON.parse(body); }
     catch { return json({ error: "Send valid JSON with action retry." }, 400); }
-    z.strictObject({ action: z.literal("retry") }).parse(decoded);
-    return json(await retryResume(user.id, id.parse((await params).id)));
+    const payload = z.strictObject({ action: z.enum(["retry", "cancel"]) }).parse(decoded);
+    const documentId = id.parse((await params).id);
+    return json(payload.action === "retry"
+      ? await retryQueuedDocument(user.id, documentId)
+      : await cancelQueuedDocument(user.id, documentId));
   } catch (error) { return errorResponse(error); }
 }

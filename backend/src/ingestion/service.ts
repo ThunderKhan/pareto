@@ -16,6 +16,9 @@ const documentSelect = {
   sha256: true, status: true, attempts: true, provider: true, errorCode: true,
   textTruncated: true, reviewReasons: true, createdAt: true, updatedAt: true,
   candidate: { select: { id: true, displayName: true, roleTitle: true, city: true } },
+  ingestionJob: { select: { id: true, status: true, stage: true, attempts: true,
+    maxAttempts: true, manualRetries: true, runAfter: true, batchId: true,
+    lastErrorCode: true, cancelRequested: true, startedAt: true, finishedAt: true } },
 } as const;
 
 export async function resumeImports(ownerId: string) {
@@ -242,4 +245,101 @@ export async function resumeDownload(
   if (!entry) throw new IngestionError(404, "NOT_FOUND", "Resume import not found.");
   const url = await storage.signedUrl(entry.storageKey);
   return { url, expiresInSeconds: 60 };
+}
+
+
+/**
+ * New production ingestion path. HTTP upload stores bytes and queues exactly
+ * one durable job; it NEVER makes a model call or parses a resume in the request.
+ * The earlier synchronous uploadResume remains only for isolated legacy tests.
+ */
+export async function queueResumeUpload(
+  ownerId: string, fileName: string, mimeType: string, bytes: Buffer,
+  storage: ResumeStorage = supabaseResumeStorage(),
+) {
+  const file = validateResume(fileName, mimeType, bytes);
+  const db = database();
+  const existing = await db.resumeDocument.findUnique({
+    where: { ownerId_sha256: { ownerId, sha256: file.sha256 } },
+    select: { id: true, status: true, errorCode: true, storageKey: true, attempts: true },
+  });
+  const resultFor = async (id: string, duplicate: boolean) =>
+    ({ duplicate, document: await resumeImport(ownerId, id) });
+
+  // Repair a previous failed Storage request or job enqueue in-place without
+  // creating another candidate/document for the same owner/source hash.
+  if (existing) {
+    if (existing.status === "FAILED" &&
+        ["STORAGE_FAILED", "REUPLOAD_REQUIRED", "JOB_QUEUE_FAILED"].includes(existing.errorCode ?? "") &&
+        existing.attempts < 3) {
+      const claimed = await db.resumeDocument.updateMany({
+        where: { id: existing.id, ownerId, status: "FAILED", attempts: { lt: 3 } },
+        data: { status: "PROCESSING", attempts: { increment: 1 } },
+      });
+      if (claimed.count) {
+        try {
+          if (existing.errorCode === "JOB_QUEUE_FAILED") {
+            const stored = await storage.read(existing.storageKey);
+            if (createHash("sha256").update(stored).digest("hex") !== file.sha256) throw Error("checksum");
+          } else {
+            await storage.upload(existing.storageKey, file);
+          }
+          await db.$transaction(async tx => {
+            await tx.resumeDocument.update({ where: { id: existing.id },
+              data: { status: "STORED", errorCode: null, attempts: 0, reviewReasons: [] } });
+            await tx.ingestionJob.upsert({
+              where: { documentId: existing.id },
+              update: {},
+              create: { ownerId, documentId: existing.id },
+            });
+          });
+          return resultFor(existing.id, false);
+        } catch {
+          await db.resumeDocument.update({ where: { id: existing.id },
+            data: { status: "FAILED", errorCode: "JOB_QUEUE_FAILED",
+              reviewReasons: ["Secure upload or queueing failed; retry the same document."] } });
+          return resultFor(existing.id, false);
+        }
+      }
+    }
+    return resultFor(existing.id, true);
+  }
+
+  const id = randomUUID(), storageKey = ownerId + "/" + id + "." + file.kind.toLowerCase();
+  try {
+    await db.resumeDocument.create({ data: {
+      id, ownerId, fileName: file.fileName, kind: file.kind, mimeType: file.mimeType,
+      byteSize: bytes.length, sha256: file.sha256, storageKey, attempts: 0, status: "RECEIVED",
+    } });
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+      const duplicate = await db.resumeDocument.findUnique({
+        where: { ownerId_sha256: { ownerId, sha256: file.sha256 } }, select: { id: true },
+      });
+      if (duplicate) return resultFor(duplicate.id, true);
+    }
+    throw error;
+  }
+  try {
+    await storage.upload(storageKey, file);
+  } catch {
+    await db.resumeDocument.update({ where: { id },
+      data: { status: "FAILED", errorCode: "STORAGE_FAILED",
+        reviewReasons: ["Secure Storage upload failed; reupload after correcting configuration."] } });
+    return resultFor(id, false);
+  }
+  try {
+    await db.$transaction(async tx => {
+      await tx.resumeDocument.update({ where: { id },
+        data: { status: "STORED", errorCode: null, reviewReasons: [] } });
+      await tx.ingestionJob.create({ data: { ownerId, documentId: id } });
+    });
+  } catch {
+    // File is private but must not be considered queued. A same-file retry
+    // verifies its existing checksum and atomically repairs the queue.
+    await db.resumeDocument.update({ where: { id },
+      data: { status: "FAILED", errorCode: "JOB_QUEUE_FAILED",
+        reviewReasons: ["Storage succeeded, but queue creation failed. Reupload this file to recover."] } });
+  }
+  return resultFor(id, false);
 }

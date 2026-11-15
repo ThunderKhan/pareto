@@ -8,9 +8,11 @@ on:
       - main
       - integration/release-20261114
       - feat/private-resume-ingestion
+      - feat/durable-resume-batch-workers
   pull_request:
     branches:
       - main
+      - feat/private-resume-ingestion
   workflow_dispatch:
 
 permissions:
@@ -55,6 +57,10 @@ jobs:
           pnpm db:seed
       - name: Lint, typecheck, and unit and PostgreSQL tests
         run: pnpm check
+      - name: Verify independent ingestion worker runtime against PostgreSQL
+        run: pnpm ingest:worker
+        env:
+          INGEST_WORKER_ONCE: "1"
       - name: Production build
         run: pnpm build
       - name: Install Chromium for public/browser security smoke tests

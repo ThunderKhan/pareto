@@ -1,5 +1,5 @@
 import { z } from "@pareto/backend/search";
-import { resumeImports, uploadResume } from "@pareto/backend/ingestion/server";
+import { resumeImports, queueResumeUpload } from "@pareto/backend/ingestion/server";
 import { MAX_UPLOAD_BODY_BYTES, ResumeInputError } from "@pareto/backend/ingestion/parse";
 import { IngestionError } from "@pareto/backend/ingestion/server";
 import { StorageFailure } from "@pareto/backend/ingestion/storage";
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
   if (!user) return respond({ error: "Sign in to upload resumes." }, 401);
   try {
     const file = await limitedMultipart(request);
-    const result = await uploadResume(user.id, file.name, file.type, file.bytes);
+    const result = await queueResumeUpload(user.id, file.name, file.type, file.bytes);
     return respond(result, result.duplicate ? 200 : 201);
   } catch (error) { return failure(error); }
 }

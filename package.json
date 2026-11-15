@@ -21,6 +21,7 @@
     "db:seed": "pnpm --filter @pareto/backend db:seed",
     "prebuild": "pnpm db:generate",
     "predev": "pnpm db:generate",
-    "pretypecheck": "pnpm db:generate"
+    "pretypecheck": "pnpm db:generate",
+    "ingest:worker": "pnpm --filter @pareto/backend ingest:worker"
   }
 }
