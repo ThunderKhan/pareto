@@ -22,7 +22,7 @@ export default function NotificationsMenu() {
   }, []);
 
   useEffect(() => {
-    void load();
+    void Promise.resolve().then(load);
     window.addEventListener("pareto:search-confirmed", load);
     return () => window.removeEventListener("pareto:search-confirmed", load);
   }, [load]);

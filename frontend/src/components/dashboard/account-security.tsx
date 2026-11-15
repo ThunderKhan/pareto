@@ -44,7 +44,7 @@ export default function AccountSecurity() {
 
   useEffect(() => {
     let active = true;
-    void reload().catch(cause => {
+    void Promise.resolve().then(reload).catch(cause => {
       if (active) { setError(cause instanceof Error ? cause.message : "Security settings unavailable."); setLoading(false); }
     });
     return () => { active = false; };
