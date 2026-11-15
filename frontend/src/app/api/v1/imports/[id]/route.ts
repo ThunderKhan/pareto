@@ -32,8 +32,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     const body = await request.text();
     if (body.length > 1000) return json({ error: "Request exceeds allowed size." }, 413);
-    const action = z.strictObject({ action: z.literal("retry") }).parse(JSON.parse(body));
-    void action;
+    let decoded: unknown;
+    try { decoded = JSON.parse(body); }
+    catch { return json({ error: "Send valid JSON with action retry." }, 400); }
+    z.strictObject({ action: z.literal("retry") }).parse(decoded);
     return json(await retryResume(user.id, id.parse((await params).id)));
   } catch (error) { return errorResponse(error); }
 }
