@@ -1,4 +1,5 @@
 import { database } from "../search/db";
+import { indexCandidate } from "../search/semantic";
 import { skillKey } from "../search/criteria";
 import type { JsonProvider } from "../search/interpret";
 import { extractResumeProfile } from "./extract";
@@ -101,6 +102,16 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
         reason: result.needsReview ? "Automated extraction requires human verification." : null,
       } });
     });
+    // Only index after the fenced transaction commits. Failed embedding calls
+    // never roll back an ingestion job; the idempotent backfill repairs gaps.
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      try {
+        const indexed = await database().candidate.findFirst({
+          where: { ownerId: job.ownerId, sourceDocumentId: job.documentId }, select: { id: true },
+        });
+        if (indexed) await indexCandidate(job.ownerId, indexed.id);
+      } catch { /* Offline/rate limited: deterministic search remains available. */ }
+    }
     return result.needsReview ? "NEEDS_REVIEW" as const : "READY" as const;
   } catch (err) {
     if (err instanceof LeaseLost) return "LOST_LEASE" as const;
