@@ -57,6 +57,15 @@ export default function DashboardShell({ children, user }: {
     window.addEventListener("pareto:search-confirmed", load);
     return () => { mounted = false; window.removeEventListener("pareto:search-confirmed", load); };
   }, [path]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [mobileOpen]);
+
   const current = navigation.find(item => item.href === path) ??
     navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
     navigation[0];
