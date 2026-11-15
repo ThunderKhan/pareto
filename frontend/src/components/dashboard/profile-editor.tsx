@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { Check, LockKey, UserCircle } from "@phosphor-icons/react";
+import ThemePicker from "./theme-picker";
 
 function useAuthClient() {
   return useMemo(() => {
@@ -13,10 +14,11 @@ function useAuthClient() {
   }, []);
 }
 
-export default function ProfileEditor({ email, firstName, lastName }: {
+export default function ProfileEditor({ email, firstName, lastName, themePreference }: {
   email: string;
   firstName: string;
   lastName: string;
+  themePreference: string;
 }) {
   const router = useRouter();
   const client = useAuthClient();
@@ -109,5 +111,6 @@ export default function ProfileEditor({ email, firstName, lastName }: {
         <button type="submit" disabled={!client || busy}><LockKey size={17}/>{busy ? "Updating…" : "Change password"}</button>
       </form>
     </section>
+    <ThemePicker initialValue={themePreference} />
   </div>;
 }

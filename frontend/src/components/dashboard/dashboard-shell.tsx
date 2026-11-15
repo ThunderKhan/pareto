@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
 import "./workspace-tokens.css";
+import "./workspace-dark.css";
 import "./dashboard.css";
 
 type RecruiterIdentity = {
