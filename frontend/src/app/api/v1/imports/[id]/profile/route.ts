@@ -1,3 +1,4 @@
+import { rejectCrossOriginMutation } from "@/lib/request-origin";
 import { z } from "@pareto/backend/search";
 import { recruiter } from "@/lib/auth";
 import { logger } from "@pareto/backend";
@@ -21,6 +22,8 @@ export async function GET(_request: Request, { params }: Context) {
   catch (error) { return failure(error); }
 }
 export async function POST(request: Request, { params }: Context) {
+  const forbidden = rejectCrossOriginMutation(request);
+  if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return send({ error: "Sign in to review candidates." }, 401);
   if (!request.headers.get("content-type")?.startsWith("application/json"))

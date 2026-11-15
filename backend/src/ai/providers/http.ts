@@ -1,6 +1,6 @@
 import { AiFailure, classifyHttpStatus, classifyProviderError } from "../contracts/errors";
 
-export type JsonProvider = ((system: string, input: string, timeoutMs?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq" };
+export type JsonProvider = ((system: string, input: string, timeoutMs?: number, maxOutputTokens?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq" };
 type ProviderConfig = Readonly<{ name: "Gemini" | "Groq"; key: string; model: string }>;
 
 function configured(): ProviderConfig[] {
@@ -49,9 +49,13 @@ function unwrap(payload: unknown, isGemini: boolean): unknown {
       ? parts.find(p => p && typeof p === "object" && !(p as { thought?: boolean }).thought && typeof (p as { text?: unknown }).text === "string")
       : undefined;
     output = (output as { text?: unknown } | undefined)?.text;
+    if ((candidate as { finishReason?: string } | undefined)?.finishReason === "MAX_TOKENS")
+      throw new AiFailure("OUTPUT_INVALID", false);
   } else {
     const choice = Array.isArray(doc.choices) ? doc.choices[0] : undefined;
     output = (choice as { message?: { content?: unknown } } | undefined)?.message?.content;
+    if ((choice as { finish_reason?: string } | undefined)?.finish_reason === "length")
+      throw new AiFailure("OUTPUT_INVALID", false);
   }
   if (typeof output !== "string" || output.length > 60000) throw new AiFailure("OUTPUT_INVALID", false);
   try { return JSON.parse(output); }
@@ -59,7 +63,10 @@ function unwrap(payload: unknown, isGemini: boolean): unknown {
 }
 
 function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
-  const call: JsonProvider = async (system, input, timeoutMs = 9000) => {
+  const call: JsonProvider = async (system, input, timeoutMs = 9000, maxOutputTokens = 2600) => {
+    // Task output budgets are bounded independently of model suggestions.
+    const tokenLimit = Number.isInteger(maxOutputTokens) && maxOutputTokens >= 256 && maxOutputTokens <= 6144
+      ? maxOutputTokens : 2600;
     const isGemini = name === "Gemini";
     const endpoint = isGemini
       ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
@@ -67,9 +74,9 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
     const payload = isGemini
       ? { systemInstruction: { parts: [{ text: system }] },
           contents: [{ parts: [{ text: input }] }],
-          generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2600, temperature: 0 } }
+          generationConfig: { responseMimeType: "application/json", maxOutputTokens: tokenLimit, temperature: 0 } }
       : { model, messages: [{ role: "system", content: system }, { role: "user", content: input }],
-          response_format: { type: "json_object" }, max_completion_tokens: 2600, temperature: 0 };
+          response_format: { type: "json_object" }, max_completion_tokens: tokenLimit, temperature: 0 };
     let response: Response;
     try {
       response = await fetch(endpoint, {

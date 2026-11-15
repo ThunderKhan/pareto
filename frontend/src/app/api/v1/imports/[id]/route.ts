@@ -1,3 +1,4 @@
+import { rejectCrossOriginMutation } from "@/lib/request-origin";
 import { z } from "@pareto/backend/search";
 import { resumeImport, IngestionError } from "@pareto/backend/ingestion/server";
 import { retryQueuedDocument, cancelQueuedDocument, JobConflict } from "@pareto/backend/ingestion/queue";
@@ -26,6 +27,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   catch (error) { return errorResponse(error); }
 }
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const forbidden = rejectCrossOriginMutation(request);
+  if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return json({ error: "Sign in to retry resume imports." }, 401);
   try {

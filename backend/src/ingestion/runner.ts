@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isResumeIngestionEnabled } from "./policy";
 import { database } from "../search/db";
 import { logger } from "../index";
 import { processClaim, type ProcessingDependencies } from "./processor";
@@ -27,6 +28,7 @@ export async function workOnce(
   id: string, limits: {global: number; perOwner: number},
   deps: ProcessingDependencies = {},
 ) {
+  if (!isResumeIngestionEnabled()) return false;
   const claimed = await claimJob(id, limits);
   if (!claimed) return false;
   await workClaimed(claimed, deps);
@@ -63,6 +65,10 @@ export async function runWorker(options: WorkerOptions, deps: ProcessingDependen
   const active = new Set<Promise<void>>();
   let recoveredAt = 0;
   while (!options.signal.aborted) {
+    if (!isResumeIngestionEnabled()) {
+      await delay(options.pollMs);
+      continue;
+    }
     if (Date.now() - recoveredAt > options.recoveryMs) {
       recoveredAt = Date.now();
       try {

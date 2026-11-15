@@ -1,3 +1,4 @@
+import { rejectCrossOriginMutation } from "@/lib/request-origin";
 import { z } from "@pareto/backend/search";
 import { resumeImports, queueResumeUpload } from "@pareto/backend/ingestion/server";
 import { MAX_UPLOAD_BODY_BYTES, ResumeInputError } from "@pareto/backend/ingestion/parse";
@@ -75,8 +76,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const forbidden = rejectCrossOriginMutation(request);
+  if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return respond({ error: "Sign in to upload resumes." }, 401);
+  // Block before constructing Storage clients or parsing a large multipart body.
+  if (process.env.RESUME_INGESTION_ENABLED === "false")
+    return respond({ code: "INGESTION_DISABLED", error: "Resume ingestion is temporarily paused." }, 503);
   try {
     const file = await limitedMultipart(request);
     const result = await queueResumeUpload(user.id, file.name, file.type, file.bytes);
