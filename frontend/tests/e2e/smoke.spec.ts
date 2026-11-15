@@ -107,6 +107,13 @@ test("signed-out visitors cannot search or read candidate data", async ({ page, 
   await expect(page).toHaveURL(/\/login/);
   expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
   expect((await request.get("/api/v1/search?history=1")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports", { multipart: { file: {
+    name: "candidate.txt", mimeType: "text/plain", buffer: Buffer.from("Candidate") } } })).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111/download")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports/11111111-1111-4111-8111-111111111111",
+    { data: { action: "retry" } })).status()).toBe(401);
   expect((await request.post("/api/v1/search", { data: { action: "interpret", prompt: "Find Java developers" } })).status()).toBe(401);
 });
 
