@@ -48,7 +48,12 @@ export function checkSkillEvidence(skill: string, quote: string): "supported" | 
   };
   const terms = aliases[skillKey(skill)] ?? [skillKey(skill)];
   if (!terms.some(term => hasWord(term, quote))) return "unknown";
-  if (/\b(?:no|zero|without|lack(?:ing|s)?|never|don't have|do not have)\s+(?:(?:professional|practical|hands-on|commercial)\s+)?(?:experience|knowledge|skills?|exposure)?\s*(?:in|of|with|using)?\s*/i.test(quote)) return "contradicted";
+  const negative = terms.some(term => {
+    const escaped = term.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+    return new RegExp("\\b(?:no|zero|without|lack(?:s|ing)?|never had)\\s+(?:(?:professional|practical|hands-on)\\s+)?(?:(?:experience|knowledge|skills?|exposure|proficiency)\\s+(?:in|of|with|using)\\s+)?" + escaped + "(?![\\p{L}\\p{N}])", "iu").test(quote)
+      || new RegExp("\\b(?:do not know|don't know|not proficient in)\\s+" + escaped + "(?![\\p{L}\\p{N}])", "iu").test(quote);
+  });
+  if (negative) return "contradicted";
   if (/\b(?:want to learn|learning|plan to learn|interested in learning|aspiring to learn|will learn)\b/i.test(quote))
     return "unknown";
   if (/\b(?:job requirements?|we are hiring|must have|required skills|ideal candidate)\s*:/i.test(quote))
