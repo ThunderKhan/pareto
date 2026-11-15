@@ -38,7 +38,7 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
     metrics.sourceChars = parsed.text.length;
     await changeStage(job, "EXTRACTING");
     const modelStartedAt = Date.now();
-    const result = await extractResumeProfile(parsed, deps.providers);
+    const result = await extractResumeProfile(parsed, deps.providers, job.ownerId);
     metrics.modelMs = result.provider ? Date.now() - modelStartedAt : undefined;
     metrics.provider = result.provider;
     metrics.evidenceCount = result.evidence.length;

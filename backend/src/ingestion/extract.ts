@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { skillKey } from "../search/criteria";
 import { verifyResumeClaim } from "../ai/quality/resume-evidence";
-import { resumeExtractPromptV1 } from "../ai/prompts/resume-extract.v1";
+import { proposeResumeFacts } from "../ai/tasks/resume-extract";
 import { configuredProviders, type JsonProvider } from "../search/interpret";
 import type { ParsedResume } from "./parse";
 
@@ -41,7 +41,7 @@ export type ResumeExtraction = {
   needsReview: boolean;
 };
 
-const instructions = resumeExtractPromptV1;
+
 
 function locate(quote: string, parsed: ParsedResume): Omit<VerifiedEvidence, "fieldKey"> | null {
   const compact = (v: string) => v.replace(/\s+/gu, " ").trim();
@@ -155,26 +155,29 @@ export function validateExtractedProfile(raw: unknown, parsed: ParsedResume, pro
     needsReview: warnings.length > 0 || parsed.truncated };
 }
 
-export async function extractResumeProfile(parsed: ParsedResume,
-  providers: JsonProvider[] = configuredProviders()): Promise<ResumeExtraction> {
+export async function extractResumeProfile(
+  parsed: ParsedResume,
+  providers: JsonProvider[] = configuredProviders(),
+  ownerId?: string,
+): Promise<ResumeExtraction> {
   if (!providers.length) return {
     profile: null, evidence: [], provider: null, needsReview: true,
     warnings: ["AI provider not configured. Extracted text is stored; retry when configured."],
   };
-  const input = JSON.stringify({ resumeText: parsed.text.slice(0, 16000) });
-  for (const provider of providers) {
-    try {
-      const response = await provider(instructions, input);
-      const result = validateExtractedProfile(response.raw, parsed, response.provider);
-      if (parsed.text.length > 16000) {
-        result.needsReview = true;
-        result.warnings.push("Only the first 16,000 characters were submitted for extraction.");
-      }
-      return result;
-    } catch {
-      // Never log raw resume, model output, tokens, credentials or prompt.
+  try {
+    const result = await proposeResumeFacts(parsed.text, raw => {
+      // Strict Zod schema and original-source semantic validation run inside
+      // the provider gateway. Invalid output may safely fall back to Groq.
+      return validateExtractedProfile(raw, parsed, "Pending");
+    }, providers, ownerId);
+    if (parsed.text.length > 16000) {
+      result.needsReview = true;
+      result.warnings.push("Only the first 16,000 characters were submitted for extraction.");
     }
+    return result;
+  } catch {
+    // Never log raw resume, prompt, provider response, credentials or model text.
+    return { profile: null, evidence: [], provider: null, needsReview: true,
+      warnings: ["AI extraction was unavailable or failed validation. Retry later."] };
   }
-  return { profile: null, evidence: [], provider: null, needsReview: true,
-    warnings: ["AI extraction was unavailable or failed validation. Retry later."] };
 }
