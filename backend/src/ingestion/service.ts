@@ -124,9 +124,36 @@ export async function uploadResume(
   const checked = validateResume(fileName, mimeType, bytes);
   const db = database();
   const existing = await db.resumeDocument.findUnique({
-    where: { ownerId_sha256: { ownerId, sha256: checked.sha256 } }, select: { id: true },
+    where: { ownerId_sha256: { ownerId, sha256: checked.sha256 } },
+    select: { id: true, status: true, attempts: true, errorCode: true, storageKey: true },
   });
-  if (existing) return { duplicate: true, document: await resumeImport(ownerId, existing.id) };
+  if (existing) {
+    // Recover a failed initial Storage upload using the same hash/key. A missing
+    // bucket must not permanently poison the owner's deduplication slot.
+    if (existing.status === "FAILED" && existing.attempts < MAX_ATTEMPTS &&
+        ["STORAGE_FAILED", "REUPLOAD_REQUIRED"].includes(existing.errorCode ?? "")) {
+      const claimed = await db.resumeDocument.updateMany({
+        where: { id: existing.id, ownerId, status: "FAILED",
+          attempts: { lt: MAX_ATTEMPTS } },
+        data: { status: "PROCESSING", attempts: { increment: 1 } },
+      });
+      if (claimed.count === 1) {
+        try {
+          await storage.upload(existing.storageKey, checked);
+          await db.resumeDocument.update({ where: { id: existing.id },
+            data: { status: "STORED", errorCode: null } });
+          return { duplicate: false, document: await completeExtraction(ownerId, existing.id, checked, providers) };
+        } catch {
+          await db.resumeDocument.update({ where: { id: existing.id }, data: {
+            status: "FAILED", errorCode: "STORAGE_FAILED",
+            reviewReasons: ["Secure file upload failed. Check private Storage and reupload."],
+          } });
+          return { duplicate: false, document: await resumeImport(ownerId, existing.id) };
+        }
+      }
+    }
+    return { duplicate: true, document: await resumeImport(ownerId, existing.id) };
+  }
   const id = randomUUID(), extension = checked.kind.toLowerCase();
   const storageKey = ownerId + "/" + id + "." + extension;
   try {
@@ -175,8 +202,15 @@ export async function retryResume(
   if (!["FAILED", "NEEDS_REVIEW"].includes(entry.status)) {
     throw new IngestionError(409, "NOT_RETRYABLE", "Only failed or review-needed imports can be retried.");
   }
-  if (entry.status === "FAILED" && entry.storageKey === "") {
-    throw new IngestionError(409, "REUPLOAD_REQUIRED", "Upload this document again.");
+  // Storage errors cannot be repaired by parsing a nonexistent object.
+  // Reupload the same file through POST /imports; the dedup recovery path
+  // will reuse its owner-scoped metadata and object key safely.
+  if (entry.status === "FAILED" &&
+      ["STORAGE_FAILED", "REUPLOAD_REQUIRED"].includes(
+        (await db.resumeDocument.findFirst({ where: { ownerId, id },
+          select: { errorCode: true } }))?.errorCode ?? "")) {
+    throw new IngestionError(409, "REUPLOAD_REQUIRED",
+      "Reupload the original document after verifying private Storage.");
   }
   const claimed = await db.resumeDocument.updateMany({
     where: { id, ownerId, status: { in: ["FAILED", "NEEDS_REVIEW"] },
