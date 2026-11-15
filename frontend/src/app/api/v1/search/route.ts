@@ -2,7 +2,7 @@ import { z } from "@pareto/backend/search";
 import { criteriaSchema, promptSchema } from "@pareto/backend/search";
 import { logger } from "@pareto/backend";
 import {
-  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults,
+  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, searchDiagnostics,
 } from "@pareto/backend/search/server";
 import { interpret, interpretRefinement } from "@pareto/backend/search/interpret";
 import { recruiter } from "@/lib/auth";
@@ -40,6 +40,9 @@ async function authorized(operation: (ownerId: string) => Promise<unknown>) {
 export function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   return authorized(ownerId => {
+    // Diagnostics are a read-only projection of an existing CONFIRMED session.
+    // The service checks ownerId before accessing candidate records.
+    if (params.has("diagnostics")) return searchDiagnostics(ownerId, id.parse(params.get("diagnostics")));
     if (params.has("history")) return recentSearches(ownerId);
     if (params.has("session")) return searchResults(ownerId, id.parse(params.get("session")),
       z.coerce.number().int().min(0).max(1000).parse(params.get("offset") ?? 0));

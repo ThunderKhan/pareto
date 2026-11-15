@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from "node:util";
 import { database } from "./db";
 import { criteriaSchema, type Rule } from "./criteria";
 import { evaluatorVersion, rank, referenceCriteria } from "./evaluate";
+import { diagnoseSearch } from "./diagnostics";
 import type { Prisma } from "../generated/prisma/client";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
@@ -69,10 +70,14 @@ export async function activeSearch(ownerId: string, id: string) {
   };
 }
 
-async function compute(ownerId: string, criteria: Rule[], referenceId: string | null, offset = 0) {
+async function searchableCandidates(ownerId: string) {
   const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
   if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
-  const results = rank(rows.map(profile), criteria, referenceId);
+  return rows.map(profile);
+}
+
+async function compute(ownerId: string, criteria: Rule[], referenceId: string | null, offset = 0) {
+  const results = rank(await searchableCandidates(ownerId), criteria, referenceId);
   const counts = { ELIGIBLE: 0, NEEDS_REVIEW: 0, INELIGIBLE: 0 };
   for (const result of results) counts[result.eligibility]++;
   return { counts, results: results.slice(offset, offset + 20), total: results.length, evaluatorVersion };
@@ -81,6 +86,16 @@ async function compute(ownerId: string, criteria: Rule[], referenceId: string | 
 export async function searchResults(ownerId: string, sessionId: string, offset = 0) {
   const state = await activeSearch(ownerId, sessionId);
   return { ...state, ...await compute(ownerId, state.criteria, state.referenceId, offset) };
+}
+
+/**
+ * Only a recruiter's own confirmed session is eligible for diagnostics.
+ * Re-evaluates the same owner-scoped dataset as normal search, without writes.
+ */
+export async function searchDiagnostics(ownerId: string, sessionId: string) {
+  const state = await activeSearch(ownerId, sessionId);
+  const diagnostic = diagnoseSearch(await searchableCandidates(ownerId), state.criteria, state.referenceId);
+  return { sessionId: state.sessionId, version: state.version, ...diagnostic };
 }
 
 type Confirmation = { requestId: string; criteria: Rule[]; referenceId?: string; sessionId?: string; expectedVersion?: number };

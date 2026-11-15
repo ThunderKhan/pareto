@@ -169,7 +169,10 @@ export function diagnoseSearch(
   // Coupled constraints can each individually produce zero gain. Check a bounded
   // subset of two DIFFERENT requirements; never claim an exhaustive optimization.
   if (!evaluated.some(item => item.suggestion.additionalEligibleCount > 0)) {
-    const representative = [...new Map(singles.map(item => [item.key, item])).values()].slice(0, 7);
+    const distinct = new Map<string, Adjustment>();
+    // Prefer the smallest measured step for each rule when investigating pairs.
+    for (const option of singles) if (!distinct.has(option.key)) distinct.set(option.key, option);
+    const representative = [...distinct.values()].slice(0, 7);
     outer: for (let i = 0; i < representative.length; i++) {
       for (let j = i + 1; j < representative.length; j++) {
         if (pairedTested >= MAX_PAIRED_VARIANTS) break outer;

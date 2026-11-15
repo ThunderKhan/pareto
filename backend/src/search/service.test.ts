@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { database } from "./db";
 import { criteriaSchema } from "./criteria";
 import { interpret, interpretRefinement } from "./interpret";
-import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults } from "./service";
+import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, searchDiagnostics } from "./service";
 
 const integrationUrl = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -16,6 +16,37 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     const db = database();
     await db.searchSession.deleteMany({ where: { ownerId: owner, id: { in: [...sessions] } } });
     await db.$disconnect();
+  });
+
+  it("diagnoses confirmed restrictions with measured counts and no revision mutations", async () => {
+    const criteria = criteriaSchema.parse([
+      { field: "role", value: "Senior Java Developer", mode: "required" },
+      { field: "city", value: "Hyderabad", mode: "required" },
+      { field: "notice", maxDays: 30, mode: "required" },
+    ]);
+    const saved = await confirmSearch(owner, { requestId: randomUUID(), criteria });
+    sessions.add(saved.sessionId);
+    expect(saved.counts).toMatchObject({ ELIGIBLE: 3, NEEDS_REVIEW: 1 });
+    const report = await searchDiagnostics(owner, saved.sessionId);
+    expect(report).toMatchObject({
+      status: "PREVIEW_ONLY",
+      sessionId: saved.sessionId, version: 1, totalCandidates: 48,
+      baseline: { counts: saved.counts, criteria },
+      evaluatorVersion: saved.evaluatorVersion,
+    });
+    const notice = report.bottlenecks.find(item => item.key === "notice");
+    expect(notice).toMatchObject({ unknownCount: 6 });
+    const relaxed = report.suggestions.find(suggestion =>
+      suggestion.changes.some(change =>
+        change.kind === "extend_notice" && change.after.field === "notice" && change.after.maxDays === 45));
+    expect(relaxed).toBeDefined();
+    expect(relaxed?.additionalEligibleCount).toBe(1);
+    expect(relaxed?.counts.ELIGIBLE).toBe(4);
+    expect(relaxed?.newlyEligible.map(candidate => candidate.displayName)).toContain("Meera Iyer");
+    expect(await activeSearch(owner, saved.sessionId)).toMatchObject({ version: 1, criteria });
+    expect((await searchResults(owner, saved.sessionId)).counts).toEqual(saved.counts);
+    await expect(searchDiagnostics(stranger, saved.sessionId)).rejects.toMatchObject({ status: 404 });
+    await expect(searchDiagnostics(owner, "not-a-session")).rejects.toMatchObject({ status: 404 });
   });
 
   it("keeps 48 stable synthetic candidates and 129 skill links after repeat seeding", async () => {
