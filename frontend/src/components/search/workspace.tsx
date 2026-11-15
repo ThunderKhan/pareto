@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowClockwise, MagnifyingGlass, PencilSimple, Sparkle, UsersThree, X } from "@phosphor-icons/react";
+import { ArrowClockwise, Info, MagnifyingGlass, PencilSimple, Sparkle, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
 import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
 import CriteriaEditor, { labels } from "./criteria-editor";
@@ -14,6 +14,7 @@ import "./search.css";
 import "./insights.css";
 import "./round-02.css";
 import "./round-03-motion.css";
+import "./conversation-layout.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -360,8 +361,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <SearchOrb />
         <h2>Who are we looking for?</h2>
       </div>}
-      {lastRequest && <div className="pareto-chat__request">
-        <span className="pareto-chat__caption">YOUR REQUEST</span>
+      {lastRequest && <div className="pareto-chat__request" role="group" aria-label="Your message">
         <p>{lastRequest}</p>
       </div>}
       {(busy || message || alert || results) && <div className="pareto-chat__assistant-turn"
@@ -373,8 +373,16 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       {busy && <div className="pareto-chat__processing" role="status">
         <span>{busyLabel}</span>
       </div>}
-      {message && <p className="pareto-chat__notice" role="status">{message}</p>}
-      {alert && <p className="search-error" role="alert">{alert}</p>}
+      {message && <p className="pareto-chat__notice" role="status">
+        <Info size={17} aria-hidden="true"/><span>{message}</span>
+      </p>}
+      {alert && <div className="pareto-chat__error" role="alert">
+        <WarningCircle size={18} aria-hidden="true"/>
+        <div><p>{alert}</p>
+          {alert === "Cross-origin requests are not allowed." &&
+            <p className="pareto-chat__error-help">The server rejected the origin of this request. Check that the app and its proxy use the same public hostname, then retry.</p>}
+        </div>
+      </div>}
       {results && <section className="search-panel pareto-chat__results" aria-label="Confirmed results">
         <div className="pareto-chat__results-head">
           <div>
