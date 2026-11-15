@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { database } from "./db";
 import { criteriaSchema } from "./criteria";
 import { interpret, interpretRefinement } from "./interpret";
-import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults } from "./service";
+import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor } from "./service";
 
 const integrationUrl = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -16,6 +16,68 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     const db = database();
     await db.searchSession.deleteMany({ where: { ownerId: owner, id: { in: [...sessions] } } });
     await db.$disconnect();
+  });
+
+  it("grounds Dev Shah's near match in the seed, without mutating revisions or notifications", async () => {
+    const criteria = criteriaSchema.parse([
+      { field: "role", mode: "required", value: "Senior Java Developer" },
+      { field: "city", mode: "required", value: "Hyderabad" },
+      { field: "experience", mode: "required", minMonths: 72, maxMonths: 120 },
+      { field: "skill", mode: "required", value: "Java" },
+      { field: "notice", mode: "required", maxDays: 30 },
+    ]);
+    const confirmed = await confirmSearch(owner, { criteria, requestId: randomUUID() });
+    sessions.add(confirmed.sessionId);
+    const [dev] = await candidateList(owner, "Dev Shah");
+    const [unknown] = await candidateList(owner, "Riya Sen");
+    const db = database();
+    const revisions = await db.searchRevision.count({ where: { sessionId: confirmed.sessionId } });
+    const notifications = await db.recruiterNotification.count({ where: { sessionId: confirmed.sessionId } });
+
+    const report = await counterfactualFor(owner, confirmed.sessionId, 1, dev.id);
+    expect(report).toMatchObject({
+      sessionId: confirmed.sessionId, version: 1, status: "PREVIEW_ONLY",
+      referenceId: null, candidate: { id: dev.id, displayName: "Dev Shah" },
+      before: { eligibility: "INELIGIBLE" }, after: { eligibility: "ELIGIBLE" },
+      knownRequiredFailures: 1, changedRuleCount: 1,
+      changes: [{
+        key: "notice", kind: "EXPAND_NOTICE", before: { maxDays: 30 },
+        after: { maxDays: 60 },
+        evidence: { source: "structured_candidate_record", actual: 60, outcome: "FAIL" },
+      }],
+    });
+    expect(report.proposedCriteria.filter(rule => rule.field !== "notice"))
+      .toEqual(criteria.filter(rule => rule.field !== "notice"));
+    expect(report.after.details.find(detail => detail.rule.field === "notice")).toMatchObject({
+      outcome: "MATCH", actual: 60,
+    });
+    const verify = await counterfactualFor(owner, confirmed.sessionId, 1, unknown.id);
+    expect(verify).toMatchObject({
+      knownRequiredFailures: 0, changedRuleCount: 0,
+      before: { eligibility: "NEEDS_REVIEW" }, after: { eligibility: "NEEDS_REVIEW" },
+      missingEvidence: [{ key: "notice", actual: null, action: "VERIFY_EVIDENCE" }],
+    });
+    expect(await db.searchRevision.count({ where: { sessionId: confirmed.sessionId } })).toBe(revisions);
+    expect(await db.recruiterNotification.count({ where: { sessionId: confirmed.sessionId } })).toBe(notifications);
+    expect(await activeSearch(owner, confirmed.sessionId)).toMatchObject({ version: 1, criteria });
+    expect((await searchResults(owner, confirmed.sessionId)).counts).toEqual(confirmed.counts);
+    await expect(counterfactualFor(stranger, confirmed.sessionId, 1, dev.id))
+      .rejects.toMatchObject({ status: 404 });
+    await expect(counterfactualFor(owner, confirmed.sessionId, 2, dev.id))
+      .rejects.toMatchObject({ status: 409 });
+    await expect(counterfactualFor(owner, confirmed.sessionId, 1, "not-a-candidate"))
+      .rejects.toMatchObject({ status: 404 });
+    await expect(counterfactualFor(owner, "not-a-session", 1, dev.id))
+      .rejects.toMatchObject({ status: 404 });
+
+    const [asha] = await candidateList(owner, "Asha Nair");
+    const reference = await referenceDraft(owner, asha.id);
+    const referenceSearch = await confirmSearch(owner, {
+      requestId: randomUUID(), criteria: reference.criteria, referenceId: asha.id,
+    });
+    sessions.add(referenceSearch.sessionId);
+    await expect(counterfactualFor(owner, referenceSearch.sessionId, 1, asha.id))
+      .rejects.toMatchObject({ status: 422 });
   });
 
   it("keeps 48 stable synthetic candidates and 129 skill links after repeat seeding", async () => {

@@ -99,6 +99,7 @@ test("signed-out visitors cannot search or read candidate data", async ({ page, 
   await expect(page).toHaveURL(/\/login/);
   expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
   expect((await request.get("/api/v1/search?history=1")).status()).toBe(401);
+  expect((await request.get("/api/v1/search?counterfactual=example&candidate=someone&version=1")).status()).toBe(401);
   expect((await request.post("/api/v1/search", { data: { action: "interpret", prompt: "Find Java developers" } })).status()).toBe(401);
 });
 

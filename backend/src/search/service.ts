@@ -3,6 +3,7 @@ import { database } from "./db";
 import { criteriaSchema, type Rule } from "./criteria";
 import { evaluatorVersion, rank, referenceCriteria } from "./evaluate";
 import type { Prisma } from "../generated/prisma/client";
+import { explainNearMatch } from "./counterfactual";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
 type Candidate = Prisma.CandidateGetPayload<{ include: { skills: typeof skills } }>;
@@ -146,4 +147,27 @@ export async function confirmSearch(ownerId: string, input: Confirmation) {
     }
   }
   return { ...saved, criteria, referenceId, ...await compute(ownerId, criteria, referenceId) };
+}
+
+
+/**
+ * Evidence-backed near-match analysis for one candidate and one owned
+ * CONFIRMED search. No writes; the only source of facts is the candidate row.
+ */
+export async function counterfactualFor(
+  ownerId: string, sessionId: string, expectedVersion: number, candidateId: string,
+) {
+  const state = await activeSearch(ownerId, sessionId);
+  if (state.version !== expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
+  if (state.referenceId === candidateId) {
+    throw new SearchError(422, "The reference candidate cannot be evaluated as their own near match.");
+  }
+  const candidate = await candidateFor(ownerId, candidateId);
+  const report = explainNearMatch(candidate, state.criteria);
+  // A concurrent revision must not surface a preview tied to a stale version.
+  const latest = await activeSearch(ownerId, sessionId);
+  if (latest.version !== expectedVersion) {
+    throw new SearchError(409, "This search changed during analysis. Reload the latest revision.");
+  }
+  return { sessionId: state.sessionId, version: state.version, referenceId: state.referenceId, ...report };
 }
