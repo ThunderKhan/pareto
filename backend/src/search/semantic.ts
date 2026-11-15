@@ -61,10 +61,10 @@ async function embeddingForOwner(
     const release = aiProcessLimiter.acquire(ownerId);
     const started = Date.now();
     try {
-      if (durableQuotaEnabled()) await reserveDurableAiAttempt(ownerId);
-      // Resolve the actual key *after* owner quota admission; never silently
-      // use the platform Gemini credential when a BYOK recruiter selected Groq.
+      // Check the selected billing source before consuming a quota attempt.
+      // A Groq-only BYOK account must not burn Gemini usage on an unavailable key.
       const credential = await resolveGeminiEmbeddingCredential(ownerId);
+      if (durableQuotaEnabled()) await reserveDurableAiAttempt(ownerId);
       try {
         const vector = await geminiEmbed(text, task, credential.key);
         await recordAiAttempt({ userId: ownerId,
