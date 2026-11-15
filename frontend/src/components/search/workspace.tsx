@@ -144,7 +144,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     if (!isDraftOpen) return;
     const origin = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const dialog = draftDialogRef.current;
-    dialog?.querySelector<HTMLElement>("select, input, button")?.focus();
+    dialog?.querySelector<HTMLElement>(".search-rule__fields select, .search-editor__add, .pareto-draft-close")?.focus();
     const keys = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); setDraft(undefined); return; }
       if (event.key !== "Tab" || !dialog) return;
@@ -382,12 +382,12 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
               }
             }} placeholder="Search candidates by name…" autoComplete="off"/>
         </label>
-        <div className="pareto-reference-picker__list" role="status" aria-live="polite">
+        <div className="pareto-reference-picker__list">
           {lookupName.trim().length < 2 && <p>Enter at least two characters to find a profile.</p>}
-          {lookupName.trim().length >= 2 && lookupBusy && <p>Searching candidate profiles…</p>}
+          {lookupName.trim().length >= 2 && lookupBusy && <p role="status">Searching candidate profiles…</p>}
           {lookupError && <p role="alert">{lookupError}</p>}
           {!lookupBusy && !lookupError && lookupName.trim().length >= 2 && lookup?.length === 0 &&
-            <p>No matching profiles. Try another name.</p>}
+            <p role="status">No matching profiles. Try another name.</p>}
           {!lookupBusy && !lookupError && lookup?.map(candidate =>
             <button type="button" className="pareto-reference-picker__result" key={candidate.id}
               disabled={busy} onClick={() => fromReference(candidate.id)}>
