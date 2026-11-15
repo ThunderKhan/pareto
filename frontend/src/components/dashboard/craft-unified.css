@@ -1,0 +1,88 @@
+/* Pareto product craft floor · nine-pass polish from existing landing design.
+ * This is not a second theme. All ink, paper, warm surfaces and accent roles are
+ * inherited from workspace-tokens.css (and its graphite theme override). */
+.pareto-app { font-kerning: normal; font-synthesis: none; }
+.pareto-app .pareto-main { min-width: 0; }
+.pareto-app .pareto-page-title { font-weight: 400; letter-spacing: -.045em; overflow-wrap: break-word; }
+.pareto-app .pareto-page-lede { color: var(--ws-muted); letter-spacing: 0; line-height: 1.65; }
+.pareto-app .pareto-page-eyebrow { color: var(--ws-muted); letter-spacing: .035em; font-size: 12px; font-weight: 600; }
+.pareto-app .pareto-nav__eyebrow { color: var(--ws-muted); letter-spacing: .035em; font-size: 11px; }
+.pareto-app .pareto-sidebar { background: var(--ws-surface); border-color: var(--ws-edge); }
+.pareto-app .pareto-nav__link { min-height: 44px; color: var(--ws-text); border-radius: 10px; }
+.pareto-app .pareto-nav__link:hover { background: var(--ws-hover); color: var(--ws-ink); }
+.pareto-app .pareto-nav__link--active { background: var(--ws-panel); color: var(--ws-ink); font-weight: 650; }
+.pareto-app .pareto-nav__link--active:hover { background: var(--ws-panel); }
+.pareto-app .pareto-recent__item { color: var(--ws-muted); min-height: 40px; }
+.pareto-app .pareto-recent__item:hover { color: var(--ws-ink); background: var(--ws-hover); }
+.pareto-app .pareto-recent__item small { color: var(--ws-subtle); font-variant-numeric: tabular-nums; }
+.pareto-app .pareto-topbar { border-color: var(--ws-edge); }
+.pareto-app .pareto-topbar__action,
+.pareto-app .pareto-overview-new { background: var(--ws-primary); color: var(--ws-on-primary); min-height: 44px; border-radius: 12px; }
+.pareto-app .pareto-topbar__action:hover,
+.pareto-app .pareto-overview-new:hover { background: var(--ws-primary-hover); color: var(--ws-on-primary); }
+.pareto-app .pareto-overview-header { align-items: flex-end; }
+.pareto-app .pareto-overview-header .pareto-page-lede { max-width: 570px; margin-top: 12px; font-size: 14px; }
+.pareto-app .pareto-overview-history__heading h2 { color: var(--ws-ink); font: 400 26px/1.2 var(--ws-display); letter-spacing: -.03em; margin: 0 0 7px; }
+.pareto-app .pareto-overview-history__description { color: var(--ws-muted); font-size: 13px; line-height: 1.6; margin: 0 0 17px; }
+.pareto-app .pareto-overview-history__list { gap: 0; border-top: 1px solid var(--ws-edge); }
+.pareto-app .pareto-overview-history__item {
+  border: 0; border-bottom: 1px solid var(--ws-edge); border-radius: 0; background: transparent;
+  box-shadow: none; min-height: 70px; padding: 16px 4px;
+}
+.pareto-app .pareto-overview-history__item:hover { background: var(--ws-panel); border-color: var(--ws-edge); }
+.pareto-app .pareto-overview-history__name { color: var(--ws-ink); font-size: 14px; }
+.pareto-app .pareto-overview-history__meta { color: var(--ws-muted); font-variant-numeric: tabular-nums; }
+.pareto-app .pareto-overview-history__empty {
+  background: transparent; border: 1px solid var(--ws-edge); border-radius: 12px;
+  color: var(--ws-muted); padding: 28px;
+}
+.pareto-app .pareto-overview-history__empty h3 { color: var(--ws-ink); font-size: 20px; font-family: var(--ws-display); font-weight: 400; }
+.pareto-app .pareto-candidates { gap: clamp(20px, 2.4vw, 36px); align-items: start; }
+.pareto-app .pareto-candidates__list, .pareto-app .pareto-candidates__detail {
+  border: 0; border-top: 1px solid var(--ws-edge);
+  border-radius: 0; background: transparent; box-shadow: none; padding: 20px 0;
+}
+.pareto-app .pareto-candidates__search label { color: var(--ws-text); }
+.pareto-app .pareto-candidates__search > div { border-color: var(--ws-control); background: var(--ws-surface); }
+.pareto-app .pareto-candidates__search:focus-within > div { border-color: var(--ws-focus); box-shadow: 0 0 0 2px var(--ws-active); }
+.pareto-app .pareto-candidates__search svg { color: var(--ws-muted); }
+.pareto-app .pareto-candidates__search input { background: transparent; color: var(--ws-ink); }
+.pareto-app .pareto-candidates__search button { background: var(--ws-primary); color: var(--ws-on-primary); min-height: 42px; border-radius: 8px; }
+.pareto-app .pareto-candidates__row { min-height: 58px; color: var(--ws-text); }
+.pareto-app .pareto-candidates__row:hover,
+.pareto-app .pareto-candidates__row--selected { background: var(--ws-panel); border-color: var(--ws-edge); }
+.pareto-app .pareto-candidates__row strong { color: var(--ws-ink); }
+.pareto-app .pareto-candidates__row small, .pareto-app .pareto-candidates__count,
+.pareto-app .pareto-candidates__subtitle { color: var(--ws-muted); }
+.pareto-app .pareto-candidates__initial { background: var(--ws-panel); color: var(--ws-text); font-weight: 600; }
+.pareto-app .pareto-candidates__detail dt { color: var(--ws-muted); }
+.pareto-app .pareto-candidates__detail dd { color: var(--ws-ink); }
+.pareto-app .pareto-candidates__detail dl > div { padding-bottom: 10px; border-bottom: 1px solid var(--ws-edge); }
+.pareto-app .pareto-candidates__empty { color: var(--ws-muted); }
+.pareto-app .pareto-candidates__empty-action { color: var(--ws-ink); min-height: 44px; padding: 10px 14px; border: 1px solid var(--ws-edge); border-radius: 10px; font-size: 12px; font-weight: 650; }
+.pareto-app .pareto-candidates__empty-action:hover { background: var(--ws-panel); }
+.pareto-app .pareto-profile-intro { align-items: flex-start; }
+.pareto-app .pareto-profile-card { background: transparent; border: 0; border-top: 1px solid var(--ws-edge); border-radius: 0; padding: 28px 0; margin-top: 30px; box-shadow: none; }
+.pareto-app .pareto-profile-card h2 { color: var(--ws-ink); display: flex; align-items: center; gap: 10px; font: 400 24px/1.25 var(--ws-display); }
+.pareto-app .pareto-profile-card h2 svg { color: var(--ws-muted); flex: none; }
+.pareto-app .pareto-profile-card p { color: var(--ws-muted); }
+.pareto-app .pareto-profile-form label { color: var(--ws-text); font-weight: 600; }
+.pareto-app .pareto-profile-form input {
+  background: var(--ws-surface); border: 1px solid var(--ws-control);
+  border-radius: 10px; min-height: 46px; color: var(--ws-ink);
+}
+.pareto-app .pareto-profile-form input:focus-visible { outline: 3px solid var(--ws-focus); outline-offset: 2px; }
+.pareto-app .pareto-profile-form input:disabled { background: var(--ws-panel); color: var(--ws-muted); }
+.pareto-app .pareto-profile-form button:not(.pareto-secondary-action) { min-height: 44px; border-radius: 12px; }
+.pareto-app .pareto-profile-message { background: transparent; border: 1px solid var(--ws-edge); color: var(--ws-success); }
+.pareto-app .pareto-profile-message--error { color: var(--ws-danger); }
+.pareto-app :is(.pareto-nav__link, .pareto-overview-history__item, .pareto-candidates__row,
+  .pareto-profile-form button, .pareto-secondary-action) { transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+@media (max-width: 600px) {
+  .pareto-app .pareto-overview-header { align-items: stretch; }
+  .pareto-app .pareto-overview-history__item { align-items: start; }
+  .pareto-app .pareto-candidates { margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-app :is(.pareto-nav__link, .pareto-overview-history__item, .pareto-candidates__row, .pareto-profile-form button) { transition: none; }
+}
