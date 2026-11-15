@@ -15,6 +15,7 @@ ALTER TABLE "IngestionAttempt"
   ADD COLUMN "durationMs" INTEGER,
   ADD COLUMN "parseMs" INTEGER,
   ADD COLUMN "modelMs" INTEGER,
+  ADD COLUMN "persistMs" INTEGER,
   ADD COLUMN "sourceChars" INTEGER,
   ADD COLUMN "evidenceCount" INTEGER,
   ADD COLUMN "verifiedFields" INTEGER,
@@ -24,6 +25,7 @@ ALTER TABLE "IngestionAttempt" ADD CONSTRAINT "IngestionAttempt_metrics_nonnegat
   CHECK (("durationMs" IS NULL OR "durationMs" >= 0)
     AND ("parseMs" IS NULL OR "parseMs" >= 0)
     AND ("modelMs" IS NULL OR "modelMs" >= 0)
+    AND ("persistMs" IS NULL OR "persistMs" >= 0)
     AND ("sourceChars" IS NULL OR "sourceChars" >= 0)
     AND ("evidenceCount" IS NULL OR "evidenceCount" >= 0)
     AND ("verifiedFields" IS NULL OR "verifiedFields" >= 0));

@@ -275,6 +275,7 @@ model IngestionAttempt {
   durationMs    Int?
   parseMs       Int?
   modelMs       Int?
+  persistMs     Int?
   sourceChars   Int?
   evidenceCount Int?
   verifiedFields Int?
