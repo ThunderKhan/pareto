@@ -284,6 +284,7 @@ model IngestionAttempt {
 
   @@unique([jobId, generation, attempt])
   @@index([jobId, startedAt])
+  @@index([jobId, finishedAt])
 }
 
 enum ResumeReviewState {
