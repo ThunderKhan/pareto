@@ -51,7 +51,10 @@ export async function jobForDocument(ownerId: string, documentId: string) {
 export async function jobHistory(ownerId: string, documentId: string) {
   const job = await database().ingestionJob.findFirst({ where: { ownerId, documentId },
     select: { ...publicJob, history: { select: { attempt: true, outcome: true,
-      errorCode: true, startedAt: true, finishedAt: true },
+      errorCode: true, startedAt: true, finishedAt: true,
+      durationMs: true, parseMs: true, modelMs: true, persistMs: true,
+      sourceChars: true, evidenceCount: true, verifiedFields: true,
+      provider: true, extractorVersion: true },
       orderBy: { attempt: "asc" as const } } } });
   if (!job) throw new JobConflict(404, "NOT_FOUND", "Import job not found.");
   return job;

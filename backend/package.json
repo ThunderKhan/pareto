@@ -14,7 +14,9 @@
     "./ingestion/storage": "./src/ingestion/storage.ts",
     "./ingestion/extract": "./src/ingestion/extract.ts",
     "./ingestion/queue": "./src/ingestion/queue.ts",
-    "./ingestion/runner": "./src/ingestion/runner.ts"
+    "./ingestion/runner": "./src/ingestion/runner.ts",
+    "./ingestion/review": "./src/ingestion/review.ts",
+    "./ingestion/metrics": "./src/ingestion/metrics.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
