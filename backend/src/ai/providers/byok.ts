@@ -58,7 +58,6 @@ export async function checkCredential(provider: AiProvider, key: string) {
       method: "GET",
       headers: provider === "Gemini" ? { "x-goog-api-key": key } : { Authorization: "Bearer " + key },
       signal: AbortSignal.timeout(7000),
-      cache: "no-store",
     });
   } catch { throw new AiFailure("NETWORK"); }
   await response.body?.cancel().catch(() => {});
