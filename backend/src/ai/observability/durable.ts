@@ -7,7 +7,7 @@ import type { AiErrorCode } from "../contracts/errors";
  * reporting includes explicit coverage caveats instead of inventing billing.
  */
 export async function recordAiAttempt(event: {
-  userId?: string; taskId: AiTaskId; provider: "Gemini"|"Groq";
+  userId?: string; taskId: AiTaskId | "embedding.query.v1" | "embedding.document.v1"; provider: "Gemini"|"Groq";
   modelId?: string; credentialSource?: "platform"|"byok";
   outcome: "ok"|AiErrorCode; inputTokens?: number; outputTokens?: number;
   latencyMs: number;
@@ -82,6 +82,7 @@ export async function aiUsageSummary(userId: string, days: 1|7|30|90 = 7) {
       "Provider prices are optional operator-configured estimates, not verified invoices.",
       "Missing token counts or model prices produce unknown costs, not zero.",
       "Previously failed, unreported or unpersisted provider calls may be absent.",
-      "Direct embedding requests and credential validation are not included in this gateway ledger.",
+      "Embedding calls have no provider token counts in this adapter and cannot be priced from this ledger.",
+      "Credential validation requests are not included in the model-attempt ledger.",
     ] };
 }
