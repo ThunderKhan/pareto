@@ -58,10 +58,13 @@
 .pareto-account summary::-webkit-details-marker { display: none; }
 .pareto-account summary:hover { background: var(--ws-hover); }
 .pareto-avatar { display: grid; place-items: center; overflow: hidden; flex: none;
-  width: 40px; height: 40px; border-radius: 13px; background: #e6efff; border: 1px solid #c1d3ef; }
-.pareto-avatar img { display: block; width: 92px; height: auto; max-width: none; }
-.pareto-avatar--large { width: 64px; height: 64px; border-radius: 18px; }
-.pareto-avatar--large img { width: 144px; }
+  width: 40px; height: 40px; padding: 2px; border-radius: 13px;
+  background: #edf3ff; border: 1px solid #c1d3ef; }
+.pareto-avatar img { display: block; width: 100%; height: 100%; max-width: 100%; object-fit: contain; }
+.pareto-avatar--large { width: 78px; height: 78px; padding: 5px; border-radius: 23px; }
+.pareto-avatar--chat { width: 39px; height: 39px; padding: 2px; border-radius: 50%; }
+.pareto-avatar--hero { width: 88px; height: 88px; padding: 7px; border-radius: 50%;
+  background: #f0f5ff; border-color: #d0ddf6; box-shadow: 0 12px 28px #163e8019; }
 .pareto-account__identity { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .pareto-account__identity strong { font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pareto-account__identity small { font-size: 11px; color: #778491; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -240,10 +243,18 @@
   border: 1px solid var(--ws-edge); border-radius: 10px; }
 .pareto-workspace-memberships dt { font-size: 13px; font-weight: 650; color: var(--ws-ink); }
 .pareto-workspace-memberships dd { font-size: 12px; margin: 4px 0 0; color: var(--ws-muted); }
-.pareto-setting-checkbox { display: flex !important; align-items: flex-start; gap: 11px; font-weight: 500 !important;
-  line-height: 1.5; cursor: pointer; }
-.pareto-setting-checkbox input[type=checkbox] { width: 19px; height: 19px; flex: none;
-  accent-color: var(--ws-blue); margin-top: 2px; }
+.pareto-profile-form label.pareto-setting-checkbox {
+  display: flex; flex-direction: row; align-items: center; gap: 12px;
+  min-height: 44px; width: fit-content; max-width: 100%;
+  font-size: 13px; font-weight: 500; line-height: 1.45; cursor: pointer;
+}
+.pareto-profile-form label.pareto-setting-checkbox input[type=checkbox] {
+  box-sizing: border-box; flex: 0 0 19px; display: block;
+  width: 19px; height: 19px; min-width: 19px; min-height: 19px;
+  padding: 0; margin: 0; border-radius: 4px;
+  accent-color: var(--ws-blue); cursor: pointer;
+}
+.pareto-setting-checkbox span { min-width: 0; }
 .pareto-profile-security-controls { display: grid; gap: 28px; margin-top: 24px; }
 .pareto-profile-security-controls > section { padding-top: 24px; border-top: 1px solid var(--ws-edge); }
 .pareto-profile-security-controls p { color: var(--ws-muted); font-size: 12px; line-height: 1.6; }
@@ -301,6 +312,5 @@
 
 @media (max-width: 600px) {
   .pareto-profile-intro { gap: 12px; }
-  .pareto-profile-intro .pareto-avatar--large { width: 50px; height: 50px; border-radius: 14px; }
-  .pareto-profile-intro .pareto-avatar--large img { width: 113px; }
+  .pareto-profile-intro .pareto-avatar--large { width: 62px; height: 62px; padding: 4px; border-radius: 18px; }
 }
