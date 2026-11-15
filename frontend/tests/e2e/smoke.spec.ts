@@ -107,6 +107,25 @@ test("signed-out visitors cannot search or read candidate data", async ({ page, 
   await expect(page).toHaveURL(/\/login/);
   expect((await request.get("/api/v1/search?q=Asha")).status()).toBe(401);
   expect((await request.get("/api/v1/search?history=1")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/jobs")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/metrics?days=30")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111/profile")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports/11111111-1111-4111-8111-111111111111/profile",
+    { data: { action: "approve", expectedVersion: 0, confirmedAgainstSource: true } })).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111/audit")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/batches")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports/batches", { data: {
+    documentIds: ["11111111-1111-4111-8111-111111111111"] } })).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111/job")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports/11111111-1111-4111-8111-111111111111",
+    { data: { action: "cancel" } })).status()).toBe(401);
+  expect((await request.post("/api/v1/imports", { multipart: { file: {
+    name: "candidate.txt", mimeType: "text/plain", buffer: Buffer.from("Candidate") } } })).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111")).status()).toBe(401);
+  expect((await request.get("/api/v1/imports/11111111-1111-4111-8111-111111111111/download")).status()).toBe(401);
+  expect((await request.post("/api/v1/imports/11111111-1111-4111-8111-111111111111",
+    { data: { action: "retry" } })).status()).toBe(401);
   expect((await request.get("/api/v1/search?counterfactual=example&candidate=someone&version=1")).status()).toBe(401);
   expect((await request.get("/api/v1/search?diagnostics=example")).status()).toBe(401);
   expect((await request.post("/api/v1/search", { data: { action: "simulate", sessionId: "x", expectedVersion: 1, criteria: [] } })).status()).toBe(401);

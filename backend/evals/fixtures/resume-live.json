@@ -1,0 +1,86 @@
+[
+  {
+    "id": "java-hyderabad",
+    "category": "skills",
+    "resumeText": "Asha Nair\nCurrent role: Senior Java Developer\nCurrent city: Hyderabad\nSkills: Java, AWS\nProfessional experience: 6 years\nNotice period: 30 days.\n",
+    "expected": {
+      "displayName": "Asha Nair",
+      "roleTitle": "Senior Java Developer",
+      "city": "Hyderabad",
+      "skills": [
+        "Java",
+        "AWS"
+      ],
+      "experienceMonths": 72,
+      "noticePeriodDays": 30
+    }
+  },
+  {
+    "id": "kubernetes-pune",
+    "category": "skills",
+    "resumeText": "Rahul Shah\nPlatform Engineer\nBased in Pune\nTech stack: Kubernetes, Docker, PostgreSQL\nFour years professional experience\nAvailability: 15 days notice.\n",
+    "expected": {
+      "displayName": "Rahul Shah",
+      "roleTitle": "Platform Engineer",
+      "city": "Pune",
+      "skills": [
+        "Kubernetes",
+        "Docker",
+        "PostgreSQL"
+      ],
+      "experienceMonths": 48,
+      "noticePeriodDays": 15
+    }
+  },
+  {
+    "id": "notice-not-mentioned",
+    "category": "unknown",
+    "resumeText": "Isha Rao\nData Analyst, Chennai\nData analysis using SQL and Python for clients. No notice period is stated anywhere on this resume.\n",
+    "expected": {
+      "displayName": "Isha Rao",
+      "roleTitle": "Data Analyst",
+      "city": "Chennai",
+      "noticePeriodDays": null
+    }
+  },
+  {
+    "id": "javascript-not-java",
+    "category": "negation",
+    "resumeText": "Dev Kumar\nJavaScript Engineer based in Delhi.\nSkills: JavaScript, React, TypeScript. I have never used Java as a programming language.\n",
+    "expected": {
+      "displayName": "Dev Kumar",
+      "city": "Delhi",
+      "skills": [
+        "JavaScript",
+        "React",
+        "TypeScript"
+      ]
+    }
+  },
+  {
+    "id": "aspirational-not-experienced",
+    "category": "context",
+    "resumeText": "Meera Sen\nBackend Developer based in Ahmedabad\nCurrent experience: Python and PostgreSQL.\nInterested in learning Rust in the future; I have no professional Rust experience.\n",
+    "expected": {
+      "displayName": "Meera Sen",
+      "roleTitle": "Backend Developer",
+      "city": "Ahmedabad",
+      "skills": [
+        "Python",
+        "PostgreSQL"
+      ]
+    }
+  },
+  {
+    "id": "missing-numeric-claims",
+    "category": "unknown",
+    "resumeText": "Arjun Das\nDevOps Engineer based in Hyderabad.\nExperience: worked on deployment operations, but no employment timeline included.\nTools: AWS, Terraform.\nNo joining availability given.\n",
+    "expected": {
+      "displayName": "Arjun Das",
+      "roleTitle": "DevOps Engineer",
+      "city": "Hyderabad",
+      "experienceMonths": null,
+      "noticePeriodDays": null
+    }
+  }
+]

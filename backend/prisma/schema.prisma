@@ -24,6 +24,8 @@ model Candidate {
   skillsKnown      Boolean          @default(false)
   skills           CandidateSkill[]
   createdAt        DateTime         @default(now())
+  sourceDocumentId String?          @unique
+  sourceDocument   ResumeDocument?  @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
 
   @@index([ownerId, roleTitle, city])
   @@index([ownerId, displayName, id])
@@ -121,4 +123,205 @@ model RecruiterNotification {
 
   @@unique([userId, sessionId, version])
   @@index([userId, createdAt])
+}
+
+enum ResumeDocumentKind {
+  PDF
+  DOCX
+  TXT
+}
+
+enum ResumeIngestionStatus {
+  RECEIVED
+  PROCESSING
+  STORED
+  TEXT_EXTRACTED
+  READY
+  NEEDS_REVIEW
+  FAILED
+}
+
+/// Private resume metadata. Extracted text contains sensitive candidate data:
+/// no direct Supabase Data API grants, no client-side SQL access.
+model ResumeDocument {
+  id              String                @id @default(cuid())
+  ownerId         String
+  fileName        String
+  kind            ResumeDocumentKind
+  mimeType        String
+  byteSize        Int
+  sha256          String
+  storageKey      String                @unique
+  status          ResumeIngestionStatus @default(RECEIVED)
+  attempts        Int                   @default(1)
+  extractedText   String?
+  textTruncated   Boolean               @default(false)
+  provider        String?
+  errorCode       String?
+  reviewReasons   Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  candidate       Candidate?
+  evidence        ResumeEvidence[]
+  ingestionJob    IngestionJob?
+  reviewState     ResumeReviewState @default(UNREVIEWED)
+  reviewVersion   Int               @default(0)
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  audit           ResumeProfileAudit[]
+
+  @@unique([ownerId, sha256])
+  @@index([ownerId, createdAt])
+}
+
+/// One evidence entry per normalized attribute / canonical skill.
+model ResumeEvidence {
+  id           String          @id @default(cuid())
+  documentId   String
+  fieldKey     String
+  quote        String
+  pageNumber   Int?
+  sourceStart  Int?
+  sourceEnd    Int?
+  document     ResumeDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  @@unique([documentId, fieldKey])
+}
+
+enum IngestionJobStatus {
+  QUEUED
+  RUNNING
+  RETRY_SCHEDULED
+  READY
+  NEEDS_REVIEW
+  FAILED_PERMANENT
+  CANCELLED
+}
+
+enum IngestionJobStage {
+  QUEUED
+  PARSING
+  EXTRACTING
+  PERSISTING
+  COMPLETE
+}
+
+/// Durable, owner-bound, at-least-once work. No model writes without a valid
+/// lease/fencing token. Exactly one logical job for each source document.
+model IngestionJob {
+  id               String             @id @default(uuid())
+  ownerId          String
+  documentId       String             @unique
+  document         ResumeDocument     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  batchId          String?
+  batch            IngestionBatch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  status           IngestionJobStatus @default(QUEUED)
+  stage            IngestionJobStage  @default(QUEUED)
+  priority         Int                @default(0)
+  attempts         Int                @default(0)
+  maxAttempts      Int                @default(3)
+  manualRetries    Int                @default(0)
+  generation       Int                @default(0)
+  runAfter         DateTime           @default(now())
+  workerId         String?
+  leaseToken       String?            @unique
+  leaseExpiresAt   DateTime?
+  heartbeatAt      DateTime?
+  cancelRequested  Boolean            @default(false)
+  lastErrorCode    String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  history          IngestionAttempt[]
+
+  @@index([ownerId, createdAt])
+  @@index([batchId, createdAt])
+  @@index([status, runAfter, priority])
+  @@index([status, leaseExpiresAt])
+}
+
+model IngestionBatch {
+  id          String         @id @default(uuid())
+  ownerId     String
+  label       String?
+  createdAt   DateTime       @default(now())
+  jobs        IngestionJob[]
+
+  @@index([ownerId, createdAt])
+}
+
+enum IngestionAttemptOutcome {
+  RUNNING
+  RETRY
+  READY
+  NEEDS_REVIEW
+  FAILED
+  CANCELLED
+  RECOVERED
+}
+
+model IngestionAttempt {
+  id            String                  @id @default(uuid())
+  jobId         String
+  job           IngestionJob            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  attempt       Int
+  generation    Int                     @default(0)
+  leaseToken    String
+  workerId      String
+  outcome       IngestionAttemptOutcome @default(RUNNING)
+  errorCode     String?
+  startedAt     DateTime                @default(now())
+  finishedAt    DateTime?
+  durationMs    Int?
+  parseMs       Int?
+  modelMs       Int?
+  persistMs     Int?
+  sourceChars   Int?
+  evidenceCount Int?
+  verifiedFields Int?
+  provider      String?
+  extractorVersion String?
+
+  @@unique([jobId, generation, attempt])
+  @@index([jobId, startedAt])
+  @@index([jobId, finishedAt])
+}
+
+enum ResumeReviewState {
+  UNREVIEWED
+  NEEDS_REVIEW
+  HUMAN_VERIFIED
+}
+
+enum ResumeAuditAction {
+  MODEL_EXTRACTED
+  REVIEW_REQUIRED
+  HUMAN_CORRECTED
+  HUMAN_APPROVED
+  HUMAN_REJECTED
+}
+
+/// Immutable, private field-level extraction / human-correction audit.
+/// JSON may contain candidate PII; these records are never publicly exposed.
+/// Application services must owner-filter every query and never log snapshots.
+model ResumeProfileAudit {
+  id             String            @id @default(uuid())
+  documentId     String
+  document       ResumeDocument    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  ownerId        String
+  actorId        String?
+  action         ResumeAuditAction
+  reviewVersion  Int
+  changedFields  String[]          @default([])
+  before         Json?
+  after          Json?
+  reason         String?
+  provider       String?
+  extractorVersion String?
+  jobId          String?
+  attempt        Int?
+  createdAt      DateTime          @default(now())
+
+  @@index([ownerId, createdAt])
+  @@index([documentId, createdAt])
 }

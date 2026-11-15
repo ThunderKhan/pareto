@@ -68,3 +68,30 @@
 @media (prefers-reduced-motion: reduce) {
   .insight-module *, .insight-near * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }
+
+/* Cohort transition matrix and calmer evidence-first comparison. */
+.insight-transitions { display: grid; gap: 8px; margin: 2px 0 10px; min-width: 0; }
+.insight-transition-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; }
+.insight-transition-head h4 { margin: 0; font: 400 22px/1.25 var(--ws-display, Georgia, serif); letter-spacing: -.03em; }
+.insight-transition-head p { margin: 0; color: var(--ws-muted, #52616e); }
+.insight-transition-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--ws-edge, #e7e1d8); border-radius: 12px; }
+.insight-transition-scroll table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 12px; text-align: left; font-variant-numeric: tabular-nums; }
+.insight-transition-scroll caption { padding: 12px 14px 6px; text-align: left; font-size: 11px; color: var(--ws-muted, #52616e); }
+.insight-transition-scroll th, .insight-transition-scroll td { padding: 13px 14px; border-bottom: 1px solid var(--ws-edge, #e7e1d8); }
+.insight-transition-scroll tr:last-child > * { border-bottom: 0; }
+.insight-transition-scroll thead th { font-weight: 650; color: var(--ws-text, #24344b); background: var(--ws-panel, #f7f5ef); }
+.insight-transition-scroll tbody th { font-weight: 650; color: var(--ws-ink, #020e24); }
+.insight-transition-scroll td strong { display: block; font-size: 20px; font-weight: 650; color: var(--ws-ink, #020e24); }
+.insight-transition-scroll td span { display: block; font-size: 10px; color: var(--ws-muted, #52616e); margin-top: 2px; }
+.insight-transition-unchanged { background: var(--ws-panel, #f7f5ef); }
+.insight-transition-changed strong { color: var(--ws-primary, #020e24); }
+.insight-module .insight-heading h3 { font-size: clamp(23px, 2.4vw, 28px); }
+.insight-module .insight-body { gap: 18px; }
+.insight-module .insight-bottlenecks, .insight-module .insight-suggestions { gap: 12px; }
+.insight-module .insight-bottlenecks article, .insight-module .insight-suggestion,
+.insight-module .insight-pane, .insight-module .insight-delta { border-radius: 12px; background: var(--ws-surface, #fff); padding: clamp(14px, 1.6vw, 20px); }
+.insight-module .insight-counts > div { background: var(--ws-panel, #f7f5ef); border-color: var(--ws-edge, #e7e1d8); border-radius: 12px; }
+.insight-module .insight-pane h4 { font: 400 20px/1.3 var(--ws-display, Georgia, serif); }
+.insight-module .insight-delta > h4:first-child { font: 400 23px/1.3 var(--ws-display, Georgia, serif); }
+.insight-module .insight-quiet, .insight-module .insight-action { border-radius: 10px; }
+@media (max-width: 760px) { .insight-transition-scroll table { min-width: 460px; } .insight-module .insight-pane { padding: 14px; } }

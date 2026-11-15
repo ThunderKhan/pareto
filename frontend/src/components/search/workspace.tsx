@@ -397,7 +397,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             sessionId={results.sessionId} version={results.version}
             onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
           <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
-            sessionId={results.sessionId} version={results.version} criteria={results.criteria}
+            sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
             onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
         </div>
         {results.total === 0 && <p>No candidate profiles are available in this workspace.</p>}
