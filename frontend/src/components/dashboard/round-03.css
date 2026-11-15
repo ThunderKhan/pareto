@@ -1,0 +1,129 @@
+/* Round 03 #01 / #04 — motion with stable landmarks, no breadcrumb chrome. */
+.pareto-app {
+  transition: grid-template-columns 280ms cubic-bezier(.22, 1, .36, 1);
+}
+.pareto-app__body { min-width: 0; }
+.pareto-topbar {
+  justify-content: flex-end;
+  border-bottom: none;
+}
+.pareto-topbar__left { display: none; }
+
+/* Desktop collapse never changes the layout model (or display:none on text).
+   Fade the labels while the actual grid column resizes. */
+@media (min-width: 881px) {
+  .pareto-sidebar { overflow-x: clip; }
+  .pareto-sidebar__header {
+    padding-inline: 0;
+    gap: 8px;
+  }
+  .pareto-sidebar__brand {
+    flex: 1 1 auto;
+    max-width: 180px;
+    overflow: hidden;
+    opacity: 1;
+    white-space: nowrap;
+    transition: max-width 220ms cubic-bezier(.22, 1, .36, 1),
+                opacity 150ms ease;
+  }
+  .pareto-sidebar__brand img { flex: none; }
+  .pareto-app--collapsed .pareto-sidebar__brand {
+    max-width: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pareto-sidebar__toggle--desktop { flex: none; }
+  .pareto-app--collapsed .pareto-sidebar__header {
+    flex-direction: row;
+    justify-content: center;
+    padding-inline: 0;
+    gap: 0;
+  }
+  .pareto-sidebar__header { transition: gap 180ms ease; }
+
+  .pareto-nav__eyebrow,
+  .pareto-nav__link > span,
+  .pareto-account__identity,
+  .pareto-account__caret,
+  .pareto-recent,
+  .pareto-nav__note {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 145ms ease, visibility 0s linear 0s,
+                max-width 240ms cubic-bezier(.22, 1, .36, 1);
+  }
+  .pareto-nav__link > span {
+    display: inline-block;
+    max-width: 205px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .pareto-nav__eyebrow { display: block; white-space: nowrap; overflow: hidden; }
+  .pareto-nav__link { justify-content: flex-start; }
+  .pareto-app--collapsed .pareto-nav__link {
+    justify-content: flex-start;
+  }
+  .pareto-account__identity {
+    display: grid;
+    max-width: 182px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 140ms ease, max-width 240ms cubic-bezier(.22, 1, .36, 1);
+  }
+  .pareto-account__caret { display: block; }
+  .pareto-recent {
+    display: grid;
+    max-height: 800px;
+    overflow: hidden;
+    transition: max-height 270ms ease, opacity 150ms ease, margin-top 270ms ease,
+                visibility 0s linear 0s;
+  }
+  .pareto-nav__note { display: flex; overflow: hidden; max-height: 100px; }
+  .pareto-app--collapsed .pareto-nav__eyebrow,
+  .pareto-app--collapsed .pareto-nav__link > span,
+  .pareto-app--collapsed .pareto-account__identity,
+  .pareto-app--collapsed .pareto-account__caret,
+  .pareto-app--collapsed .pareto-recent,
+  .pareto-app--collapsed .pareto-nav__note {
+    display: revert;
+    max-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 90ms ease, visibility 0s linear 220ms,
+                max-width 240ms cubic-bezier(.22, 1, .36, 1);
+  }
+  .pareto-app--collapsed .pareto-nav__eyebrow { display: block; }
+  .pareto-app--collapsed .pareto-nav__link > span { display: inline-block; }
+  .pareto-app--collapsed .pareto-account__identity { display: grid; flex: 0 1 0%; }
+  .pareto-app--collapsed .pareto-account__caret { display: block; }
+  .pareto-app--collapsed .pareto-recent {
+    display: grid;
+    max-height: 0;
+    margin-top: 0;
+    transition: max-height 240ms ease, opacity 100ms ease,
+                margin-top 240ms ease, visibility 0s linear 240ms;
+  }
+  .pareto-app--collapsed .pareto-nav__note { display: flex; max-height: 0; }
+  .pareto-app--collapsed .pareto-account summary {
+    justify-content: flex-start;
+    transition: padding 250ms cubic-bezier(.22, 1, .36, 1);
+  }
+  .pareto-sidebar__toggle--desktop,
+  .pareto-nav__link,
+  .pareto-account summary {
+    transition: padding 240ms cubic-bezier(.22,1,.36,1), background 150ms ease,
+                color 150ms ease;
+  }
+}
+@media (max-width: 880px) {
+  .pareto-app { transition: none; }
+  .pareto-topbar { justify-content: space-between; }
+  .pareto-topbar__left { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-app, .pareto-sidebar__brand, .pareto-nav__link,
+  .pareto-account__identity, .pareto-recent, .pareto-nav__note {
+    transition: none !important;
+  }
+}

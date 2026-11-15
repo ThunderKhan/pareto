@@ -15,6 +15,7 @@ import "./workspace-tokens.css";
 import "./workspace-dark.css";
 import "./dashboard.css";
 import "./audit-polish.css";
+import "./round-03.css";
 
 type RecruiterIdentity = {
   email: string;
@@ -87,17 +88,14 @@ export default function DashboardShell({ children, user }: {
     };
   }, []);
 
-  const current = navigation.find(item => item.href === path) ??
-    navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
-    navigation[0];
-
   return <div className={"pareto-app" + (collapsed ? " pareto-app--collapsed" : "") + (path === "/dashboard/search" ? " pareto-app--search" : "")}>
     {mobileOpen && <button className="pareto-sidebar-backdrop" type="button"
       onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
     <aside id="pareto-navigation" className={"pareto-sidebar" + (mobileOpen ? " pareto-sidebar--open" : "")}
       aria-label="Recruiter navigation">
       <div className="pareto-sidebar__header">
-        <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="pareto-sidebar__brand" aria-label="Pareto workspace">
+        <Link href="/dashboard" onClick={() => setMobileOpen(false)} tabIndex={collapsed ? -1 : undefined}
+          className="pareto-sidebar__brand" aria-label="Pareto workspace">
           <Image src="/brand/pareto-mark.svg" alt="" width={34} height={34} unoptimized />
           <span>pareto<span className="pareto-brand-dot">.</span></span>
         </Link>
@@ -113,6 +111,7 @@ export default function DashboardShell({ children, user }: {
           {navigation.map(({label,href,Icon}) => {
             const active = href === "/dashboard" ? path === href : path === href || path.startsWith(href + "/");
             return <Link key={href} href={href} title={collapsed ? label : undefined}
+              aria-label={collapsed ? label : undefined}
               aria-current={active ? "page" : undefined} onClick={() => setMobileOpen(false)}
               className={"pareto-nav__link" + (active ? " pareto-nav__link--active" : "")}>
               <Icon size={19} weight={active ? "fill" : "regular"} aria-hidden="true"/>
@@ -154,9 +153,6 @@ export default function DashboardShell({ children, user }: {
             aria-controls="pareto-navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}>
             <SidebarSimple size={22}/>
           </button>
-          <span className="pareto-topbar__crumb">Workspace</span>
-          <span className="pareto-topbar__slash" aria-hidden="true">/</span>
-          <strong>{path === "/dashboard/profile" ? "Account settings" : current.label}</strong>
         </div>
         <div className="pareto-topbar__right">
           <NotificationsMenu />
