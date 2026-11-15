@@ -34,5 +34,17 @@ export function verifyResumeClaim(claim: Claim): Verdict {
     return noticeDaysInContext(Number(claim.value), context) ? "supported" : "unknown";
   if (claim.field === "experienceMonths")
     return checkExperienceEvidence(Number(claim.value), context);
+  // Resume text may mention a desired job/location or an unearned credential.
+  // A matching substring in those contexts is not an established candidate fact.
+  if (claim.field === "city" && /\b(?:preferred|desired|target|prospective|relocat(?:e|ion)|willing to move|seeking (?:work|jobs?|roles?) in)\b/i.test(context))
+    return "unknown";
+  if (claim.field === "roleTitle" && /\b(?:seeking|aspiring|desired|target|interested in (?:a|an)|looking for (?:a|an)|job advert|we are hiring|ideal candidate)\b/i.test(context))
+    return "unknown";
+  if ((claim.field === "education" || claim.field === "certification") &&
+      /\b(?:planning to|plan to|preparing for|studying for|working toward|in progress|expected to|aspiring to|not yet|pursuing)\b/i.test(context))
+    return "unknown";
+  if (claim.field === "displayName" &&
+      /\b(?:references?|referee|supervisor|manager contact|reported to|recommended by)\s*:/i.test(context))
+    return "unknown";
   return "supported";
 }
