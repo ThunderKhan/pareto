@@ -80,6 +80,9 @@ export async function POST(request: Request) {
   if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return respond({ error: "Sign in to upload resumes." }, 401);
+  // Block before constructing Storage clients or parsing a large multipart body.
+  if (process.env.RESUME_INGESTION_ENABLED === "false")
+    return respond({ code: "INGESTION_DISABLED", error: "Resume ingestion is temporarily paused." }, 503);
   try {
     const file = await limitedMultipart(request);
     const result = await queueResumeUpload(user.id, file.name, file.type, file.bytes);
