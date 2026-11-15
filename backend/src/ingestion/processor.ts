@@ -1,4 +1,5 @@
 import { database } from "../search/db";
+import { shouldIndexResumeCandidate } from "./policy";
 import { indexCandidate } from "../search/semantic";
 import { skillKey } from "../search/criteria";
 import type { JsonProvider } from "../search/interpret";
@@ -104,7 +105,7 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
     });
     // Refresh the retrieval cache only after the fenced profile transaction commits.
     // This is best effort: any failure leaves the verified profile intact; backfill repairs gaps.
-    if (process.env.AI_ENABLED !== "false" && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    if (shouldIndexResumeCandidate()) {
       try {
         const candidate = await database().candidate.findFirst({
           where: { ownerId: job.ownerId, sourceDocumentId: job.documentId }, select: { id: true },
