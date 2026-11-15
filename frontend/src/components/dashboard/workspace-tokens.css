@@ -1,0 +1,63 @@
+/* Authenticated UI follows the established Pareto landing-page foundation. */
+@font-face {
+  font-family: "Pareto STK Earl";
+  src: url("/fonts/stk-earl-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+.pareto-app {
+  --ws-display: "Pareto STK Earl", Georgia, serif;
+  --ws-ink: #020e24;
+  --ws-text: #24344b;
+  --ws-muted: #52616e;
+  --ws-subtle: #64758a;
+  --ws-paper: #fffdf9;
+  --ws-surface: #ffffff;
+  --ws-bar: #fffdf9f5;
+  --ws-panel: #f7f5ef;
+  --ws-edge: #e7e1d8;
+  --ws-control: #d5d1c9;
+  --ws-blue: #467beb;
+  --ws-active: #edf3ff;
+  --ws-hover: #f4f6fa;
+  --ws-primary: #020e24;
+  --ws-primary-hover: #18304a;
+  --ws-on-primary: #ffffff;
+  --ws-focus: #467beb;
+  --ws-success: #246344;
+  --ws-danger: #9a3333;
+  --ws-warning: #986b21;
+  --ws-shadow: 0 10px 32px #07152f0f;
+  color-scheme: light;
+  font-family: var(--font-pareto-dashboard-ui), Inter, "Helvetica Neue", Arial, sans-serif;
+}
+.pareto-app button, .pareto-app input, .pareto-app select, .pareto-app textarea { font-family: inherit; }
+.pareto-app a:focus-visible, .pareto-app button:focus-visible,
+.pareto-app summary:focus-visible, .pareto-app [tabindex]:focus-visible {
+  outline: 3px solid var(--ws-focus); outline-offset: 3px;
+}
+.pareto-app .button--dark,
+.pareto-app .pareto-topbar__action,
+.pareto-app .pareto-overview-new,
+.pareto-app .pareto-profile-form button,
+.pareto-app .pareto-candidates__search button,
+.pareto-app .pareto-candidates__similar,
+.pareto-app .pareto-chat__send {
+  color: var(--ws-on-primary);
+  background: var(--ws-primary);
+  border-radius: 12px;
+}
+.pareto-app .button--dark:hover:not(:disabled),
+.pareto-app .pareto-topbar__action:hover,
+.pareto-app .pareto-overview-new:hover,
+.pareto-app .pareto-profile-form button:hover:not(:disabled),
+.pareto-app .pareto-candidates__search button:hover:not(:disabled),
+.pareto-app .pareto-candidates__similar:hover,
+.pareto-app .pareto-chat__send:hover:not(:disabled) { background: var(--ws-primary-hover); }
+.pareto-app .pareto-page-title { font-family: var(--ws-display); }
+.pareto-app .search-panel, .pareto-app .pareto-profile-card,
+.pareto-app .pareto-candidates__list, .pareto-app .pareto-candidates__detail,
+.pareto-app .pareto-overview-history__item {
+  background: var(--ws-surface); border-color: var(--ws-edge);
+}

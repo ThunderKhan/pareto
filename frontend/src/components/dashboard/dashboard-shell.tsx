@@ -9,6 +9,7 @@ import {
   UserCircle, UsersThree, X,
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
+import "./workspace-tokens.css";
 import "./dashboard.css";
 
 type RecruiterIdentity = {
