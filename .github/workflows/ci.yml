@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        image: pgvector/pgvector:0.8.7-pg17
         env:
           POSTGRES_USER: pareto
           POSTGRES_PASSWORD: pareto_ci_only
@@ -111,7 +111,7 @@ jobs:
     environment: pareto-demo
     services:
       postgres:
-        image: postgres:17-alpine
+        image: pgvector/pgvector:0.8.7-pg17
         env:
           POSTGRES_USER: pareto
           POSTGRES_PASSWORD: pareto_live_ci_only

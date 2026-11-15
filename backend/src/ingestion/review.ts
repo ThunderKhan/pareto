@@ -2,6 +2,7 @@ import { z } from "zod";
 import { database } from "../search/db";
 import { skillKey } from "../search/criteria";
 import { JobConflict } from "./queue";
+import { indexCandidate } from "../search/semantic";
 
 const label = z.string().trim().min(1).max(120)
   .refine(value => !/[\u0000-\u001F\u007F]/u.test(value), "No control characters.");
@@ -187,7 +188,12 @@ export async function reviewResumeProfile(ownerId: string, documentId: string, i
       },
     });
   }, { timeout: 20000, maxWait: 10000 });
-  return resumeReviewProfile(ownerId, documentId);
+  const updated = await resumeReviewProfile(ownerId, documentId);
+  if (updated.candidateId && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    try { await indexCandidate(ownerId, updated.candidateId); }
+    catch { /* CLI backfill repairs index; human correction already committed. */ }
+  }
+  return updated;
 }
 
 export async function resumeAuditHistory(ownerId: string, documentId: string) {

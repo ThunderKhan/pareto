@@ -1,4 +1,5 @@
 import { database } from "../search/db";
+import { indexCandidate } from "../search/semantic";
 import { skillKey } from "../search/criteria";
 import type { JsonProvider } from "../search/interpret";
 import { extractResumeProfile } from "./extract";
@@ -101,6 +102,16 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
         reason: result.needsReview ? "Automated extraction requires human verification." : null,
       } });
     });
+    // Refresh the retrieval cache only after the fenced profile transaction commits.
+    // This is best effort: any failure leaves the verified profile intact; backfill repairs gaps.
+    if (process.env.AI_ENABLED !== "false" && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      try {
+        const candidate = await database().candidate.findFirst({
+          where: { ownerId: job.ownerId, sourceDocumentId: job.documentId }, select: { id: true },
+        });
+        if (candidate) await indexCandidate(job.ownerId, candidate.id);
+      } catch { /* Retrieval cache unavailable; deterministic search is unaffected. */ }
+    }
     return result.needsReview ? "NEEDS_REVIEW" as const : "READY" as const;
   } catch (err) {
     if (err instanceof LeaseLost) return "LOST_LEASE" as const;
