@@ -73,12 +73,12 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
   }
 
   const { skills, skillsKnown, ...properties } = result.profile;
-  const uniqueSkills = [...new Set((skills ?? []).map(skillKey))];
+  const uniqueSkills = new Map((skills ?? []).map(name => [skillKey(name), name]));
   try {
     await db.$transaction(async tx => {
-      if (uniqueSkills.length) {
+      if (uniqueSkills.size) {
         await tx.skill.createMany({
-          data: uniqueSkills.map(value => ({ id: value, displayName: value })),
+          data: [...uniqueSkills].map(([id, displayName]) => ({ id, displayName })),
           skipDuplicates: true,
         });
       }
@@ -88,9 +88,9 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
         ? await tx.candidate.update({ where: { id: old.id, ownerId },
             data: { ...data, skills: { deleteMany: {} } } })
         : await tx.candidate.create({ data: { ...data, sourceDocumentId: id } });
-      if (uniqueSkills.length) {
+      if (uniqueSkills.size) {
         await tx.candidateSkill.createMany({
-          data: uniqueSkills.map(skillId => ({ skillId, candidateId: candidate.id })),
+          data: [...uniqueSkills.keys()].map(skillId => ({ skillId, candidateId: candidate.id })),
           skipDuplicates: true,
         });
       }

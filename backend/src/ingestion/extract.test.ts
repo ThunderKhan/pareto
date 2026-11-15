@@ -32,7 +32,7 @@ describe("evidence-backed resume extraction", () => {
       provider: "Gemini", needsReview: false,
       profile: {
         displayName: "Asha Nair", roleTitle: "Senior Java Developer", city: "Hyderabad",
-        experienceMonths: 72, noticePeriodDays: 30, skills: ["java", "aws"], skillsKnown: true,
+        experienceMonths: 72, noticePeriodDays: 30, skills: ["Java", "AWS"], skillsKnown: true,
       },
     });
     expect(result.evidence.find(x => x.fieldKey === "skill:java")).toMatchObject({

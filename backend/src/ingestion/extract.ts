@@ -134,7 +134,7 @@ export function validateExtractedProfile(raw: unknown, parsed: ParsedResume, pro
       const originalKey = field + ":" + value;
       if (claim(originalKey, field, value)) {
         evidence[evidence.length - 1].fieldKey = field + ":" + canonical;
-        results.set(canonical, field === "skill" ? canonical : value);
+        results.set(canonical, value); // Preserve human-facing spelling; keys remain canonical.
       }
     }
     return [...results.values()];
