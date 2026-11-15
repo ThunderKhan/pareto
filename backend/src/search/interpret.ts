@@ -2,10 +2,12 @@
 import { AiFailure } from "../ai/contracts/errors";
 import { proposeSearchDraft } from "../ai/tasks/search-interpret";
 import { proposeRefinementDraft } from "../ai/tasks/search-refine";
-import type { JsonProvider } from "../ai/providers/http";
+import { availableProviders, type JsonProvider } from "../ai/providers/http";
 import { SearchError } from "./service";
 import type { Rule } from "./criteria";
 export type { JsonProvider } from "../ai/providers/http";
+/** Kept for compatibility with the pending ingestion PR #13. */
+export const configuredProviders = availableProviders;
 
 function asSearchError(error: unknown): never {
   if (error instanceof AiFailure) {
