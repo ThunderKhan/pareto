@@ -28,7 +28,8 @@
     "db:seed": "prisma db seed",
     "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts",
     "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts",
-    "ingest:evaluate": "node --import=tsx scripts/evaluate-ingestion.ts"
+    "ingest:evaluate": "node --import=tsx scripts/evaluate-ingestion.ts",
+    "ingest:evaluate:live": "node --import=tsx scripts/evaluate-ingestion-live.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",
