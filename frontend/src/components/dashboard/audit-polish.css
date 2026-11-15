@@ -1,0 +1,82 @@
+/* Round 02 / #10 — bounded Impeccable/Unslop source-level audit refinements.
+   Operational screens use precise alignment, accessible states and Pareto tokens. */
+
+/* Previously mobile 'New search' became invisible: the original responsive rule
+   set font-size:0 after decorative CTA arrows were removed. Preserve its label. */
+@media (max-width: 600px) {
+  .pareto-app .pareto-topbar__action {
+    font-size: 12px;
+    line-height: 1.3;
+    min-height: 42px;
+    padding: 10px 12px;
+  }
+  .pareto-app .pareto-topbar { gap: 10px; }
+  .pareto-app .pareto-topbar__right { gap: 5px; }
+}
+/* Make the candidate list genuinely keyboard-scannable and use the same
+   light/dark focus, surface, and text roles as the rest of the workspace. */
+.pareto-app .pareto-candidates__search > div:focus-within {
+  border-color: var(--ws-blue);
+  box-shadow: 0 0 0 3px #467beb22;
+}
+.pareto-app .pareto-candidates__search input {
+  background: transparent;
+  color: var(--ws-ink);
+}
+.pareto-app .pareto-candidates__search input::placeholder { color: var(--ws-subtle); }
+.pareto-app .pareto-candidates__row { min-height: 59px; }
+.pareto-app .pareto-candidates__row[aria-pressed="true"] {
+  border-color: var(--ws-control);
+  background: var(--ws-active);
+}
+.pareto-app .pareto-candidates__row strong { color: var(--ws-ink); font-size: 13px; }
+.pareto-app .pareto-candidates__row small {
+  color: var(--ws-muted);
+  font-size: 12px;
+  white-space: normal;
+  line-height: 1.45;
+}
+.pareto-app .pareto-candidates__count { font-size: 12px; color: var(--ws-muted); }
+.pareto-app .pareto-candidates__detail dt { color: var(--ws-subtle); font-size: 12px; }
+.pareto-app .pareto-candidates__detail dd { color: var(--ws-text); font-size: 13px; }
+.pareto-app .pareto-candidates__detail h2 { color: var(--ws-ink); }
+.pareto-app .pareto-overview-history__name { color: var(--ws-ink); }
+.pareto-app .pareto-overview-history__meta { color: var(--ws-muted); }
+.pareto-app .pareto-account__actions :is(a,button) {
+  color: var(--ws-text);
+  min-height: 43px;
+}
+.pareto-app .pareto-notifications__panel li small {
+  color: var(--ws-subtle);
+  font-size: 12px;
+}
+.pareto-app .pareto-notifications__panel li a {
+  color: var(--ws-ink);
+  overflow-wrap: anywhere;
+}
+.pareto-app .pareto-notifications__panel li button {
+  min-height: 36px;
+  font-size: 12px;
+}
+.pareto-app :is(.pareto-account summary,.pareto-notifications summary):focus-visible {
+  outline: 2px solid var(--ws-focus);
+  outline-offset: 3px;
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-candidates__row[aria-pressed="true"] {
+  background: var(--ws-active);
+  border-color: var(--ws-control);
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-candidates__search input {
+  background: transparent;
+  color: var(--ws-ink);
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-account__actions :is(a,button) {
+  color: var(--ws-text);
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-notifications__panel {
+  background: var(--ws-surface);
+  border-color: var(--ws-edge);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-app .pareto-candidates__row { transition: none; }
+}
