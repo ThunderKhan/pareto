@@ -24,6 +24,8 @@ model Candidate {
   skillsKnown      Boolean          @default(false)
   skills           CandidateSkill[]
   createdAt        DateTime         @default(now())
+  sourceDocumentId String?          @unique
+  sourceDocument   ResumeDocument?  @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
 
   @@index([ownerId, roleTitle, city])
   @@index([ownerId, displayName, id])
@@ -121,4 +123,60 @@ model RecruiterNotification {
 
   @@unique([userId, sessionId, version])
   @@index([userId, createdAt])
+}
+
+enum ResumeDocumentKind {
+  PDF
+  DOCX
+  TXT
+}
+
+enum ResumeIngestionStatus {
+  RECEIVED
+  PROCESSING
+  STORED
+  TEXT_EXTRACTED
+  READY
+  NEEDS_REVIEW
+  FAILED
+}
+
+/// Private resume metadata. Extracted text contains sensitive candidate data:
+/// no direct Supabase Data API grants, no client-side SQL access.
+model ResumeDocument {
+  id              String                @id @default(cuid())
+  ownerId         String
+  fileName        String
+  kind            ResumeDocumentKind
+  mimeType        String
+  byteSize        Int
+  sha256          String
+  storageKey      String                @unique
+  status          ResumeIngestionStatus @default(RECEIVED)
+  attempts        Int                   @default(1)
+  extractedText   String?
+  textTruncated   Boolean               @default(false)
+  provider        String?
+  errorCode       String?
+  reviewReasons   Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  candidate       Candidate?
+  evidence        ResumeEvidence[]
+
+  @@unique([ownerId, sha256])
+  @@index([ownerId, createdAt])
+}
+
+/// One evidence entry per normalized attribute / canonical skill.
+model ResumeEvidence {
+  id           String          @id @default(cuid())
+  documentId   String
+  fieldKey     String
+  quote        String
+  pageNumber   Int?
+  sourceStart  Int?
+  sourceEnd    Int?
+  document     ResumeDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  @@unique([documentId, fieldKey])
 }

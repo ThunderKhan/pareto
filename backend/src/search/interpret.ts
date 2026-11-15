@@ -45,7 +45,7 @@ function providerCall(provider: Provider): JsonProvider {
   };
 }
 
-function configuredProviders() {
+export function configuredProviders() {
   const providers: Provider[] = [
     { name: "Gemini", key: process.env.GOOGLE_GENERATIVE_AI_API_KEY, model: process.env.GEMINI_MODEL },
     { name: "Groq", key: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL },
