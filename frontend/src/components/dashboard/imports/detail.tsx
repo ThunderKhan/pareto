@@ -176,7 +176,11 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
     {loading && <p role="status">Loading private import details…</p>}
     {error && <p role="alert" className="import-alert">{error} {conflict && "Your edits were not saved. Reload and compare with the current version."}</p>}
     {conflict && <button type="button" className="import-button" onClick={() => { setLoading(true); void load(); }}>Reload current review version</button>}
-    {message && <p role="status" className="import-success">{message}</p>}
+    {message && <div role="status" className="import-success import-review-complete">
+      <strong>{message}</strong>
+      <span>Your source-review decision was saved. The versioned audit below records the action.</span>
+      {detail?.candidate && <Link href={"/dashboard/candidates?candidate=" + encodeURIComponent(detail.candidate.id)}>View candidate</Link>}
+    </div>}
     {detail && review && <>
       <div className="import-detail__overview">
         <span className="import-chip">{job?.status.replaceAll("_"," ") ?? detail.status.replaceAll("_"," ")}</span>
