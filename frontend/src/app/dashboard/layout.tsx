@@ -1,4 +1,4 @@
-import { recruiter } from "@/lib/auth";
+import { recruiterAuthState } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/dashboard-shell";
 import { Inter } from "next/font/google";
@@ -8,8 +8,9 @@ const uiFont = Inter({ subsets: ["latin"], display: "swap", variable: "--font-pa
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = await recruiter();
+  const { user, mfaPending } = await recruiterAuthState();
   if (!user) redirect("/login?next=/dashboard");
+  if (mfaPending) redirect("/mfa?next=/dashboard");
 
   const first = user.user_metadata?.first_name;
   const last = user.user_metadata?.last_name;
