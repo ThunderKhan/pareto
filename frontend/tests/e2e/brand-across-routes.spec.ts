@@ -5,7 +5,11 @@ import { expect, test, type Page, type TestInfo } from "@playwright/test";
  * Signed-in route coverage is opt-in and never uses real candidate mutations.
  */
 async function capture(page: Page, info: TestInfo, label: string) {
-  await info.attach(label, { body: await page.screenshot(), contentType: "image/png" });
+  // Keep the actual screenshots as files so CI's artifact uploader retains
+  // successful runs, not just failed traces or HTML-reporter attachments.
+  const path = info.outputPath(label + ".png");
+  await page.screenshot({ path });
+  await info.attach(label, { path, contentType: "image/png" });
 }
 
 test("landing, login and signup use the same paper, ink and STK Earl design system", async ({ page }, info) => {
@@ -40,6 +44,16 @@ test("landing, login and signup use the same paper, ink and STK Earl design syst
   expect(targetHeight).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
   await capture(page, info, "pareto-landing-mobile");
+
+  for (const width of [390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of ["/", "/login", "/signup"]) {
+      await page.goto(route);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1),
+        `${route} must not overflow at ${width}px`).toBe(false);
+      await capture(page, info, `pareto-${route === "/" ? "landing" : route.slice(1)}-${width}`);
+    }
+  }
 });
 
 test("authenticated dashboard surfaces retain common typography, focus and responsive layout", async ({ page }, info) => {
