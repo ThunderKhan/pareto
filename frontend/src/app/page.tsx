@@ -6,7 +6,7 @@ import { Inter } from "next/font/google";
 const uiFont = Inter({ subsets: ["latin"], style: "normal", display: "swap", variable: "--font-pareto-v2-ui" });
 
 export const metadata: Metadata = {
-  title: "Pareto | Find the right people. Understand every match.",
+  title: "Pareto",
   description: "Describe your hiring brief, confirm the criteria, and understand the evidence behind candidate matches.",
 };
 

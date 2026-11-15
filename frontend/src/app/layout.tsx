@@ -3,7 +3,7 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pareto — Recruitment Intelligence",
+  title: "Pareto",
   description: "Explainable recruitment intelligence, built with human oversight.",
 };
 
