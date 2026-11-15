@@ -21,6 +21,7 @@ import "./conversation-layout.css";
 import "./review-phase1.css";
 import "./result-phase2.css";
 import "./continuity-phase3.css";
+import "./intelligence-unified.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -484,7 +485,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <SearchOrb />
         <h2>Who are we looking for?</h2>
         {recentSearch && <div className="pareto-continuity" data-testid="recent-search-resume">
-          <p className="pareto-continuity__eyebrow">CONTINUE WHERE YOU LEFT OFF</p>
+          <p className="pareto-continuity__eyebrow">Continue where you left off</p>
           <Link href={"/dashboard/search?session=" + encodeURIComponent(recentSearch.id)}>
             Resume confirmed search <span aria-hidden="true">→</span>
           </Link>
@@ -517,7 +518,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       {results && <section className="search-panel pareto-chat__results" aria-label="Confirmed results">
         <div className="pareto-chat__results-head">
           <div>
-            <p className="pareto-chat__caption">CONFIRMED DATABASE SEARCH</p>
+            <p className="pareto-chat__caption">Confirmed search</p>
             <h2>Search results · revision {results.version}</h2>
           </div>
           <button type="button" disabled={busy} className="pareto-chat__edit"
@@ -528,7 +529,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         {latestConfirmed?.sessionId === results.sessionId && latestConfirmed.version === results.version &&
           <section className="pareto-completion" aria-label="Search confirmed" role="status" data-testid="search-confirmed">
             <div><span className="pareto-completion__mark" aria-hidden="true">✓</span>
-              <div><p className="pareto-continuity__eyebrow">SAVED SEARCH · REVISION {results.version}</p>
+              <div><p className="pareto-continuity__eyebrow">Saved search · revision {results.version}</p>
                 <h3>Your shortlist is ready to review.</h3>
                 <p>{results.counts.ELIGIBLE} eligible · {results.counts.NEEDS_REVIEW} need verification · {results.counts.INELIGIBLE} ineligible.
                   These are measured outcomes from your confirmed search.</p>
@@ -555,7 +556,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         </details>
         <section className="pareto-results__shortlist" id="pareto-shortlist" aria-label="Ranked candidate list">
           <div className="pareto-results__section-title">
-            <div><p className="pareto-chat__caption">DOCUMENTED MATCHES</p><h3>Candidate shortlist</h3></div>
+            <div><p className="pareto-chat__caption">Documented matches</p><h3>Candidate shortlist</h3></div>
             <span>{results.total === 0 ? "No candidates" :
               "Showing " + (offset + 1) + "–" + (offset + results.results.length) + " of " + results.total}</span>
           </div>
@@ -579,20 +580,27 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         </div>}
         <section className="pareto-results__analysis" aria-label="Advanced search analysis">
           <div className="pareto-results__section-title">
-            <div><p className="pareto-chat__caption">OPTIONAL ANALYSIS</p><h3>Explore deeper</h3></div>
+            <div><p className="pareto-chat__caption">Search intelligence</p><h3>Understand your options</h3></div>
           </div>
           <p>Evaluate search trade-offs and proposed criteria changes. Previews never modify a confirmed search.</p>
-          <ParetoFrontier key={"frontier:" + results.sessionId + ":" + results.version}
-            sessionId={results.sessionId} version={results.version}
-            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
-          <div className="insight-panels" aria-label="Search analysis tools">
-            <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
+          <div className="pareto-intelligence__primary">
+            <ParetoFrontier key={"frontier:" + results.sessionId + ":" + results.version}
               sessionId={results.sessionId} version={results.version}
               onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
-            <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
-              sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
-              onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
           </div>
+          <details className="pareto-intelligence__secondary" data-testid="secondary-search-tools">
+            <summary><span>Diagnostics &amp; simulation</span>
+              <small>Inspect bottlenecks or test custom changes to this confirmed search</small>
+            </summary>
+            <div className="insight-panels" aria-label="Search analysis tools">
+              <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
+                sessionId={results.sessionId} version={results.version}
+                onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+              <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
+                sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
+                onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+            </div>
+          </details>
         </section>
       </section>}
         </div>

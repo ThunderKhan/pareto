@@ -71,9 +71,9 @@ export default function ParetoFrontier({ sessionId, version, onReview }: {
   return <section className="frontier-module" aria-label="Pareto Frontier" data-testid="pareto-frontier">
     <header className="frontier-intro">
       <div>
-        <span className="frontier-eyebrow">THE PARETO FRONTIER · HIRING INTELLIGENCE</span>
+        <span className="frontier-eyebrow">Measured strategy comparison</span>
         <h3>Pareto Frontier</h3>
-        <p>Explore measured trade-offs behind your hiring requirements. Keep control of what changes.</p>
+        <p>Compare alternative requirements against your candidate records. Every proposal remains a preview until confirmed.</p>
       </div>
       <button type="button" className="frontier-cta" disabled={loading} aria-expanded={open}
         onClick={() => {
@@ -95,7 +95,7 @@ export default function ParetoFrontier({ sessionId, version, onReview }: {
       </div>}
       {report && !loading && <>
         <div className="frontier-baseline">
-          <div><span className="frontier-eyebrow">CONFIRMED · BASELINE</span>
+          <div><span className="frontier-eyebrow">Confirmed search</span>
             <h4>Your current candidate pool</h4>
             <p>These counts use your current confirmed requirements, without any relaxation.</p>
           </div>
@@ -109,19 +109,19 @@ export default function ParetoFrontier({ sessionId, version, onReview }: {
               ? <p role="status">No improvement was found among the {report.scope.evaluatedSingle} single-rule and {report.scope.evaluatedPairs} paired alternatives tested. This does not mean other strategies or candidates do not exist.</p>
               : <section className="frontier-options" aria-label="Measured alternative hiring strategies">
                 <div className="frontier-options-head">
-                  <div><span className="frontier-eyebrow">POSSIBLE PATHS</span>
+                  <div><span className="frontier-eyebrow">Alternative requirements</span>
                     <h4>Strategies worth considering</h4></div>
                   <p>{report.scope.nonDominatedCount} non-dominated in the evaluated set · showing {report.scope.displayedCount}</p>
                 </div>
                 <div className="frontier-grid">{report.strategies.map((strategy, i) =>
                   <article className="frontier-card" key={strategy.id}>
                     <div className="frontier-card-top">
-                      <span className="frontier-index">STRATEGY {String(i + 1).padStart(2, "0")}</span>
-                      <span className="frontier-preview-tag">PREVIEW ONLY</span>
+                      <span className="frontier-index">Strategy {i + 1}</span>
+                      <span className="frontier-preview-tag">Preview only</span>
                     </div>
                     <h5>{strategy.title}</h5>
-                    <div className="frontier-impact">
-                      <div><small>Exact matches</small><strong>{report.baseline.counts.ELIGIBLE} → {strategy.counts.ELIGIBLE}</strong></div>
+                    <div className="frontier-impact" role="group" aria-label={"Eligibility comparison for " + strategy.title}>
+                      <div><small>Current → proposed eligible</small><strong>{report.baseline.counts.ELIGIBLE} → {strategy.counts.ELIGIBLE}</strong></div>
                       <div><small>Newly eligible</small><strong>+{strategy.impact.newlyEligibleCount}</strong></div>
                     </div>
                     <p className="frontier-impact-note">
