@@ -51,7 +51,8 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
       await failJob(job, "PROFILE_UNVERIFIED", true, true, Math.random(), metrics);
       return "RETRY_OR_REVIEW" as const;
     }
-    const { skills, skillsKnown, ...properties } = result.profile;
+    const profile = result.profile; // Captured after null check for async transaction safety.
+    const { skills, skillsKnown, ...properties } = profile;
     const canonical = new Map((skills ?? []).map(value => [skillKey(value), value]));
     await finishJob(job, result.needsReview ? "NEEDS_REVIEW" : "READY", {
       status: result.needsReview ? "NEEDS_REVIEW" : "READY",
@@ -93,8 +94,8 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
           skills: prior.skills.map(entry => entry.skill.displayName),
           pastRoles: prior.pastRoles, certifications: prior.certifications,
         } : undefined,
-        after: result.profile,
-        changedFields: Object.keys(result.profile),
+        after: profile,
+        changedFields: Object.keys(profile),
         provider: result.provider, extractorVersion: "resume-extract.v1",
         jobId: job.id, attempt: job.attempts,
         reason: result.needsReview ? "Automated extraction requires human verification." : null,
