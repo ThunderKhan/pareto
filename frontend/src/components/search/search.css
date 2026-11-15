@@ -106,3 +106,20 @@
 @media (prefers-reduced-motion: reduce) {
   .pareto-chat__composer { transition: none; }
 }
+
+
+/* Round 02 #02: one Parito avatar labels a grouped assistant response,
+   never individual candidate profiles or every nested results card. */
+.pareto-chat__assistant-turn {
+  display: grid; grid-template-columns: 40px minmax(0,1fr);
+  align-items: start; gap: 14px; width: 100%; min-width: 0;
+}
+.pareto-chat__assistant-icon { display: flex; justify-content: center; align-items: flex-start; min-width: 0; }
+.pareto-chat__assistant-content { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.pareto-chat__assistant-content > .search-panel { width: 100%; min-width: 0; }
+.pareto-chat__assistant-content > .pareto-chat__processing { min-height: 39px; }
+@media (max-width: 560px) {
+  .pareto-chat__assistant-turn { grid-template-columns: 32px minmax(0,1fr); gap: 9px; }
+  .pareto-chat__assistant-icon .pareto-avatar--chat { width: 32px; height: 32px; padding: 2px; }
+  .pareto-chat__assistant-content { gap: 12px; }
+}

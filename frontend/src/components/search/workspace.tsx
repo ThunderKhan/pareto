@@ -6,6 +6,7 @@ import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
 import CriteriaEditor, { labels } from "./criteria-editor";
 import SearchOrb from "./search-orb";
+import ParitoAvatar from "@/components/dashboard/parito-avatar";
 import SearchHealthPanel from "./search-health";
 import WhatIfPanel from "./what-if";
 import NearMatchExplanation from "./near-match";
@@ -188,8 +189,14 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <span className="pareto-chat__caption">YOUR REQUEST</span>
         <p>{lastRequest}</p>
       </div>}
+      {(busy || message || alert || draft || results) && <div className="pareto-chat__assistant-turn"
+        role="group" aria-label="Pareto response">
+        <span className="pareto-chat__assistant-icon" aria-hidden="true">
+          {busy ? <SearchOrb working /> : <ParitoAvatar size="chat" />}
+        </span>
+        <div className="pareto-chat__assistant-content">
       {busy && <div className="pareto-chat__processing" role="status">
-        <SearchOrb working /> <span>{busyLabel}</span>
+        <span>{busyLabel}</span>
       </div>}
       {message && <p className="pareto-chat__notice" role="status">{message}</p>}
       {alert && <p className="search-error" role="alert">{alert}</p>}
@@ -266,6 +273,8 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
           <span>{offset + 1}–{offset + results.results.length} of {results.total}</span>
         </div>}
       </section>}
+        </div>
+      </div>}
       {referenceOpen && <form className="search-panel pareto-chat__reference" onSubmit={event => {
         event.preventDefault();
         void run("Finding reference candidates…",async () => {
