@@ -1,6 +1,6 @@
 import { AiFailure, classifyHttpStatus, classifyProviderError } from "../contracts/errors";
 
-export type JsonProvider = ((system: string, input: string, timeoutMs?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number }>) & { providerName?: "Gemini" | "Groq" };
+export type JsonProvider = ((system: string, input: string, timeoutMs?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq" };
 type ProviderConfig = Readonly<{ name: "Gemini" | "Groq"; key: string; model: string }>;
 
 function configured(): ProviderConfig[] {
@@ -92,7 +92,7 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
     const token = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 1000000 ? value : undefined;
     const inputTokens = token(usage?.[isGemini ? "promptTokenCount" : "prompt_tokens"]);
     const outputTokens = token(usage?.[isGemini ? "candidatesTokenCount" : "completion_tokens"]);
-    return { raw: unwrap(doc, isGemini), provider: name, inputTokens, outputTokens };
+    return { raw: unwrap(doc, isGemini), provider: name, modelId: model, inputTokens, outputTokens };
   };
   call.providerName = name;
   return call;
