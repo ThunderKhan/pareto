@@ -1,7 +1,7 @@
 # Resume Ingestion — Frontend Implementation Needed
 
 **Product:** Pareto · **PRD:** DATA-FR-01/02 · **Backend branch:** feat/private-resume-ingestion  
-**Status:** Backend only. The UI is NOT implemented.  
+**Status:** UI implemented in source on frontend PR #20; authenticated live acceptance pending.  
 **Suggested location:** Protected recruiter `/dashboard/candidates` → a clear **Import resumes** entry point, with a page or panel at `/dashboard/candidates/import` if needed. Do not replace the existing candidate library or search workspace.
 
 ## User goal
@@ -109,3 +109,9 @@ A document metadata object includes `id`, `fileName`, `kind`, `mimeType`, `byteS
 - [ ] Do not add unimplemented bulk worker/approve/edit buttons disguised as working features.
 
 **Technical reference:** [Resume ingestion backend contract](../RESUME-INGESTION.md). The user will explicitly authorize any live Supabase bucket creation/migrations; never perform them from frontend code.
+
+## Delivered frontend (PR #20)
+
+The protected recruiter importer lives at `/dashboard/candidates/import`, implemented in `frontend/src/components/dashboard/imports/workspace.tsx` and `detail.tsx`. It submits independent FormData files with two at a time, checks the real API statuses and duplicates, shows source quotes/page references, obtains private signed original access only on user click, and links READY candidates into the existing library. It never claims that a queued upload has been extracted.
+
+All upload/processing/editing operations require the real backend and a verified Supabase recruiter; public/signed-out Playwright security tests are included. Live Storage/provider extraction has not yet been exercised in this workspace.

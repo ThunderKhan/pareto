@@ -1,7 +1,7 @@
 # Durable Batch Processing — Frontend Implementation Needed
 
 **Product:** Pareto · **Backend branch:** `feat/durable-resume-batch-workers` stacked on `feat/private-resume-ingestion` (PR #13).  
-**Frontend:** NOT implemented in this branch.  
+**Frontend:** Implemented in source on frontend PR #20; authenticated live acceptance pending.  
 **Integrate in:** protected `/dashboard/candidates/import`, alongside [ingestion.md](ingestion.md); existing ivory/navy/cobalt design and candidate library navigation.
 
 ## 1. User goal
@@ -95,3 +95,7 @@ When cancellation is requested while a worker is running, show **Cancellation re
 - [ ] All existing search, profile, diagnostics, what-if and near-match UI behavior remains intact.
 
 **Backend operational truth:** [RESUME-BATCH-PROCESSING.md](../RESUME-BATCH-PROCESSING.md). The frontend team must not start worker loops from React or Next.js API handlers.
+
+## Delivered frontend (PR #20)
+
+`frontend/src/components/dashboard/imports/workspace.tsx` implements at-most-two concurrent single-file uploads, queued/processing/terminal status, manual retry with charge warning, cancellation with request-vs-terminal differentiation, grouping 1–50 only unbatched QUEUED jobs, dated scheduling and visible batch outcome history. Per-file attempt details, timings and safe stage history are in `detail.tsx`. Polling stops on navigation and avoids hidden-tab requests. It does **not** launch workers from the browser: a separate supervised backend service is required. Signed-in end-to-end acceptance remains pending.
