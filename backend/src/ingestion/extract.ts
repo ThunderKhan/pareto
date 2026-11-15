@@ -27,7 +27,8 @@ export type VerifiedEvidence = {
   fieldKey: string; quote: string; pageNumber: number | null;
   sourceStart: number | null; sourceEnd: number | null;
 };
-export type NormalizedResumeProfile = Omit<ModelProfile, "evidence" | "warnings"> & {
+export type NormalizedResumeProfile = Omit<ModelProfile, "evidence" | "warnings" | "displayName"> & {
+  displayName: string; // Only returned after matching a verbatim source quote.
   skillsKnown: boolean;
 };
 export type ResumeExtraction = {
