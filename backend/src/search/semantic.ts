@@ -69,9 +69,9 @@ export async function indexCandidate(ownerId: string, candidateId: string, embed
   const document = candidateDocument(candidateProfile(row));
   if (!document) return "empty" as const;
   const hash = documentHash(document);
-  const existing = await db.$queryRaw<Array<{ contentHash: string; model: string }>>\`
+  const existing = await db.$queryRaw<Array<{ contentHash: string; model: string }>>`
     SELECT "contentHash", "model" FROM "CandidateEmbedding"
-    WHERE "ownerId" = \${ownerId} AND "candidateId" = \${candidateId}\`;
+    WHERE "ownerId" = ${ownerId} AND "candidateId" = ${candidateId}`;
   if (existing[0]?.contentHash === hash && existing[0].model === MODEL_KEY) return "unchanged" as const;
   const vector = vectorLiteral(await embed(document, "RETRIEVAL_DOCUMENT"));
   // Protect against concurrent candidate edits while the network request was running.
@@ -79,13 +79,13 @@ export async function indexCandidate(ownerId: string, candidateId: string, embed
     where: { id: candidateId, ownerId }, include: { skills },
   });
   if (!latest || documentHash(candidateDocument(candidateProfile(latest))) !== hash) return "stale" as const;
-  await db.$executeRaw\`
+  await db.$executeRaw`
     INSERT INTO "CandidateEmbedding" ("candidateId","ownerId","model","contentHash","contentVersion","embedding","updatedAt")
-    VALUES (\${candidateId},\${ownerId},\${MODEL_KEY},\${hash},\${1},\${vector},now())
+    VALUES (${candidateId},${ownerId},${MODEL_KEY},${hash},${1},${vector},now())
     ON CONFLICT ("candidateId") DO UPDATE SET
       "ownerId" = EXCLUDED."ownerId", "model" = EXCLUDED."model",
       "contentHash" = EXCLUDED."contentHash", "contentVersion" = EXCLUDED."contentVersion",
-      "embedding" = EXCLUDED."embedding", "updatedAt" = now()\`;
+      "embedding" = EXCLUDED."embedding", "updatedAt" = now()`;
   return "indexed" as const;
 }
 
@@ -125,9 +125,9 @@ export async function rankWithSemantic(
   }
   const db = database();
   try {
-    const rows = await db.$queryRaw<Array<{ candidateId: string; contentHash: string }>>\`
+    const rows = await db.$queryRaw<Array<{ candidateId: string; contentHash: string }>>`
       SELECT "candidateId", "contentHash" FROM "CandidateEmbedding"
-      WHERE "ownerId" = \${ownerId} AND "model" = \${MODEL_KEY}\`;
+      WHERE "ownerId" = ${ownerId} AND "model" = ${MODEL_KEY}`;
     const current = new Map(candidates.map(c => [c.id, documentHash(candidateDocument(c))]));
     const fresh = new Set(rows.filter(row => current.get(row.candidateId) === row.contentHash)
       .map(row => row.candidateId));
@@ -139,14 +139,14 @@ export async function rankWithSemantic(
     // SET LOCAL makes pgvector work whether Supabase installed it in public or extensions.
     const nearest = await db.$transaction(async tx => {
       await tx.$executeRawUnsafe("SET LOCAL search_path TO public, extensions");
-      return tx.$queryRaw<Array<{ candidateId: string; similarity: number }>>\`
-        SELECT e."candidateId", (1 - (e."embedding" <=> \${vector}::vector))::double precision AS similarity
+      return tx.$queryRaw<Array<{ candidateId: string; similarity: number }>>`
+        SELECT e."candidateId", (1 - (e."embedding" <=> ${vector}::vector))::double precision AS similarity
         FROM "CandidateEmbedding" e
         JOIN "Candidate" c ON c."id" = e."candidateId"
-        WHERE e."ownerId" = \${ownerId} AND c."ownerId" = \${ownerId}
-          AND e."model" = \${MODEL_KEY} AND e."contentVersion" = \${1}
-        ORDER BY e."embedding" <=> \${vector}::vector, e."candidateId"
-        LIMIT 1000\`;
+        WHERE e."ownerId" = ${ownerId} AND c."ownerId" = ${ownerId}
+          AND e."model" = ${MODEL_KEY} AND e."contentVersion" = ${1}
+        ORDER BY e."embedding" <=> ${vector}::vector, e."candidateId"
+        LIMIT 1000`;
     });
     const scores = new Map(nearest.filter(row => fresh.has(row.candidateId) &&
       Number.isFinite(row.similarity)).map(row => [row.candidateId, row.similarity]));

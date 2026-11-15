@@ -17,9 +17,9 @@ const vector = (axis: number) => {
 describe.skipIf(!integrationUrl)("pgvector owner-scoped retrieval integration", () => {
   if (integrationUrl) process.env.DATABASE_URL = integrationUrl;
   afterAll(async () => {
-    await database().$executeRaw\`
-      DELETE FROM "CandidateEmbedding" WHERE "ownerId" = \${owner}
-      AND "candidateId" IN (\${candidateA}, \${candidateB})\`;
+    await database().$executeRaw`
+      DELETE FROM "CandidateEmbedding" WHERE "ownerId" = ${owner}
+      AND "candidateId" IN (${candidateA}, ${candidateB})`;
     await database().$disconnect();
   });
   it("enforces ownership, persists idempotent vectors and computes nearest neighbors", async () => {
