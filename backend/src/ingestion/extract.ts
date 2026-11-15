@@ -3,7 +3,8 @@ import { AiFailure } from "../ai/contracts/errors";
 import { skillKey } from "../search/criteria";
 import { verifyResumeClaim } from "../ai/quality/resume-evidence";
 import { proposeResumeFacts } from "../ai/tasks/resume-extract";
-import { configuredProviders, type JsonProvider } from "../search/interpret";
+import type { JsonProvider } from "../search/interpret";
+import { resolveAiProviders } from "../ai/providers/byok";
 import type { ParsedResume } from "./parse";
 
 const label = z.string().trim().min(1).max(120);
@@ -158,10 +159,11 @@ export function validateExtractedProfile(raw: unknown, parsed: ParsedResume, pro
 
 export async function extractResumeProfile(
   parsed: ParsedResume,
-  providers: JsonProvider[] = configuredProviders(),
+  providers?: JsonProvider[],
   ownerId?: string,
 ): Promise<ResumeExtraction> {
-  if (!providers.length) {
+  const selected = await resolveAiProviders(ownerId, providers);
+  if (!selected.length) {
     // Worker-owned jobs must wait for configuration instead of exhausting
     // their finite processing retry budget. Legacy offline callers still get
     // the review result they expect.
@@ -176,7 +178,7 @@ export async function extractResumeProfile(
       // Strict Zod schema and original-source semantic validation run inside
       // the provider gateway. Invalid output may safely fall back to Groq.
       return validateExtractedProfile(raw, parsed, "Pending");
-    }, providers, ownerId);
+    }, selected, ownerId);
     if (parsed.text.length > 16000) {
       result.needsReview = true;
       result.warnings.push("Only the first 16,000 characters were submitted for extraction.");

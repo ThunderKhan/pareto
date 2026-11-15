@@ -3,6 +3,7 @@ import { AiFailure, canFallback, classifyProviderError } from "../contracts/erro
 import type { AiTaskId } from "../contracts/task";
 import { taskDefinition } from "../registry";
 import { recordSafeUsage } from "../observability/usage";
+import { recordAiAttempt } from "../observability/durable";
 import { aiProcessLimiter } from "./budgets";
 import { durableQuotaEnabled, reserveDurableAiAttempt } from "./durable-quota";
 import { providerCircuitBreaker } from "./circuit-breaker";
@@ -63,19 +64,30 @@ export async function proposeStructured<T extends object>(
         throw new AiFailure("OUTPUT_INVALID", false);
       }
       if (provider.providerName) providerCircuitBreaker.onSuccess(provider.providerName);
+      const safeProvider = response.provider === "Groq" ? "Groq" : "Gemini";
+      const latencyMs = Date.now() - attemptStarted;
       recordSafeUsage({
-        taskId, requestId, provider: response.provider === "Groq" ? "Groq" : "Gemini",
-        outcome: "ok", latencyMs: Date.now() - attemptStarted,
+        taskId, requestId, provider: safeProvider,
+        outcome: "ok", latencyMs,
         modelId: response.modelId, promptVersion: config.promptVersion, schemaVersion: config.schemaVersion,
         inputTokens: response.inputTokens, outputTokens: response.outputTokens,
       });
+      await recordAiAttempt({ userId: context.ownerId, taskId, provider: safeProvider,
+        modelId: response.modelId ?? provider.modelId,
+        credentialSource: provider.providerSource, outcome: "ok", latencyMs,
+        inputTokens: response.inputTokens, outputTokens: response.outputTokens });
       return { ...proposal, provider: response.provider };
     } catch (error) {
       last = classifyProviderError(error);
       if (provider.providerName) providerCircuitBreaker.onFailure(provider.providerName, last.code);
-      recordSafeUsage({ taskId, requestId, provider: provider.providerName ?? (index === 0 ? "Gemini" : "Groq"),
-        outcome: last.code, latencyMs: Date.now() - attemptStarted,
+      const safeProvider = provider.providerName ?? (index === 0 ? "Gemini" : "Groq");
+      const latencyMs = Date.now() - attemptStarted;
+      recordSafeUsage({ taskId, requestId, provider: safeProvider,
+        outcome: last.code, latencyMs,
         promptVersion: config.promptVersion, schemaVersion: config.schemaVersion });
+      await recordAiAttempt({ userId: context.ownerId, taskId, provider: safeProvider,
+        modelId: provider.modelId, credentialSource: provider.providerSource,
+        outcome: last.code, latencyMs });
       if (!canFallback(last.code) || index === selected.length - 1) break;
     } finally { release(); }
   }

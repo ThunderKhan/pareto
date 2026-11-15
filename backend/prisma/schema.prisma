@@ -99,6 +99,43 @@ model RecruiterSettings {
   updatedAt       DateTime  @updatedAt
 }
 
+// User-owned credential ciphertext never returned to client SQL APIs.
+// AES-256-GCM key material is managed by PARETO_BYOK_MASTER_KEY server-only.
+model AiUserCredential {
+  userId        String
+  provider      String
+  encryptedKey  String @db.Text
+  iv            String
+  tag           String
+  keyVersion    Int    @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@id([userId, provider])
+}
+
+model AiUserPreference {
+  userId    String @id
+  mode      String @default("PLATFORM")
+  updatedAt DateTime @updatedAt
+}
+
+// Metadata only. Never store input text, output bodies, API secrets or IPs.
+model AiUsageRecord {
+  id               String @id @default(uuid())
+  userId           String
+  taskId           String
+  provider         String
+  modelId          String?
+  credentialSource String
+  outcome          String
+  inputTokens      Int?
+  outputTokens     Int?
+  latencyMs        Int
+  createdAt        DateTime @default(now())
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
 model Organization {
   id          String                @id @default(cuid())
   name        String
