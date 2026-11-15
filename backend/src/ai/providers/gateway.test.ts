@@ -45,4 +45,12 @@ describe("bounded provider gateway", () => {
     expect(model).toHaveBeenCalledOnce();
   });
 
+  it("passes task-specific bounded output limits to model adapters", async () => {
+    const provider = vi.fn().mockResolvedValue({ raw: { valid: true }, provider: "Gemini" });
+    await proposeStructured("instructions", "data", accept, [provider], { taskId: "search.interpret.v1" });
+    expect(provider.mock.calls[0][3]).toBe(2600);
+    await proposeStructured("instructions", "data", accept, [provider], { taskId: "resume.extract.v1" });
+    expect(provider.mock.calls[1][3]).toBe(4096);
+  });
+
 });

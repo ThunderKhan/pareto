@@ -85,4 +85,31 @@ describe("actual provider HTTP request construction (offline)", () => {
     await expect(availableProviders()[0]("task", "input"))
       .rejects.toMatchObject({ code: "OUTPUT_INVALID", retryable: false });
   });
+  it("passes a bounded resume output token budget to each provider", async () => {
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "synthetic-key");
+    vi.stubEnv("GEMINI_MODEL", "gemini-2.5-flash");
+    vi.stubEnv("GROQ_API_KEY", "synthetic-key");
+    vi.stubEnv("GROQ_MODEL", "openai/gpt-oss-20b");
+    const budgets: number[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string | Request | URL, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      budgets.push(url.toString().includes("groq") ? body.max_completion_tokens : body.generationConfig.maxOutputTokens);
+      return url.toString().includes("groq")
+        ? Response.json({ choices: [{ message: { content: '{"value":1}' }, finish_reason: "stop" }] })
+        : Response.json({ candidates: [{ content: { parts: [{ text: '{"value":1}' }] }, finishReason: "STOP" }] });
+    }));
+    for (const provider of availableProviders()) await provider("instructions", "input", 9000, 4096);
+    expect(budgets).toEqual([4096, 4096]);
+  });
+  it("rejects incomplete provider outputs even if the JSON parses", async () => {
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "synthetic-key");
+    vi.stubEnv("GEMINI_MODEL", "gemini-2.5-flash");
+    vi.stubEnv("GROQ_API_KEY", "");
+    vi.stubEnv("GROQ_MODEL", "");
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      candidates: [{ content: { parts: [{ text: '{"value":1}' }] }, finishReason: "MAX_TOKENS" }],
+    })));
+    await expect(availableProviders()[0]("instructions", "input")).rejects.toMatchObject({ code: "OUTPUT_INVALID" });
+  });
+
 });

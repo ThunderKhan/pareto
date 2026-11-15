@@ -36,7 +36,7 @@ export async function proposeStructured<T extends object>(
     const release = aiProcessLimiter.acquire(context.ownerId ?? "unscoped");
     const attemptStarted = Date.now();
     try {
-      const response = await provider(system, input, Math.min(9000, remaining));
+      const response = await provider(system, input, Math.min(9000, remaining), config.maxOutputTokens);
       let proposal: T;
       try { proposal = validate(response.raw); }
       catch (error) {
