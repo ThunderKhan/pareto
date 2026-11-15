@@ -33,4 +33,16 @@ describe("bounded provider gateway", () => {
     await expect(proposeStructured("instruction", "data", accept, []))
       .rejects.toBeInstanceOf(AiFailure);
   });
+  it("preserves semantic rejection codes so invalid evidence is not misclassified as malformed JSON", async () => {
+    const model = vi.fn().mockResolvedValue({
+      raw: { evidence: "plausible but unsupported" }, provider: "Gemini",
+    });
+    await expect(proposeStructured("instructions", "data", () => {
+      throw new AiFailure("SEMANTIC_UNVERIFIED", false);
+    }, [model])).rejects.toMatchObject({
+      code: "SEMANTIC_UNVERIFIED", retryable: false,
+    });
+    expect(model).toHaveBeenCalledOnce();
+  });
+
 });
