@@ -506,7 +506,7 @@ function Footer() {
       <div className="v2-container v2-close-inner">
         <Image
           src="/mascot/pareto-mascot.svg"
-          alt="Pareto mascot waving and holding a candidate profile"
+          alt="Parito, Pareto’s friendly blue document mascot"
           width={240}
           height={225}
           className="v2-close-mascot"
