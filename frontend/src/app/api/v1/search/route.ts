@@ -2,7 +2,7 @@ import { z } from "@pareto/backend/search";
 import { criteriaSchema, promptSchema } from "@pareto/backend/search";
 import { logger } from "@pareto/backend";
 import {
-  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor, searchDiagnostics, simulateSearch,
+  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor, searchDiagnostics, simulateSearch, searchFrontier,
 } from "@pareto/backend/search/server";
 import { interpret, interpretRefinement } from "@pareto/backend/search/interpret";
 import { recruiter } from "@/lib/auth";
@@ -14,6 +14,8 @@ const input = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("reference"), candidateId: id }),
   z.strictObject({ action: z.literal("refine"), sessionId: id, expectedVersion: revision, prompt: promptSchema }),
   z.strictObject({ action: z.literal("simulate"), sessionId: id, expectedVersion: revision, criteria: criteriaSchema }),
+  z.strictObject({ action: z.literal("frontier"), sessionId: id, expectedVersion: revision,
+    maxStrategies: z.number().int().min(1).max(5).optional() }),
   z.strictObject({ action: z.literal("confirm"), criteria: criteriaSchema, requestId: z.uuid(),
     referenceId: id.optional(), sessionId: id.optional(), expectedVersion: revision.optional() }),
 ]);
@@ -97,6 +99,7 @@ export function POST(request: Request) {
       case "interpret": return interpret(data.prompt, undefined, ownerId);
       case "reference": return referenceDraft(ownerId, data.candidateId);
       case "simulate": return simulateSearch(ownerId, data.sessionId, data.expectedVersion, data.criteria);
+      case "frontier": return searchFrontier(ownerId, data.sessionId, data.expectedVersion, data.maxStrategies);
       case "confirm":
         if (Boolean(data.sessionId) !== Boolean(data.expectedVersion) || (data.sessionId && data.referenceId)) {
           throw new SearchError(422, "Revision confirmation requires a session ID and its expected version.");
