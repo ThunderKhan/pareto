@@ -62,6 +62,8 @@ jobs:
         run: pnpm check
       - name: Run offline synthetic extraction-quality evaluation (no model keys)
         run: pnpm --filter @pareto/backend ingest:evaluate
+      - name: Validate ten real synthetic one-page PDF resumes with PDF.js and evidence verifier
+        run: pnpm --filter @pareto/backend ingest:verify:pdfs
       - name: Verify independent ingestion worker runtime against PostgreSQL
         run: pnpm ingest:worker
         env:

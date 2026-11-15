@@ -29,6 +29,8 @@
     "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts",
     "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts",
     "ingest:evaluate": "node --import=tsx scripts/evaluate-ingestion.ts",
+    "ingest:verify:pdfs": "node --import=tsx scripts/verify-ats-resume-corpus.mjs",
+    "ingest:generate:pdfs": "node scripts/generate-ats-resume-corpus.mjs",
     "ingest:evaluate:live": "node --import=tsx scripts/evaluate-ingestion-live.ts",
     "ai:evaluate:live": "node --import=tsx scripts/evaluate-search-live.ts",
     "semantic:index": "node --import=tsx scripts/index-candidates.ts",
