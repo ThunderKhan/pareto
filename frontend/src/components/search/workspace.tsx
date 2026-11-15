@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import Link from "next/link";
 import { ArrowClockwise, Info, MagnifyingGlass, PencilSimple, Sparkle, UsersThree, WarningCircle, X } from "@phosphor-icons/react";
 import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
@@ -19,6 +20,7 @@ import "./round-03-motion.css";
 import "./conversation-layout.css";
 import "./review-phase1.css";
 import "./result-phase2.css";
+import "./continuity-phase3.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -181,6 +183,9 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   const [lastRequest, setLastRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [busyLabel, setBusyLabel] = useState("Working…");
+  const [busySeconds, setBusySeconds] = useState(0);
+  const [latestConfirmed, setLatestConfirmed] = useState<{sessionId: string; version: number} | null>(null);
+  const [recentSearch, setRecentSearch] = useState<{id: string; title: string; version: number} | null>(null);
   const isDraftOpen = Boolean(draft);
   const composerText = results ? followup : prompt;
   const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -223,6 +228,30 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       setDraftClosing(false);
     }, 230);
   }
+
+  // Reports elapsed waiting, not a synthetic model progress or completion estimate.
+  useEffect(() => {
+    if (!busy) return;
+    const timer = window.setInterval(() => setBusySeconds(value => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [busy]);
+
+  // Resume only server-confirmed owner-scoped history. Private drafts are never
+  // serialized into browser storage.
+  useEffect(() => {
+    if (initialSession || initialReference) return;
+    const controller = new AbortController();
+    void fetch("/api/v1/search?history=1", { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() as Promise<unknown> : [])
+      .then(data => {
+        if (controller.signal.aborted || !Array.isArray(data)) return;
+        const item = data.find(value => value && typeof value === "object" &&
+          typeof value.id === "string" && typeof value.title === "string" &&
+          typeof value.version === "number");
+        if (item) setRecentSearch({id: item.id, title: item.title, version: item.version});
+      }).catch(() => { /* Optional history must never block a fresh search. */ });
+    return () => controller.abort();
+  }, [initialSession, initialReference]);
 
   // Keep the same textarea mounted while the session moves from centered to active.
   useEffect(() => {
@@ -320,7 +349,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
 
   async function run(label: string, operation: () => Promise<void>) {
     if (busy) return;
-    setBusy(true); setBusyLabel(label); setAlert(""); setMessage("");
+    setBusySeconds(0); setBusy(true); setBusyLabel(label); setAlert(""); setMessage("");
     try { await operation(); }
     catch (error) { setAlert(error instanceof Error ? error.message : "The request failed."); }
     finally { setBusy(false); }
@@ -415,6 +444,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       // Keep the review visible for its closing transition, while updating
       // the newly confirmed search underneath. The saved revision is already real.
       setResults(data); setOffset(0);
+      setLatestConfirmed({sessionId: data.sessionId, version: data.version});
       if (prefersReducedMotion()) {
         setDraft(undefined);
       } else {
@@ -429,7 +459,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       setFollowup(""); setPrompt(""); setLastRequest("");
       window.history.replaceState(null, "", "?session=" + encodeURIComponent(data.sessionId));
       window.dispatchEvent(new Event("pareto:search-confirmed"));
-      setMessage("Revision " + data.version + " confirmed. These matches come from your candidate database.");
+      setMessage(""); // Verified completion is displayed beside the confirmed results.
     });
   }
 
@@ -453,6 +483,13 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       {!results && !draft && !lastRequest && <div className="pareto-chat__empty">
         <SearchOrb />
         <h2>Who are we looking for?</h2>
+        {recentSearch && <div className="pareto-continuity" data-testid="recent-search-resume">
+          <p className="pareto-continuity__eyebrow">CONTINUE WHERE YOU LEFT OFF</p>
+          <Link href={"/dashboard/search?session=" + encodeURIComponent(recentSearch.id)}>
+            Resume confirmed search <span aria-hidden="true">→</span>
+          </Link>
+          <small>{recentSearch.title} · revision {recentSearch.version}</small>
+        </div>}
       </div>}
       {lastRequest && <div className="pareto-chat__request" role="group" aria-label="Your message">
         <p>{lastRequest}</p>
@@ -463,8 +500,9 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
           {busy ? <SearchOrb working /> : <ParitoAvatar size="chat" />}
         </span>
         <div className="pareto-chat__assistant-content">
-      {busy && <div className="pareto-chat__processing" role="status">
-        <span>{busyLabel}</span>
+      {busy && <div className="pareto-chat__processing pareto-progress" role="status" aria-live="polite" data-testid="search-processing">
+        <span className="pareto-progress__title">{busyLabel}</span>
+        {busySeconds >= 8 && <small>The service has not returned yet. This is elapsed waiting, not a completion estimate.</small>}
       </div>}
       {message && <p className="pareto-chat__notice" role="status">
         <Info size={17} aria-hidden="true"/><span>{message}</span>
@@ -487,6 +525,20 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             <PencilSimple size={16}/> Edit confirmed criteria
           </button>
         </div>
+        {latestConfirmed?.sessionId === results.sessionId && latestConfirmed.version === results.version &&
+          <section className="pareto-completion" aria-label="Search confirmed" role="status" data-testid="search-confirmed">
+            <div><span className="pareto-completion__mark" aria-hidden="true">✓</span>
+              <div><p className="pareto-continuity__eyebrow">SAVED SEARCH · REVISION {results.version}</p>
+                <h3>Your shortlist is ready to review.</h3>
+                <p>{results.counts.ELIGIBLE} eligible · {results.counts.NEEDS_REVIEW} need verification · {results.counts.INELIGIBLE} ineligible.
+                  These are measured outcomes from your confirmed search.</p>
+              </div>
+            </div>
+            <div className="pareto-completion__actions">
+              <button type="button" onClick={() => document.getElementById("pareto-shortlist")?.scrollIntoView({block:"start",behavior:"auto"})}>Review shortlist</button>
+              <button type="button" onClick={() => composerRef.current?.focus()}>Refine search</button>
+            </div>
+          </section>}
         <div className="pareto-results__counts" role="group" aria-label="Confirmed search outcome counts">
           {similarityOnly
             ? <p className="pareto-results__similarity">{results.total} candidates ranked by similarity <span>· no required filters yet</span></p>
@@ -501,7 +553,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
           <ul>{results.criteria.map(rule =>
             <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul>
         </details>
-        <section className="pareto-results__shortlist" aria-label="Ranked candidate list">
+        <section className="pareto-results__shortlist" id="pareto-shortlist" aria-label="Ranked candidate list">
           <div className="pareto-results__section-title">
             <div><p className="pareto-chat__caption">DOCUMENTED MATCHES</p><h3>Candidate shortlist</h3></div>
             <span>{results.total === 0 ? "No candidates" :
@@ -624,7 +676,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         </header>
         <form className="pareto-draft-form" onSubmit={confirm}>
           <div className="pareto-draft-scroll">
-            <p className="pareto-draft-intro">Review the AI suggestion, adjust priorities, and confirm only what you intend to search. Nothing is applied until you confirm.</p>
+            <p className="pareto-draft-intro">Review the AI suggestion, adjust priorities, and confirm only what you intend to search. This draft is not saved; confirm or discard it before leaving.</p>
             {draft.reference && <details className="pareto-draft-context">
               <summary>Reference profile · {draft.reference.displayName}</summary><ProfileFacts profile={draft.reference}/>
             </details>}
