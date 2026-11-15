@@ -23,7 +23,6 @@ const navigation = [
   { label: "Overview", href: "/dashboard", Icon: House },
   { label: "AI candidate search", href: "/dashboard/search", Icon: MagnifyingGlass },
   { label: "Candidates", href: "/dashboard/candidates", Icon: UsersThree },
-  { label: "My profile", href: "/dashboard/profile", Icon: UserCircle },
 ];
 
 function initials(user: RecruiterIdentity) {
@@ -109,10 +108,6 @@ export default function DashboardShell({ children, user }: {
             <span>{item.title}</span><small>v{item.version}</small>
           </Link>)}
         </div>}
-        <div className="pareto-nav__note">
-          <span className="pareto-nav__note-dot" aria-hidden="true" />
-          <p>Human-confirmed search. Evidence you can inspect.</p>
-        </div>
       </div>
       <details className="pareto-account">
         <summary aria-label={"Account menu for " + identityName(user)}>
@@ -138,7 +133,7 @@ export default function DashboardShell({ children, user }: {
           </button>
           <span className="pareto-topbar__crumb">Workspace</span>
           <span className="pareto-topbar__slash" aria-hidden="true">/</span>
-          <strong>{current.label}</strong>
+          <strong>{path === "/dashboard/profile" ? "Account settings" : current.label}</strong>
         </div>
         <div className="pareto-topbar__right">
           <Link href="/dashboard/search" className="pareto-topbar__action">
