@@ -12,20 +12,18 @@ const responseSchema = z.strictObject({
 });
 export type InterpretedDraft = { criteria: Rule[]; warnings: string[]; provider: string };
 
-export async function proposeSearchDraft(prompt: string, providers?: JsonProvider[]): Promise<InterpretedDraft> {
+export async function proposeSearchDraft(prompt: string, providers?: JsonProvider[], ownerId?: string): Promise<InterpretedDraft> {
   const safe = validateSearchRequest(prompt);
   return proposeStructured(searchInterpretPromptV1, isolatedUserData({ prompt: safe }), raw => {
     const candidate = responseSchema.parse(raw);
     let criteria: Rule[];
     try {
       criteria = candidate.criteria.length ? criteriaSchema.parse(candidate.criteria) : [];
-      // Defense in depth: an unsupported protected-trait filter must never enter a valid draft.
       for (const rule of criteria) {
-        if ("value" in rule && /\b(?:male only|female only|men only|women only|caste|race|religion|pregnan(?:t|cy))\b/i.test(rule.value)) {
+        if ("value" in rule && /\b(?:male only|female only|men only|women only|caste|race|religion|pregnan(?:t|cy))\b/i.test(rule.value))
           throw new AiFailure("SEMANTIC_UNVERIFIED", false);
-        }
       }
     } catch { throw new AiFailure("SEMANTIC_UNVERIFIED", false); }
     return { criteria, warnings: candidate.warnings };
-  }, providers);
+  }, providers, { taskId: "search.interpret.v1", ownerId });
 }
