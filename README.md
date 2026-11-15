@@ -17,7 +17,7 @@ A natural-language candidate search workspace that turns hiring intent into edit
 ![Supabase](https://img.shields.io/badge/Auth-Supabase-3FCF8E?logo=supabase&logoColor=white)
 ![Gemini + Groq](https://img.shields.io/badge/AI-Gemini_%2B_Groq-467BEB)
 
-**Trustume AI Hackathon 2026 · Problem Statement 1 · Team \`std::zero\`**
+**Trustume AI Hackathon 2026 · Problem Statement 1 · Team `std::zero`**
 
 [**Live demo**](https://try-pareto.vercel.app) · [**How it works**](#how-it-works) · [**Features**](#features) · [**Quick start**](#quick-start) · [**Architecture**](#architecture) · [**Documentation**](#documentation)
 
@@ -37,7 +37,7 @@ Traditional keyword search loses the intent. Pure LLM ranking introduces a diffe
 
 ## How it works
 
-\`\`\`text
+```text
   Natural-language hiring brief
                 │
                 ▼
@@ -63,7 +63,7 @@ Traditional keyword search loses the intent. Pure LLM ranking introduces a diffe
                 ▼
        Follow-up refinement
          Saved search revision
-\`\`\`
+```
 
 **The confirmation boundary matters:** a generated draft never silently becomes a candidate search. The model interprets language; the application owns retrieval, eligibility, and the audit trail.
 
@@ -86,7 +86,7 @@ The initial demo database contains **48 deterministic, fictional candidate recor
 
 Pareto uses a **pnpm monorepo** with one Next.js web application and a separate reusable TypeScript backend package. There is no second standalone HTTP backend server.
 
-\`\`\`text
+```text
 Browser
   │
   ├── Supabase Auth (recruiter identity / session)
@@ -107,13 +107,13 @@ Next.js 16 · React 19 · App Router
   │                     └── Separate worker + private Storage
   │
   └── Audit-friendly search revision history
-\`\`\`
+```
 
 ### Production topology
 
 - **[Vercel](https://try-pareto.vercel.app)** serves the Next.js frontend and Supabase authentication flow.
 - **[Railway](https://pareto-production.up.railway.app)** runs the existing application/API service and remains an independent fallback URL.
-- In Vercel's production configuration, authenticated \`/api/v1/*\` requests are forwarded through an **allowlisted server-side rewrite** to Railway. Railway performs AI calls, matching, and database writes.
+- In Vercel's production configuration, authenticated `/api/v1/*` requests are forwarded through an **allowlisted server-side rewrite** to Railway. Railway performs AI calls, matching, and database writes.
 - **Supabase PostgreSQL** holds recruiter-scoped candidate records, saved searches, revisions and operational data.
 
 This split is intentional, not a claim that the entire backend runs as Vercel functions. See [the Vercel–Railway deployment guide](docs/VERCEL-RAILWAY-FRONTEND.md).
@@ -124,8 +124,8 @@ This split is intentional, not a claim that the entire backend runs as Vercel fu
 | --- | --- |
 | Interface | **Next.js 16**, **React 19**, TypeScript, Tailwind CSS 4, Phosphor Icons |
 | Motion and visual system | Lenis, Paper Design shaders, custom Pareto SVG assets |
-| Authentication | Supabase Auth, \`@supabase/ssr\`, protected server routes |
-| Application API | Next.js Route Handlers, reusable \`@pareto/backend\` TypeScript package |
+| Authentication | Supabase Auth, `@supabase/ssr`, protected server routes |
+| Application API | Next.js Route Handlers, reusable `@pareto/backend` TypeScript package |
 | Data | PostgreSQL, **Prisma 7**, Prisma PostgreSQL adapter |
 | AI | Google **Gemini** (primary), **Groq** (fallback), Zod-validated outputs |
 | Resume processing | PDF.js, Mammoth, private Supabase Storage, durable queue/worker |
@@ -136,7 +136,7 @@ This split is intentional, not a claim that the entire backend runs as Vercel fu
 
 **Requirements:** Node.js **22.18+**, pnpm **10.15.1**, Git, and a PostgreSQL database (Docker Compose is available for local development).
 
-\`\`\`powershell
+```powershell
 git clone https://github.com/ThunderKhan/pareto.git
 cd pareto
 
@@ -154,18 +154,18 @@ docker compose up -d db
 pnpm db:generate
 pnpm db:deploy
 pnpm dev
-\`\`\`
+```
 
 Open **http://localhost:3000**.
 
 ### Enable the real recruiter demo
 
-1. Configure the same **dedicated Pareto database** in \`frontend/.env.local\` and \`backend/.env\`. Apply the checked-in migrations with \`pnpm db:deploy\`.
-2. Set \`NEXT_PUBLIC_SUPABASE_URL\` and \`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY\` in \`frontend/.env.local\`. Create a confirmed Supabase Auth test recruiter.
-3. Set \`DEMO_OWNER_ID\` to that recruiter's actual Supabase UUID in \`backend/.env\`, then run \`pnpm db:seed\` to insert **48 synthetic candidates owned by that recruiter**.
-4. For natural-language interpretation, set at least one **server-only provider key and supported model ID**: \`GOOGLE_GENERATIVE_AI_API_KEY\` + \`GEMINI_MODEL\`, and/or \`GROQ_API_KEY\` + \`GROQ_MODEL\`. Restart the dev server.
+1. Configure the same **dedicated Pareto database** in `frontend/.env.local` and `backend/.env`. Apply the checked-in migrations with `pnpm db:deploy`.
+2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `frontend/.env.local`. Create a confirmed Supabase Auth test recruiter.
+3. Set `DEMO_OWNER_ID` to that recruiter's actual Supabase UUID in `backend/.env`, then run `pnpm db:seed` to insert **48 synthetic candidates owned by that recruiter**.
+4. For natural-language interpretation, set at least one **server-only provider key and supported model ID**: `GOOGLE_GENERATIVE_AI_API_KEY` + `GEMINI_MODEL`, and/or `GROQ_API_KEY` + `GROQ_MODEL`. Restart the dev server.
 
-Manual criteria search and reference matching work without an AI provider, but still require real authentication and seeded PostgreSQL data. The import queue is **not** an automatically running worker: configure the private bucket, secret credentials and \`pnpm ingest:worker\` separately if testing ingestion.
+Manual criteria search and reference matching work without an AI provider, but still require real authentication and seeded PostgreSQL data. The import queue is **not** an automatically running worker: configure the private bucket, secret credentials and `pnpm ingest:worker` separately if testing ingestion.
 
 See [Supabase database setup](docs/SUPABASE-DATABASE-SETUP.md), [release setup](docs/RELEASE-SETUP.md) and [resume ingestion](docs/RESUME-INGESTION.md) for the full runbooks.
 
@@ -188,16 +188,16 @@ The [live demonstration script](docs/DEMO-SCRIPT.md) contains repeatable scenari
 
 - **Human-in-the-loop:** extracted requirements need explicit confirmation before search.
 - **Evidence over eloquence:** eligibility and counts come from validated candidate facts, not LLM-generated rankings.
-- **Missing data stays unknown:** \`UNKNOWN\` is not silently converted into \`MATCH\`.
+- **Missing data stays unknown:** `UNKNOWN` is not silently converted into `MATCH`.
 - **Owner isolation:** recruiters access their own candidates, searches and revisions.
-- **Server-only credentials:** database passwords, AI API keys and Supabase private keys are never placed in \`NEXT_PUBLIC_*\`.
+- **Server-only credentials:** database passwords, AI API keys and Supabase private keys are never placed in `NEXT_PUBLIC_*`.
 - **Failure transparency:** disabled AI providers, missing schema and paused ingestion have explicit failure/queued states instead of fabricated successes.
 
 > **Scope note:** Private resume processing requires a configured worker and Storage. Offline ingestion benchmarks are not proof of production throughput. The seeded demo profiles are synthetic.
 
 ## Project structure
 
-\`\`\`text
+```text
 pareto/
 ├── frontend/
 │   ├── src/app/            # Pages, auth callbacks and API routes
@@ -215,15 +215,15 @@ pareto/
 ├── Dockerfile
 ├── compose.yaml
 └── pnpm-workspace.yaml
-\`\`\`
+```
 
 ## Verification
 
-\`\`\`powershell
+```powershell
 pnpm check          # Lint, typecheck and backend tests
 pnpm test:e2e       # Playwright browser suite (Chromium required)
 pnpm build          # Production Next.js build
-\`\`\`
+```
 
 Some checks require dedicated disposable database or authenticated test credentials. A passing public CI run does **not** by itself verify live third-party AI calls or the complete signed-in hosted journey.
 
@@ -244,7 +244,7 @@ Some checks require dedicated disposable database or authenticated test credenti
 
 <div align="center">
 
-**Built by team \`std::zero\` for Trustume AI Hackathon 2026.**
+**Built by team `std::zero` for Trustume AI Hackathon 2026.**
 
 **Explain the match. Keep the human in control.**
 
