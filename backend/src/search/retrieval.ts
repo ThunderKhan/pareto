@@ -108,8 +108,8 @@ export function retrievalMetrics(queries: RetrievalJudgment[], k = 10) {
     mrr += first < 0 ? 0 : 1 / (first + 1);
     const dcg = ranked.reduce((sum, id, i) => sum +
       (relevant.has(id) ? 1 / Math.log2(i + 2) : 0), 0);
-    const ideal = Array.from({ length: Math.min(relevant.size, k) })
-      .reduce((sum, _, i) => sum + 1 / Math.log2(i + 2), 0);
+    const ideal = Array.from({ length: Math.min(relevant.size, k) },
+      (_, i) => 1 / Math.log2(i + 2)).reduce((sum, value) => sum + value, 0);
     ndcg += dcg / ideal;
   }
   return { queries: queries.length, k, recallAtK: recall / queries.length,
