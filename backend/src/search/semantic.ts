@@ -10,6 +10,7 @@ const MODEL_KEY = EMBEDDING_MODEL + ":" + EMBEDDING_DIMENSIONS;
 /** Direct Gemini REST adapter, no extra SDK or third-party vector service.
  * The configured Gemini key is used only server-side. */
 export const geminiEmbed: Embedder = async (text, task) => {
+  if (process.env.AI_ENABLED === "false") throw new Error("AI inference is disabled.");
   const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!key) throw new Error("Gemini embedding key is not configured.");
   if (!text.trim() || text.length > 6000) throw new Error("Embedding input is empty or oversized.");
