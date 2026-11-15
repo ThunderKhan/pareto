@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { criteriaSchema, type Rule } from "../../search/criteria";
 import { proposeStructured } from "../providers/gateway";
+import { resolveAiProviders } from "../providers/byok";
 import type { JsonProvider } from "../providers/http";
 import { searchInterpretPromptV1 } from "../prompts/search-interpret.v1";
 import { isolatedUserData, validateSearchRequest, rejectProtectedRuleValues } from "../safety/policy";
@@ -22,5 +23,5 @@ export async function proposeSearchDraft(prompt: string, providers?: JsonProvide
       rejectProtectedRuleValues(criteria);
     } catch { throw new AiFailure("SEMANTIC_UNVERIFIED", false); }
     return { criteria, warnings: candidate.warnings };
-  }, providers, { taskId: "search.interpret.v1", ownerId });
+  }, await resolveAiProviders(ownerId, providers), { taskId: "search.interpret.v1", ownerId });
 }
