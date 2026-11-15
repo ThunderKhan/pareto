@@ -64,6 +64,8 @@ jobs:
         run: pnpm --filter @pareto/backend ingest:evaluate
       - name: Validate ten real synthetic one-page PDF resumes with PDF.js and evidence verifier
         run: pnpm --filter @pareto/backend ingest:verify:pdfs
+      - name: Smoke-test offline PDF parser and 500-profile search benchmark
+        run: pnpm --filter @pareto/backend ingest:bench:offline --docs 10 --search 500 --runs 5
       - name: Verify independent ingestion worker runtime against PostgreSQL
         run: pnpm ingest:worker
         env:
