@@ -138,3 +138,20 @@ export async function resolveAiProviders(userId?: string, override?: JsonProvide
   if (!selected.length) throw new AiFailure("AUTH_CONFIG", false);
   return selected;
 }
+
+/** Embeddings must obey the same user-selected billing source as text models. */
+export async function resolveGeminiEmbeddingCredential(userId: string) {
+  const pref = await database().aiUserPreference.findUnique({
+    where: { userId }, select: { mode: true },
+  });
+  if (pref?.mode === "BYOK") {
+    const row = await database().aiUserCredential.findUnique({
+      where: { userId_provider: { userId, provider: "Gemini" } },
+    });
+    if (!row) throw new AiFailure("AUTH_CONFIG", false);
+    return { key: openCredential(userId, "Gemini", row), source: "byok" as const };
+  }
+  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!key) throw new AiFailure("AUTH_CONFIG", false);
+  return { key, source: "platform" as const };
+}
