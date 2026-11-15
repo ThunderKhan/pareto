@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/recruiter-search
+      - "feat/ai-*"
       - feat/homepage-v2
       - main
       - integration/release-20261114

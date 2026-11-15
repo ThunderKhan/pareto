@@ -12,7 +12,7 @@ const responseSchema = z.strictObject({
 });
 export type RefinedDraft = { criteria: Rule[]; warnings: string[]; changed: boolean; provider: string };
 
-export async function proposeRefinementDraft(prompt: string, current: Rule[], providers?: JsonProvider[]): Promise<RefinedDraft> {
+export async function proposeRefinementDraft(prompt: string, current: Rule[], providers?: JsonProvider[], ownerId?: string): Promise<RefinedDraft> {
   const safe = validateSearchRequest(prompt);
   const prior = criteriaSchema.parse(current);
   const currentByKey = prior.map(rule => ({ key: ruleKey(rule), rule }));
@@ -25,7 +25,6 @@ export async function proposeRefinementDraft(prompt: string, current: Rule[], pr
     try {
       const delta = deltaSchema.parse(result.operations);
       const next = applyDelta(prior, delta);
-      // Protect unchanged criteria: a model cannot drop unrelated rules by omission.
       const touched = new Set(delta.map(op => op.op === "remove" ? op.key : ruleKey(op.rule)));
       for (const rule of prior) {
         const key = ruleKey(rule);
@@ -34,5 +33,5 @@ export async function proposeRefinementDraft(prompt: string, current: Rule[], pr
       }
       return { criteria: next, changed: JSON.stringify(next) !== JSON.stringify(prior), warnings: result.warnings };
     } catch { throw new AiFailure("SEMANTIC_UNVERIFIED", false); }
-  }, providers);
+  }, providers, { taskId: "search.refine.v1", ownerId });
 }

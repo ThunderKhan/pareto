@@ -1,6 +1,6 @@
 import { AiFailure, classifyHttpStatus, classifyProviderError } from "../contracts/errors";
 
-export type JsonProvider = (system: string, input: string, timeoutMs?: number) => Promise<{ raw: unknown; provider: string }>;
+export type JsonProvider = ((system: string, input: string, timeoutMs?: number) => Promise<{ raw: unknown; provider: string; inputTokens?: number; outputTokens?: number; modelId?: string }>) & { providerName?: "Gemini" | "Groq" };
 type ProviderConfig = Readonly<{ name: "Gemini" | "Groq"; key: string; model: string }>;
 
 function configured(): ProviderConfig[] {
@@ -59,7 +59,7 @@ function unwrap(payload: unknown, isGemini: boolean): unknown {
 }
 
 function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
-  return async (system, input, timeoutMs = 9000) => {
+  const call: JsonProvider = async (system, input, timeoutMs = 9000) => {
     const isGemini = name === "Gemini";
     const endpoint = isGemini
       ? `https://generativelanguage.googleapis.com/v1beta/models/\${encodeURIComponent(model)}:generateContent`
@@ -87,6 +87,13 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
     let doc: unknown;
     try { doc = await readBoundedJson(response); }
     catch (error) { throw error instanceof AiFailure ? error : new AiFailure("OUTPUT_INVALID", false); }
-    return { raw: unwrap(doc, isGemini), provider: name };
+    const record = (doc && typeof doc === "object") ? doc as Record<string, unknown> : {};
+    const usage = (isGemini ? record.usageMetadata : record.usage) as Record<string, unknown> | undefined;
+    const token = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 1000000 ? value : undefined;
+    const inputTokens = token(usage?.[isGemini ? "promptTokenCount" : "prompt_tokens"]);
+    const outputTokens = token(usage?.[isGemini ? "candidatesTokenCount" : "completion_tokens"]);
+    return { raw: unwrap(doc, isGemini), provider: name, modelId: model, inputTokens, outputTokens };
   };
+  call.providerName = name;
+  return call;
 }

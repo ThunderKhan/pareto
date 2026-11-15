@@ -6,7 +6,7 @@ import { availableProviders, type JsonProvider } from "../ai/providers/http";
 import { SearchError } from "./service";
 import type { Rule } from "./criteria";
 export type { JsonProvider } from "../ai/providers/http";
-/** Kept for compatibility with the pending ingestion PR #13. */
+/** Kept for compatibility with pending resume-ingestion PR #13. */
 export const configuredProviders = availableProviders;
 
 function asSearchError(error: unknown): never {
@@ -16,16 +16,13 @@ function asSearchError(error: unknown): never {
       throw new SearchError(503, "AI interpretation is unavailable. Enter criteria manually or select a reference profile.");
     throw new SearchError(503, "AI could not produce a verified draft. Try rephrasing or enter criteria manually.");
   }
-  // Do not echo raw provider errors, payloads or credentials.
   throw new SearchError(503, "AI interpretation could not be completed. Enter criteria manually or try again.");
 }
-
-export async function interpret(prompt: string, providers?: JsonProvider[]) {
-  try { return await proposeSearchDraft(prompt, providers); }
+export async function interpret(prompt: string, providers?: JsonProvider[], ownerId?: string) {
+  try { return await proposeSearchDraft(prompt, providers, ownerId); }
   catch (error) { return asSearchError(error); }
 }
-
-export async function interpretRefinement(prompt: string, criteria: Rule[], providers?: JsonProvider[]) {
-  try { return await proposeRefinementDraft(prompt, criteria, providers); }
+export async function interpretRefinement(prompt: string, criteria: Rule[], providers?: JsonProvider[], ownerId?: string) {
+  try { return await proposeRefinementDraft(prompt, criteria, providers, ownerId); }
   catch (error) { return asSearchError(error); }
 }
