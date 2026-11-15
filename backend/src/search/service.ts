@@ -124,6 +124,19 @@ export async function confirmSearch(ownerId: string, input: Confirmation) {
           id = (await tx.searchSession.create({ data: { ownerId, referenceCandidateId: referenceId, latestVersion: version } })).id;
         }
         await tx.searchRevision.create({ data: { sessionId: id, version, criteria, requestId, evaluatorVersion } });
+        // Notification delivery is a real in-app event, committed atomically
+        // with the confirmed search and subject to the recruiter's preferences.
+        const settings = await tx.recruiterSettings.findUnique({ where: { userId: ownerId } });
+        const kind = version === 1 ? "SEARCH_CONFIRMED" : "SEARCH_REFINED";
+        const enabled = version === 1 ? settings?.notifyConfirmed !== false : settings?.notifyRefined !== false;
+        if (enabled) {
+          await tx.recruiterNotification.create({
+            data: {
+              userId: ownerId, sessionId: id, version, kind,
+              title: version === 1 ? "Candidate search confirmed" : "Search refined to revision " + version,
+            },
+          });
+        }
         return { sessionId: id, version };
       });
       return { ...saved, criteria, referenceId, ...result };
