@@ -17,7 +17,9 @@
     "./ingestion/runner": "./src/ingestion/runner.ts",
     "./ingestion/review": "./src/ingestion/review.ts",
     "./ingestion/metrics": "./src/ingestion/metrics.ts",
-    "./ingestion/quality-eval": "./src/ingestion/quality-eval.ts"
+    "./ingestion/quality-eval": "./src/ingestion/quality-eval.ts",
+    "./ai/byok/server": "./src/ai/providers/byok.ts",
+    "./ai/usage/server": "./src/ai/observability/durable.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -34,7 +36,8 @@
     "ingest:evaluate:live": "node --import=tsx scripts/evaluate-ingestion-live.ts",
     "ai:evaluate:live": "node --import=tsx scripts/evaluate-search-live.ts",
     "semantic:index": "node --import=tsx scripts/index-candidates.ts",
-    "semantic:evaluate": "node --import=tsx scripts/evaluate-retrieval.ts"
+    "semantic:evaluate": "node --import=tsx scripts/evaluate-retrieval.ts",
+    "ingest:bench:offline": "node --import=tsx scripts/bench-ingestion-offline.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",
