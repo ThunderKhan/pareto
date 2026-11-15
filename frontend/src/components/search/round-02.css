@@ -1,0 +1,433 @@
+/* Round 02 / Search: compact conversational composer, candidate picker, review sheet.
+   The approved landing-page serif and workspace tokens supply the typography/colors. */
+.pareto-chat__composer-dock {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
+}
+.pareto-chat--fresh .pareto-chat__composer-dock {
+  width: 100%;
+  max-width: 850px;
+  align-self: center;
+}
+.pareto-chat__composer-dock .pareto-chat__composer {
+  width: 100%;
+  max-width: none;
+  gap: 9px;
+  padding: 13px 15px 12px;
+  border-radius: 22px;
+  box-shadow: 0 14px 34px #07152f0b;
+}
+.pareto-chat__composer .pareto-chat__composer-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.pareto-chat__composer-dock .pareto-chat__composer textarea {
+  display: block;
+  margin: 0;
+  padding: 4px 2px;
+  min-height: 30px;
+  max-height: 176px;
+  overflow-y: auto;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ws-ink);
+  background: transparent;
+  scrollbar-width: thin;
+}
+.pareto-chat__composer-dock .pareto-chat__composer textarea::placeholder {
+  color: var(--ws-subtle);
+}
+.pareto-chat__composer-dock .pareto-chat__composer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.pareto-chat__composer-dock .pareto-chat__composer-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+.pareto-chat__composer-dock .pareto-chat__composer-tools button {
+  min-height: 39px;
+  border: 1px solid var(--ws-edge);
+  border-radius: 11px;
+  padding: 8px 11px;
+  color: var(--ws-text);
+  font-size: 12px;
+}
+.pareto-chat__composer-dock .pareto-chat__composer-tools button:hover:not(:disabled) {
+  border-color: var(--ws-control);
+  background: var(--ws-hover);
+}
+.pareto-chat__composer-dock .pareto-chat__send {
+  min-height: 40px;
+  flex: none;
+  padding: 9px 13px;
+  border-radius: 11px;
+  white-space: nowrap;
+}
+.pareto-chat__composer-dock .pareto-chat__composer:focus-within {
+  border-color: var(--ws-blue);
+  box-shadow: 0 0 0 3px #467beb24, 0 14px 34px #07152f0b;
+}
+
+/* One viewport-constrained floating picker, outside the scrolling transcript. */
+.pareto-reference-picker {
+  position: absolute;
+  z-index: 24;
+  bottom: calc(100% + 12px);
+  left: 0;
+  width: min(440px, 100%);
+  max-height: min(370px, 58dvh);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 17px;
+  background: var(--ws-surface);
+  color: var(--ws-ink);
+  border: 1px solid var(--ws-edge);
+  border-radius: 17px;
+  box-shadow: var(--ws-shadow);
+}
+.pareto-reference-picker__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.pareto-reference-picker__header h2 {
+  margin: 0;
+  font: 400 24px/1.15 var(--ws-display);
+  letter-spacing: -.035em;
+  color: var(--ws-ink);
+}
+.pareto-reference-picker__header button,
+.pareto-draft-close {
+  border: 1px solid var(--ws-edge);
+  color: var(--ws-muted);
+  background: transparent;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+.pareto-reference-picker__header button:hover,
+.pareto-draft-close:hover { background: var(--ws-hover); color: var(--ws-ink); }
+.pareto-reference-picker__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border-radius: 11px;
+  border: 1px solid var(--ws-control);
+  padding: 0 11px;
+  color: var(--ws-muted);
+  background: var(--ws-panel);
+}
+.pareto-reference-picker__search:focus-within {
+  outline: 2px solid var(--ws-focus);
+  outline-offset: 2px;
+}
+.pareto-reference-picker__search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  padding: 11px 0;
+  background: transparent;
+  color: var(--ws-ink);
+  font-size: 14px;
+}
+.pareto-reference-picker__search input::placeholder { color: var(--ws-subtle); }
+.pareto-reference-picker__list {
+  min-height: 50px;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.pareto-reference-picker__list > p {
+  margin: 4px 0;
+  padding: 11px 2px;
+  color: var(--ws-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pareto-reference-picker__result {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 57px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--ws-ink);
+  background: transparent;
+  text-align: left;
+}
+.pareto-reference-picker__result:hover,
+.pareto-reference-picker__result:focus-visible { background: var(--ws-hover); }
+.pareto-reference-picker__result > span:last-child { display: grid; min-width: 0; gap: 3px; }
+.pareto-reference-picker__result strong { font-size: 13px; font-weight: 650; }
+.pareto-reference-picker__result small {
+  font-size: 12px; line-height: 1.4; color: var(--ws-muted);
+  overflow-wrap: anywhere;
+}
+.pareto-reference-picker__initial {
+  display: grid;
+  place-items: center;
+  flex: 0 0 37px;
+  height: 37px;
+  border-radius: 11px;
+  color: var(--ws-ink);
+  background: var(--ws-active);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+/* Desktop right drawer; mobile full-screen sheet. Always a single review surface. */
+.pareto-draft-layer { position: fixed; inset: 0; z-index: 90; }
+.pareto-draft-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: #07132280;
+  cursor: default;
+}
+.pareto-draft-dialog {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: min(580px, 100%);
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--ws-edge);
+  background: var(--ws-surface);
+  color: var(--ws-ink);
+  box-shadow: -18px 0 50px #060b1828;
+}
+.pareto-draft-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 27px 30px 20px;
+  border-bottom: 1px solid var(--ws-edge);
+}
+.pareto-draft-header .pareto-chat__caption { margin-bottom: 9px; }
+.pareto-draft-header h2 {
+  margin: 0;
+  font: 400 clamp(27px, 3vw, 35px)/1.12 var(--ws-display);
+  letter-spacing: -.045em;
+}
+.pareto-draft-form {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.pareto-draft-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 24px 30px;
+}
+.pareto-draft-intro {
+  margin: 0 0 18px;
+  color: var(--ws-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.pareto-draft-context, .pareto-draft-changes {
+  margin-bottom: 18px;
+  padding: 13px 15px;
+  border: 1px solid var(--ws-edge);
+  border-radius: 11px;
+  color: var(--ws-text);
+  background: var(--ws-panel);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.pareto-draft-context summary { cursor: pointer; font-weight: 650; }
+.pareto-draft-changes h3 { margin: 0 0 6px; font-size: 13px; }
+.pareto-draft-changes ul, .pareto-draft-scroll .pareto-chat__warnings {
+  margin: 0 0 18px;
+  padding: 10px 15px 10px 30px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.pareto-draft-footer {
+  border-top: 1px solid var(--ws-edge);
+  background: var(--ws-surface);
+  padding: 15px 30px 19px;
+}
+.pareto-draft-footer p { font-size: 12px; color: var(--ws-muted); margin: 0 0 11px; }
+.pareto-draft-actions { display: flex; justify-content: end; gap: 10px; }
+.pareto-draft-actions button {
+  min-height: 44px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.pareto-draft-discard {
+  color: var(--ws-text);
+  border: 1px solid var(--ws-control);
+  background: transparent;
+}
+.pareto-draft-discard:hover { background: var(--ws-hover); }
+.pareto-draft-confirm {
+  color: var(--ws-on-primary);
+  background: var(--ws-primary);
+  border: 0;
+}
+.pareto-draft-confirm:hover:not(:disabled) { background: var(--ws-primary-hover); }
+.pareto-draft-actions button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Use the same compact rule cards for manual, extracted and refined drafts. */
+.pareto-draft-dialog .search-editor { min-width: 0; margin: 0; padding: 0; border: 0; }
+.pareto-draft-dialog .search-editor > legend {
+  color: var(--ws-ink);
+  font-size: 16px;
+  margin: 0 0 4px;
+  font-weight: 650;
+}
+.search-editor__hint, .search-editor__empty {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--ws-muted);
+  line-height: 1.55;
+}
+.pareto-app .search-editor .search-rule--card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--ws-edge);
+  border-radius: 12px;
+  background: var(--ws-panel);
+}
+.search-rule__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.search-rule__number { font-size: 12px; font-weight: 700; color: var(--ws-ink); }
+.search-rule__remove {
+  display: flex; align-items: center; gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--ws-muted);
+  font-size: 12px;
+  padding: 7px;
+  border-radius: 7px;
+}
+.search-rule__remove:hover { background: var(--ws-hover); color: var(--ws-danger); }
+.search-rule__fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+.pareto-app .search-rule__fields > label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ws-text);
+}
+.pareto-app .search-rule__fields input, .pareto-app .search-rule__fields select {
+  min-width: 0;
+  width: 100%;
+  height: 42px;
+  padding: 8px 10px;
+  background: var(--ws-surface);
+  border: 1px solid var(--ws-control);
+  border-radius: 8px;
+  color: var(--ws-ink);
+  font-size: 14px;
+}
+.pareto-app .search-rule__fields input:focus-visible, .pareto-app .search-rule__fields select:focus-visible {
+  outline: 2px solid var(--ws-focus);
+  outline-offset: 1px;
+}
+.pareto-app .search-rule__exclude {
+  display: flex; align-items: center; gap: 9px;
+  width: fit-content;
+  font-size: 12px;
+  color: var(--ws-text);
+}
+.search-rule__exclude input { width: 17px; height: 17px; margin: 0; accent-color: var(--ws-blue); }
+.pareto-app .search-editor__add {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px dashed var(--ws-control);
+  border-radius: 10px;
+  color: var(--ws-text);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 650;
+}
+.pareto-app .search-editor__add:hover:not(:disabled) { background: var(--ws-hover); }
+
+.pareto-reference-picker :is(button,input):focus-visible,
+.pareto-draft-dialog :is(button,input,select,summary):focus-visible {
+  outline: 2px solid var(--ws-focus);
+  outline-offset: 2px;
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-reference-picker,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-draft-dialog,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-draft-footer {
+  background: var(--ws-surface);
+  color: var(--ws-ink);
+  border-color: var(--ws-edge);
+}
+@media (max-width: 600px) {
+  .pareto-chat__composer-dock .pareto-chat__composer { padding: 12px; }
+  .pareto-chat__composer-dock .pareto-chat__composer-actions { display: flex; flex-wrap: wrap; }
+  .pareto-chat__composer-dock .pareto-chat__composer-tools { flex: 1; }
+  .pareto-chat__composer-dock .pareto-chat__send {
+    width: auto;
+    min-height: 43px;
+    padding: 10px 12px;
+  }
+  .pareto-chat__composer-dock .pareto-chat__composer textarea { font-size: 16px; }
+  .pareto-reference-picker {
+    width: 100%;
+    left: 0;
+    max-height: min(380px, 54dvh);
+    padding: 14px;
+    bottom: calc(100% + 7px);
+  }
+  .pareto-draft-dialog { width: 100%; border-left: 0; }
+  .pareto-draft-header { padding: 19px 18px 14px; }
+  .pareto-draft-scroll { padding: 19px 18px; }
+  .pareto-draft-footer { padding: 12px 18px 16px; }
+}
+@media (max-width: 420px) {
+  .search-rule__fields { grid-template-columns: 1fr; }
+  .pareto-chat__composer-dock .pareto-chat__composer-tools button {
+    font-size: 11px;
+    padding: 8px 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-reference-picker *, .pareto-draft-dialog * { transition: none !important; animation: none !important; }
+}

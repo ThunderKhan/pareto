@@ -8,12 +8,12 @@
 .pareto-chat__suggestions { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin-top: 15px; }
 .pareto-chat__suggestions button { display: flex; gap: 12px; align-items: center; background: var(--ws-surface); border: 1px solid #dbe3ee; padding: 11px 13px; border-radius: 10px; color: #40556f; font-size: 12px; }
 .pareto-chat__suggestions button:hover { border-color: #9bb6df; background: #f4f8ff; }
-.pareto-search-orb { position: relative; display: inline-grid; place-items: center; width: 79px; height: 79px; border-radius: 50%; background: radial-gradient(circle at 30% 20%,#9ec2f5,#4778d2 44%,#152f61 87%); box-shadow: 0 14px 32px #17478226, inset 0 0 15px #b2d3ff55; overflow: hidden; }
-.pareto-search-orb__center { width: 22px; height: 22px; background: #c7e0ff55; border-radius: 50%; filter: blur(8px); }
-.pareto-search-orb i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #e5f1ff; opacity: .8; transform: rotate(calc(var(--dot) * 30deg)) translateX(25px); }
-.pareto-search-orb--working { width: 42px; height: 42px; box-shadow: 0 6px 18px #17478226; animation: pareto-orb-pulse 1.3s ease-in-out infinite; }
-.pareto-search-orb--working i { width: 3px; height: 3px; transform: rotate(calc(var(--dot) * 30deg)) translateX(13px); }
-@keyframes pareto-orb-pulse { 0%,100% { filter: brightness(.92); transform: scale(.96); } 50% { filter: brightness(1.2); transform: scale(1.04); } }
+.pareto-search-orb { display: inline-grid; place-items: center; flex: none; }
+.pareto-search-orb--working { position: relative; }
+.pareto-search-orb--working::after { content: ""; position: absolute; inset: -4px; pointer-events: none;
+  border: 2px solid transparent; border-top-color: var(--ws-blue); border-radius: 50%;
+  animation: pareto-mascot-working 1.4s linear infinite; }
+@keyframes pareto-mascot-working { to { transform: rotate(360deg); } }
 .pareto-chat__request { align-self: end; width: min(100%,670px); }
 .pareto-chat__request p { font-size: 14px; line-height: 1.6; padding: 15px 19px; margin: 5px 0 0; border-radius: 15px 15px 4px 15px; background: var(--ws-active); color: #213b5a; }
 .pareto-chat__caption { display: block; margin: 0; color: #365f9c; font-size: 10px !important; letter-spacing: .12em; text-transform: uppercase; font-weight: 750; }
@@ -65,7 +65,7 @@
  .pareto-chat__empty { padding-top: 36px; }
  .pareto-chat__suggestions { display: grid; }
 }
-@media (prefers-reduced-motion: reduce) { .pareto-search-orb--working { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .pareto-search-orb--working::after { animation: none; border-color: var(--ws-edge); } }
 
 
 /* Feedback 03: one compositor, two actual layout states. Keep the input mounted.
@@ -94,8 +94,7 @@
 .pareto-chat__composer { transition: box-shadow .2s ease, border-color .2s ease; }
 @media (max-height: 620px) {
   .pareto-chat--fresh { gap: 13px; }
-  .pareto-chat--fresh .pareto-search-orb { width: 46px; height: 46px; }
-  .pareto-chat--fresh .pareto-search-orb i { transform: rotate(calc(var(--dot) * 30deg)) translateX(14px); }
+  .pareto-chat--fresh .pareto-avatar--hero { width: 54px; height: 54px; padding: 3px; }
   .pareto-chat__empty h2 { font-size: clamp(1.7rem,4vw,2.6rem); }
   .pareto-chat__composer textarea { min-height: 42px; }
 }
@@ -106,4 +105,21 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .pareto-chat__composer { transition: none; }
+}
+
+
+/* Round 02 #02: one Parito avatar labels a grouped assistant response,
+   never individual candidate profiles or every nested results card. */
+.pareto-chat__assistant-turn {
+  display: grid; grid-template-columns: 40px minmax(0,1fr);
+  align-items: start; gap: 14px; width: 100%; min-width: 0;
+}
+.pareto-chat__assistant-icon { display: flex; justify-content: center; align-items: flex-start; min-width: 0; }
+.pareto-chat__assistant-content { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.pareto-chat__assistant-content > .search-panel { width: 100%; min-width: 0; }
+.pareto-chat__assistant-content > .pareto-chat__processing { min-height: 39px; }
+@media (max-width: 560px) {
+  .pareto-chat__assistant-turn { grid-template-columns: 32px minmax(0,1fr); gap: 9px; }
+  .pareto-chat__assistant-icon .pareto-avatar--chat { width: 32px; height: 32px; padding: 2px; }
+  .pareto-chat__assistant-content { gap: 12px; }
 }

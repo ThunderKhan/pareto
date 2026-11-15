@@ -17,6 +17,8 @@ The protected recruiter experience now includes:
 
 The supplied sidebar and morphing-orb component concepts were adapted to Pareto's existing typography, colors, Phosphor icons, and API flows. Full chat transcripts, PDF ingestion, bulk import, and hosted deployment are **not** implemented by this UI work.
 
+**AI engineering implementation roadmap:** [End-to-end AI Engineering Plan](docs/AI-ENGINEERING-IMPLEMENTATION-PLAN.md) — task modules, versioned prompts, prompt-injection security, provider budgets, evidence checks, evals and demo-release gates. This is a **planned workstream**, not a completed runtime system.
+
 ## Workspace
 
 - `frontend/`: Next.js App Router, TypeScript, Tailwind CSS, API route handlers and UI.

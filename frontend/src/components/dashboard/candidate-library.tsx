@@ -20,12 +20,14 @@ export default function CandidateLibrary() {
   const [items, setItems] = useState<Summary[]>([]);
   const [selected, setSelected] = useState<Profile | null>(null);
   const [busy, setBusy] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let live = true;
     void get<Summary[]>("?q=").then(value => { if (live) setItems(value); })
-      .catch(reason => { if (live) setError(reason instanceof Error ? reason.message : "Unable to load candidates."); });
+      .catch(reason => { if (live) setError(reason instanceof Error ? reason.message : "Unable to load candidates."); })
+      .finally(() => { if (live) setInitialLoading(false); });
     return () => { live = false; };
   }, []);
 
@@ -50,7 +52,7 @@ export default function CandidateLibrary() {
   }
 
   return <div className="pareto-candidates">
-    <section className="pareto-candidates__list" aria-label="Candidate library" aria-busy={busy}>
+    <section className="pareto-candidates__list" aria-label="Candidate library" aria-busy={busy || initialLoading}>
       <form className="pareto-candidates__search" onSubmit={search}>
         <label htmlFor="candidate-name-query">Search by name</label>
         <div>
@@ -61,17 +63,20 @@ export default function CandidateLibrary() {
         </div>
       </form>
       {error && <p role="alert" className="search-error">{error}</p>}
-      {busy && <p role="status">Loading candidates…</p>}
-      <p className="pareto-candidates__count">{items.length} profile{items.length === 1 ? "" : "s"} shown · up to 50 per search</p>
+      {(busy || initialLoading) && <p role="status">Loading candidates…</p>}
+      {!initialLoading && <p className="pareto-candidates__count" aria-live="polite">
+        {items.length} profile{items.length === 1 ? "" : "s"} shown · up to 50 per search
+      </p>}
       <div className="pareto-candidates__rows">
         {items.map(item => <button type="button" key={item.id} disabled={busy}
+          aria-pressed={selected?.id === item.id}
           className={"pareto-candidates__row" + (selected?.id === item.id ? " pareto-candidates__row--selected" : "")}
           onClick={() => void select(item.id)}>
           <span className="pareto-candidates__initial" aria-hidden="true">{item.displayName.charAt(0).toUpperCase()}</span>
           <span><strong>{item.displayName}</strong><small>{item.roleTitle ?? "Role not documented"} · {item.city ?? "City not documented"}</small></span>
           <ArrowRight size={17} aria-hidden="true"/>
         </button>)}
-        {!busy && !items.length && <div className="pareto-candidates__empty">
+        {!busy && !initialLoading && !items.length && <div className="pareto-candidates__empty">
           <UsersThree size={26} aria-hidden="true"/>
           <p>No candidates found. Try another name or confirm this workspace has imported profiles.</p>
         </div>}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell } from "@phosphor-icons/react";
 
 type Notice = { id: string; title: string; createdAt: string; readAt: string | null; sessionId: string };
@@ -18,6 +18,7 @@ async function describeFailure(response: Response, fallback: string): Promise<st
 }
 
 export default function NotificationsMenu() {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
   const [inbox, setInbox] = useState<Inbox | null>(null);
   const [error, setError] = useState("");
   const [working, setWorking] = useState(false);
@@ -37,6 +38,26 @@ export default function NotificationsMenu() {
     return () => window.removeEventListener("pareto:search-confirmed", load);
   }, [load]);
 
+  useEffect(() => {
+    const pointer = (event: PointerEvent) => {
+      const details = detailsRef.current;
+      if (details?.open && !details.contains(event.target as Node)) details.open = false;
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      const details = detailsRef.current;
+      if (!details?.open || event.key !== "Escape") return;
+      event.preventDefault();
+      details.open = false;
+      details.querySelector<HTMLElement>("summary")?.focus();
+    };
+    document.addEventListener("pointerdown", pointer);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", pointer);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
+
   async function mark(ids: string[]) {
     if (working || !ids.length) return;
     setWorking(true); setError("");
@@ -51,7 +72,7 @@ export default function NotificationsMenu() {
     finally { setWorking(false); }
   }
 
-  return <details className="pareto-notifications" onToggle={event => {
+  return <details ref={detailsRef} className="pareto-notifications" onToggle={event => {
     if (event.currentTarget.open) void load();
   }}>
     <summary aria-label={inbox?.unread ? `Notifications, ${inbox.unread} unread` : "Notifications"}>
@@ -68,7 +89,9 @@ export default function NotificationsMenu() {
       {!inbox && !error && <p role="status">Loading notifications…</p>}
       {inbox && (inbox.items.length ? <ul>{inbox.items.map(item => <li key={item.id}
         className={item.readAt ? "" : "pareto-notifications__item--unread"}>
-        <Link href={"/dashboard/search?session=" + encodeURIComponent(item.sessionId)}>{item.title}</Link>
+        <Link href={"/dashboard/search?session=" + encodeURIComponent(item.sessionId)} onClick={() => {
+          if (detailsRef.current) detailsRef.current.open = false;
+        }}>{item.title}</Link>
         <small>{new Date(item.createdAt).toLocaleString()}</small>
         {!item.readAt && <button type="button" disabled={working}
           onClick={() => void mark([item.id])}>Mark read</button>}

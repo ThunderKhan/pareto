@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   CaretDown, House, MagnifyingGlass, SidebarSimple,
   UserCircle, UsersThree, X,
@@ -14,6 +14,8 @@ import ParitoAvatar from "./parito-avatar";
 import "./workspace-tokens.css";
 import "./workspace-dark.css";
 import "./dashboard.css";
+import "./audit-polish.css";
+import "./round-03.css";
 
 type RecruiterIdentity = {
   email: string;
@@ -38,6 +40,7 @@ export default function DashboardShell({ children, user }: {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const accountRef = useRef<HTMLDetailsElement>(null);
   const [recent, setRecent] = useState<{ id: string; title: string; version: number }[]>([]);
   useEffect(() => {
     let mounted = true;
@@ -64,9 +67,26 @@ export default function DashboardShell({ children, user }: {
     return () => window.removeEventListener("keydown", onEscape);
   }, [mobileOpen]);
 
-  const current = navigation.find(item => item.href === path) ??
-    navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
-    navigation[0];
+  // Keep the account control usable without a mouse and prevent a stranded popup.
+  useEffect(() => {
+    const outside = (event: PointerEvent) => {
+      const menu = accountRef.current;
+      if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      const menu = accountRef.current;
+      if (!menu?.open || event.key !== "Escape") return;
+      event.preventDefault();
+      menu.open = false;
+      menu.querySelector<HTMLElement>("summary")?.focus();
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
 
   return <div className={"pareto-app" + (collapsed ? " pareto-app--collapsed" : "") + (path === "/dashboard/search" ? " pareto-app--search" : "")}>
     {mobileOpen && <button className="pareto-sidebar-backdrop" type="button"
@@ -74,7 +94,8 @@ export default function DashboardShell({ children, user }: {
     <aside id="pareto-navigation" className={"pareto-sidebar" + (mobileOpen ? " pareto-sidebar--open" : "")}
       aria-label="Recruiter navigation">
       <div className="pareto-sidebar__header">
-        <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="pareto-sidebar__brand" aria-label="Pareto workspace">
+        <Link href="/dashboard" onClick={() => setMobileOpen(false)}
+          className="pareto-sidebar__brand" aria-label="Pareto workspace">
           <Image src="/brand/pareto-mark.svg" alt="" width={34} height={34} unoptimized />
           <span>pareto<span className="pareto-brand-dot">.</span></span>
         </Link>
@@ -90,6 +111,7 @@ export default function DashboardShell({ children, user }: {
           {navigation.map(({label,href,Icon}) => {
             const active = href === "/dashboard" ? path === href : path === href || path.startsWith(href + "/");
             return <Link key={href} href={href} title={collapsed ? label : undefined}
+              aria-label={collapsed ? label : undefined}
               aria-current={active ? "page" : undefined} onClick={() => setMobileOpen(false)}
               className={"pareto-nav__link" + (active ? " pareto-nav__link--active" : "")}>
               <Icon size={19} weight={active ? "fill" : "regular"} aria-hidden="true"/>
@@ -106,7 +128,7 @@ export default function DashboardShell({ children, user }: {
           </Link>)}
         </div>}
       </div>
-      <details className="pareto-account">
+      <details ref={accountRef} className="pareto-account">
         <summary aria-label={"Account menu for " + identityName(user)}>
           <ParitoAvatar />
           <span className="pareto-account__identity">
@@ -116,7 +138,10 @@ export default function DashboardShell({ children, user }: {
           <CaretDown size={16} className="pareto-account__caret" aria-hidden="true" />
         </summary>
         <div className="pareto-account__actions">
-          <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)}><UserCircle size={17}/> Account settings</Link>
+          <Link href="/dashboard/profile" onClick={() => {
+            setMobileOpen(false);
+            if (accountRef.current) accountRef.current.open = false;
+          }}><UserCircle size={17}/> Account settings</Link>
           <SignOutButton />
         </div>
       </details>
@@ -128,9 +153,6 @@ export default function DashboardShell({ children, user }: {
             aria-controls="pareto-navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}>
             <SidebarSimple size={22}/>
           </button>
-          <span className="pareto-topbar__crumb">Workspace</span>
-          <span className="pareto-topbar__slash" aria-hidden="true">/</span>
-          <strong>{path === "/dashboard/profile" ? "Account settings" : current.label}</strong>
         </div>
         <div className="pareto-topbar__right">
           <NotificationsMenu />

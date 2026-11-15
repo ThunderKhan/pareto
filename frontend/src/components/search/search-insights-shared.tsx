@@ -45,6 +45,13 @@ export function previewError(error: unknown): string {
   return "The request could not be completed. Check your connection and retry.";
 }
 
+/** Route-local reload preserves session query and fetches its latest confirmed revision. */
+export function ReloadSearch({ status }: { status: number | null }) {
+  if (status !== 409) return null;
+  return <button type="button" className="insight-reload"
+    onClick={() => window.location.reload()}>Reload latest search</button>;
+}
+
 export function ruleSummary(rule: Rule) {
   const field = labels[rule.field];
   let detail: string;
@@ -57,7 +64,25 @@ export function ruleSummary(rule: Rule) {
     case "skill": detail = (rule.exclude ? "exclude " : "") + rule.value; break;
     default: detail = rule.value;
   }
-  return field + " · " + detail + " (" + rule.mode + ")";
+  return field + " · " + detail + " (" + (rule.mode === "required" ? "Required" : "Preferred") + ")";
+}
+
+/** A change to the recruiter's numeric boundary, never a changed candidate fact. */
+export function exactBoundaryChange(before: Rule, after: Rule): string | null {
+  if (before.field === "notice" && after.field === "notice") {
+    return "Joining window: " + before.maxDays + " → " + after.maxDays + " days";
+  }
+  if (before.field === "experience" && after.field === "experience") {
+    if (before.minMonths !== after.minMonths) {
+      return "Minimum experience: " + (before.minMonths ?? "none") +
+        " → " + (after.minMonths ?? "none") + " months";
+    }
+    if (before.maxMonths !== after.maxMonths) {
+      return "Maximum experience: " + (before.maxMonths ?? "none") +
+        " → " + (after.maxMonths ?? "none") + " months";
+    }
+  }
+  return null;
 }
 
 export function actualText(value: unknown): string {

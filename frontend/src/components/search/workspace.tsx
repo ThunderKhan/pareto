@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowClockwise, PencilSimple, Sparkle, UsersThree } from "@phosphor-icons/react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { ArrowClockwise, MagnifyingGlass, PencilSimple, Sparkle, UsersThree, X } from "@phosphor-icons/react";
 import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
 import CriteriaEditor, { labels } from "./criteria-editor";
 import SearchOrb from "./search-orb";
+import ParitoAvatar from "@/components/dashboard/parito-avatar";
 import SearchHealthPanel from "./search-health";
 import WhatIfPanel from "./what-if";
 import NearMatchExplanation from "./near-match";
 import "./search.css";
 import "./insights.css";
+import "./round-02.css";
+import "./round-03-motion.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -65,7 +68,18 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   const [followup, setFollowup] = useState("");
   const [lookupName, setLookupName] = useState("");
   const [lookup, setLookup] = useState<Lookup>();
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupError, setLookupError] = useState("");
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [referenceClosing, setReferenceClosing] = useState(false);
+  const referenceCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const draftCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draftClosing, setDraftClosing] = useState(false);
+  const referenceTriggerRef = useRef<HTMLButtonElement>(null);
+  const referenceInputRef = useRef<HTMLInputElement>(null);
+  const referencePanelRef = useRef<HTMLElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const draftDialogRef = useRef<HTMLElement>(null);
   const [draft, setDraft] = useState<Draft>();
   const [results, setResults] = useState<Results>();
   const [offset, setOffset] = useState(0);
@@ -74,6 +88,125 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   const [lastRequest, setLastRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [busyLabel, setBusyLabel] = useState("Working…");
+  const isDraftOpen = Boolean(draft);
+  const composerText = results ? followup : prompt;
+  const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Exit animations keep overlays mounted until they finish; all timers are
+  // cancelled on unmount or when a new panel is opened.
+  useEffect(() => () => {
+    if (referenceCloseTimer.current !== null) clearTimeout(referenceCloseTimer.current);
+    if (draftCloseTimer.current !== null) clearTimeout(draftCloseTimer.current);
+  }, []);
+
+  function closeReference() {
+    if (referenceCloseTimer.current !== null) return;
+    if (prefersReducedMotion()) {
+      setReferenceOpen(false);
+      setReferenceClosing(false);
+      return;
+    }
+    setReferenceClosing(true);
+    referenceCloseTimer.current = setTimeout(() => {
+      referenceCloseTimer.current = null;
+      setReferenceOpen(false);
+      setReferenceClosing(false);
+    }, 220);
+  }
+
+  function closeDraft() {
+    if (draftCloseTimer.current !== null) return;
+    // Closing an unconfirmed draft must never leave a ghost user request.
+    if (!results) setLastRequest("");
+    if (prefersReducedMotion()) {
+      setDraft(undefined);
+      setDraftClosing(false);
+      return;
+    }
+    setDraftClosing(true);
+    draftCloseTimer.current = setTimeout(() => {
+      draftCloseTimer.current = null;
+      setDraft(undefined);
+      setDraftClosing(false);
+    }, 230);
+  }
+
+  // Keep the same textarea mounted while the session moves from centered to active.
+  useEffect(() => {
+    const input = composerRef.current;
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 176) + "px";
+  }, [composerText, results]);
+
+  // The candidate picker reads the real owner-scoped API and cancels stale lookups.
+  useEffect(() => {
+    const name = lookupName.trim();
+    if (!referenceOpen || name.length < 2) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setLookupBusy(true);
+      void fetch("/api/v1/search?q=" + encodeURIComponent(name), {
+        cache: "no-store", signal: controller.signal,
+      }).then(async response => {
+        const data: unknown = await response.json();
+        if (!response.ok) throw new Error(
+          data && typeof data === "object" && "error" in data && typeof data.error === "string"
+            ? data.error : "Candidate lookup failed.",
+        );
+        if (!controller.signal.aborted) setLookup(data as Lookup);
+      }).catch(error => {
+        if (!controller.signal.aborted) setLookupError(
+          error instanceof Error ? error.message : "Candidate lookup is unavailable.",
+        );
+      }).finally(() => { if (!controller.signal.aborted) setLookupBusy(false); });
+    }, 230);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [lookupName, referenceOpen]);
+
+  // Dismiss a lightweight picker by Escape or pointer outside; restore its trigger.
+  useEffect(() => {
+    if (!referenceOpen) return;
+    referenceInputRef.current?.focus();
+    const outside = (event: PointerEvent) => {
+      if (referencePanelRef.current?.contains(event.target as Node) ||
+          referenceTriggerRef.current?.contains(event.target as Node)) return;
+      closeReference();
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeReference();
+      referenceTriggerRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [referenceOpen]);
+
+  // Dialog focus is trapped and returned to the element that opened the review.
+  useEffect(() => {
+    if (!isDraftOpen) return;
+    const origin = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = draftDialogRef.current;
+    dialog?.querySelector<HTMLElement>(".search-rule__fields select, .search-editor__add, .pareto-draft-close")?.focus();
+    const keys = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); if (!busy) closeDraft(); return; }
+      if (event.key !== "Tab" || !dialog) return;
+      const nodes = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(node => node.getClientRects().length > 0);
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener("keydown", keys);
+    return () => { document.removeEventListener("keydown", keys); if (origin?.isConnected) origin.focus(); };
+  }, [isDraftOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,7 +234,37 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   }
 
   function openDraft(criteria: Rule[], warnings: string[] = [], options: Partial<Draft> = {}) {
+    if (draftCloseTimer.current !== null) {
+      clearTimeout(draftCloseTimer.current);
+      draftCloseTimer.current = null;
+    }
+    if (referenceCloseTimer.current !== null) {
+      clearTimeout(referenceCloseTimer.current);
+      referenceCloseTimer.current = null;
+    }
+    setDraftClosing(false);
+    setReferenceClosing(false);
+    setReferenceOpen(false);
     setDraft({ criteria: criteria.map(rule => ({ ...rule })), warnings, requestId: crypto.randomUUID(), ...options });
+  }
+
+  function discardDraft() {
+    if (!busy) closeDraft();
+  }
+
+  function toggleReference() {
+    if (referenceOpen) { closeReference(); return; }
+    if (referenceCloseTimer.current !== null) {
+      clearTimeout(referenceCloseTimer.current);
+      referenceCloseTimer.current = null;
+    }
+    setReferenceClosing(false);
+    setDraft(undefined);
+    setLookupName("");
+    setLookup(undefined);
+    setLookupError("");
+    setLookupBusy(false);
+    setReferenceOpen(true);
   }
 
   function fromReference(id: string) {
@@ -156,7 +319,20 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         sessionId: draft.active?.sessionId, expectedVersion: draft.active?.version,
         referenceId: draft.reference?.id,
       });
-      setDraft(undefined); setResults(data); setOffset(0);
+      // Keep the review visible for its closing transition, while updating
+      // the newly confirmed search underneath. The saved revision is already real.
+      setResults(data); setOffset(0);
+      if (prefersReducedMotion()) {
+        setDraft(undefined);
+      } else {
+        setDraftClosing(true);
+        if (draftCloseTimer.current !== null) clearTimeout(draftCloseTimer.current);
+        draftCloseTimer.current = setTimeout(() => {
+          draftCloseTimer.current = null;
+          setDraft(undefined);
+          setDraftClosing(false);
+        }, 230);
+      }
       setFollowup(""); setPrompt(""); setLastRequest("");
       window.history.replaceState(null, "", "?session=" + encodeURIComponent(data.sessionId));
       window.dispatchEvent(new Event("pareto:search-confirmed"));
@@ -176,7 +352,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       (after ? describe(after) + " (" + after.mode + ")" : "Removed")] : [];
   });
   const similarityOnly = Boolean(results?.referenceId) && results?.criteria.every(rule => rule.mode === "preferred");
-  const conversationStarted = Boolean(results || draft || lastRequest || busy || referenceOpen || alert || message || initialSession || initialReference);
+  const conversationStarted = Boolean(results || draft || lastRequest || busy || alert || message || initialSession || initialReference);
 
   return <div className={"pareto-chat " + (conversationStarted ? "pareto-chat--active" : "pareto-chat--fresh")} aria-busy={busy}>
     <div className="pareto-chat__timeline">
@@ -188,25 +364,17 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <span className="pareto-chat__caption">YOUR REQUEST</span>
         <p>{lastRequest}</p>
       </div>}
+      {(busy || message || alert || results) && <div className="pareto-chat__assistant-turn"
+        role="group" aria-label="Pareto response">
+        <span className="pareto-chat__assistant-icon" aria-hidden="true">
+          {busy ? <SearchOrb working /> : <ParitoAvatar size="chat" />}
+        </span>
+        <div className="pareto-chat__assistant-content">
       {busy && <div className="pareto-chat__processing" role="status">
-        <SearchOrb working /> <span>{busyLabel}</span>
+        <span>{busyLabel}</span>
       </div>}
       {message && <p className="pareto-chat__notice" role="status">{message}</p>}
       {alert && <p className="search-error" role="alert">{alert}</p>}
-      {draft && <form className="search-panel pareto-chat__draft" onSubmit={confirm}>
-        <p className="pareto-chat__caption">RECRUITER REVIEW REQUIRED</p>
-        <h2>Review draft criteria</h2>
-        <p>Candidate results stay the same until you confirm this draft. Required and preferred criteria are evaluated separately.</p>
-        {draft.reference && <details><summary>Reference profile · {draft.reference.displayName}</summary><ProfileFacts profile={draft.reference}/></details>}
-        {draft.warnings.length > 0 && <ul className="pareto-chat__warnings">{draft.warnings.map((warning,index) => <li key={index}>{warning}</li>)}</ul>}
-        {changes.length > 0 && <ul aria-label="Proposed changes">{changes.map(change => <li key={change}>{change}</li>)}</ul>}
-        <CriteriaEditor rules={draft.criteria} disabled={busy}
-          onChange={criteria => setDraft({ ...draft, criteria, requestId: crypto.randomUUID() })}/>
-        <div className="search-actions">
-          <button className="button button--dark" disabled={busy || !draft.criteria.length}>Confirm Search</button>
-          <button type="button" disabled={busy} onClick={() => setDraft(undefined)}>Discard draft</button>
-        </div>
-      </form>}
       {results && <section className="search-panel pareto-chat__results" aria-label="Confirmed results">
         <div className="pareto-chat__results-head">
           <div>
@@ -229,7 +397,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             sessionId={results.sessionId} version={results.version}
             onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
           <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
-            sessionId={results.sessionId} version={results.version} criteria={results.criteria}
+            sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
             onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
         </div>
         {results.total === 0 && <p>No candidate profiles are available in this workspace.</p>}
@@ -266,38 +434,60 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
           <span>{offset + 1}–{offset + results.results.length} of {results.total}</span>
         </div>}
       </section>}
-      {referenceOpen && <form className="search-panel pareto-chat__reference" onSubmit={event => {
-        event.preventDefault();
-        void run("Finding reference candidates…",async () => {
-          setLookup(await api<Lookup>("?q=" + encodeURIComponent(lookupName.trim())));
-        });
-      }}>
-        <div className="pareto-chat__reference-head">
-          <div><p className="pareto-chat__caption">REFERENCE-BASED SEARCH</p><h2>Find candidates like someone</h2></div>
-          <button type="button" onClick={() => setReferenceOpen(false)}>Close</button>
         </div>
-        <label htmlFor="reference-name">Find candidates like someone</label>
-        <input id="reference-name" maxLength={100} value={lookupName} onChange={event => setLookupName(event.target.value)}
-          placeholder="Search by candidate name" />
-        <button className="button button--dark" disabled={busy}><UsersThree size={17}/> Find reference profiles</button>
-        {lookup && (lookup.length ? <ul>{lookup.map(candidate => <li key={candidate.id}>
-          <button type="button" disabled={busy} onClick={() => fromReference(candidate.id)}>
-            {candidate.displayName} · {candidate.roleTitle ?? "Role not documented"} · {candidate.city ?? "City not documented"}
-          </button></li>)}</ul> : <p>No profiles found for that name.</p>)}
-      </form>}
+      </div>}
     </div>
+    <div className="pareto-chat__composer-dock">
+      {referenceOpen && <section id="pareto-reference-picker"
+        className={"pareto-reference-picker" + (referenceClosing ? " pareto-reference-picker--closing" : "")} role="dialog"
+        aria-label="Find a reference candidate" ref={referencePanelRef}>
+        <header className="pareto-reference-picker__header">
+          <h2>Find a reference candidate</h2>
+          <button type="button" onClick={() => {
+            closeReference(); referenceTriggerRef.current?.focus();
+          }} aria-label="Close reference picker"><X size={18} aria-hidden="true"/></button>
+        </header>
+        <label className="pareto-reference-picker__search" htmlFor="reference-name">
+          <MagnifyingGlass size={19} aria-hidden="true"/>
+          <span className="sr-only">Search by candidate name</span>
+          <input ref={referenceInputRef} id="reference-name" type="search" maxLength={100}
+            value={lookupName} onChange={event => {
+              setLookupName(event.target.value); setLookup(undefined); setLookupError("");
+            }} onKeyDown={event => {
+              if (event.key === "ArrowDown") {
+                const first = referencePanelRef.current?.querySelector<HTMLButtonElement>(".pareto-reference-picker__result");
+                if (first) { event.preventDefault(); first.focus(); }
+              }
+            }} placeholder="Search candidates by name…" autoComplete="off"/>
+        </label>
+        <div className="pareto-reference-picker__list">
+          {lookupName.trim().length < 2 && <p>Enter at least two characters to find a profile.</p>}
+          {lookupName.trim().length >= 2 && lookupBusy && <p role="status">Searching candidate profiles…</p>}
+          {lookupError && <p role="alert">{lookupError}</p>}
+          {!lookupBusy && !lookupError && lookupName.trim().length >= 2 && lookup?.length === 0 &&
+            <p role="status">No matching profiles. Try another name.</p>}
+          {!lookupBusy && !lookupError && lookup?.map(candidate =>
+            <button type="button" className="pareto-reference-picker__result" key={candidate.id}
+              disabled={busy} onClick={() => fromReference(candidate.id)}>
+              <span className="pareto-reference-picker__initial" aria-hidden="true">{candidate.displayName.charAt(0)}</span>
+              <span><strong>{candidate.displayName}</strong>
+                <small>{candidate.roleTitle ?? "Role not documented"} · {candidate.city ?? "City not documented"}</small>
+              </span>
+            </button>)}
+        </div>
+      </section>}
     <form className="pareto-chat__composer" onSubmit={submitComposer} aria-label="Candidate search composer">
-      <label htmlFor={results ? "search-followup" : "search-brief"}>
+      <label className="pareto-chat__composer-label" htmlFor={results ? "search-followup" : "search-brief"}>
         {results ? "Refine this search" : "Hiring brief"}
       </label>
-      <textarea id={results ? "search-followup" : "search-brief"} value={results ? followup : prompt}
+      <textarea ref={composerRef} id={results ? "search-followup" : "search-brief"} value={results ? followup : prompt}
         onChange={event => results ? setFollowup(event.target.value) : setPrompt(event.target.value)}
-        onKeyDown={keydown} required minLength={3} maxLength={2000} rows={2}
-        placeholder={results ? "Only candidates who can join within 30 days…" :
-          "Find a Senior Java Developer in Hyderabad with Java, Spring Boot, AWS and 6–10 years of experience…"} />
+        onKeyDown={keydown} required minLength={3} maxLength={2000} rows={1}
+        placeholder={results ? "Refine your search…" : "Describe the candidate you're looking for…"} />
       <div className="pareto-chat__composer-actions">
         <div className="pareto-chat__composer-tools">
-          <button type="button" disabled={busy} onClick={() => setReferenceOpen(value => !value)}>
+          <button ref={referenceTriggerRef} type="button" disabled={busy} aria-expanded={referenceOpen}
+            aria-controls="pareto-reference-picker" onClick={toggleReference}>
             <UsersThree size={17} aria-hidden="true"/> Reference
           </button>
           <button type="button" disabled={busy} onClick={() => results ?
@@ -311,5 +501,46 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         </button>
       </div>
     </form>
+    </div>
+    {draft && <div className={"pareto-draft-layer" + (draftClosing ? " pareto-draft-layer--closing" : "")}>
+      <button type="button" tabIndex={-1} className="pareto-draft-backdrop"
+        aria-label="Dismiss criteria review" onClick={discardDraft}/>
+      <section className="pareto-draft-dialog" ref={draftDialogRef} role="dialog"
+        aria-modal="true" aria-labelledby="pareto-draft-title">
+        <header className="pareto-draft-header">
+          <div><p className="pareto-chat__caption">RECRUITER REVIEW REQUIRED</p>
+            <h2 id="pareto-draft-title">Review draft criteria</h2></div>
+          <button type="button" className="pareto-draft-close" onClick={discardDraft}
+            aria-label="Close criteria review"><X size={20} aria-hidden="true"/></button>
+        </header>
+        <form className="pareto-draft-form" onSubmit={confirm}>
+          <div className="pareto-draft-scroll">
+            <p className="pareto-draft-intro">Review what is required and what is preferred. The current search stays unchanged until you confirm.</p>
+            {draft.reference && <details className="pareto-draft-context">
+              <summary>Reference profile · {draft.reference.displayName}</summary><ProfileFacts profile={draft.reference}/>
+            </details>}
+            {draft.warnings.length > 0 && <ul className="pareto-chat__warnings">
+              {draft.warnings.map((warning,index) => <li key={index}>{warning}</li>)}
+            </ul>}
+            {changes.length > 0 && <div className="pareto-draft-changes">
+              <h3>Proposed changes</h3>
+              <ul>{changes.map(change => <li key={change}>{change}</li>)}</ul>
+            </div>}
+            <CriteriaEditor rules={draft.criteria} disabled={busy}
+              onChange={criteria => setDraft({ ...draft, criteria, requestId: crypto.randomUUID() })}/>
+          </div>
+          <footer className="pareto-draft-footer">
+            <p>Changes are saved only when you confirm.</p>
+            <div className="pareto-draft-actions">
+              <button type="button" disabled={busy} className="pareto-draft-discard"
+                onClick={discardDraft}>Discard draft</button>
+              <button type="submit" disabled={busy || !draft.criteria.length} className="pareto-draft-confirm">
+                Confirm Search
+              </button>
+            </div>
+          </footer>
+        </form>
+      </section>
+    </div>}
   </div>;
 }

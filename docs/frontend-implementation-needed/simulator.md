@@ -226,3 +226,11 @@ This **document is the frontend to-do specification**, not a claim that the UI e
 ## Delivered UI
 
 Implemented in `frontend/src/components/search/what-if.tsx`. A separate editable criteria copy drives read-only simulation; the side-by-side comparison renders measured counts, changes, warnings and candidate-level evidence. Editing invalidates its preview. Apply for review only opens the existing confirmation editor; Discard never writes a revision. The original acceptance checklist above is retained as the feature specification.
+
+## Frontend 04 completion — measured transitions and stale recovery
+
+- The What-If panel renders the entire backend-provided 3×3 status transition matrix, rather than only the four capped candidate groups.
+- New arrivals, lost exact matches and net count changes are explicitly distinct. Preview groups are labeled to avoid falsely implying all candidates retained their original status.
+- Current confirmed count tiles appear before simulation and switch to the same-snapshot counts returned by the simulator afterward.
+- HTTP 409 preview failures provide a **Reload latest search** control; scenario review opens the existing editable draft and never persists until **Confirm Search**.
+- Authenticated browser acceptance still needs real dedicated recruiter credentials; CI checks alone cannot establish that outcome.

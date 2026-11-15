@@ -59,6 +59,10 @@ test("confirmed search previews are measured, review-only and discardable", asyn
   await scenario.getByLabel("Maximum (days)").fill("45");
   await scenario.getByRole("button", { name: "Run simulation" }).click();
   await expect(scenario.getByText(/3 → 4/)).toBeVisible();
+  const matrix = scenario.getByRole("table", { name: "Complete candidate status transitions" });
+  await expect(matrix).toBeVisible();
+  await expect(matrix.getByRole("row")).toHaveCount(4);
+  await expect(scenario.getByText(/Newly eligible: 1 · No longer eligible: 0/)).toBeVisible();
   await expect(scenario).toContainText("Meera Iyer");
   await scenario.getByRole("button", { name: "Apply for review" }).click();
   await expect(page.getByRole("heading", { name: "Review draft criteria" })).toBeVisible();
