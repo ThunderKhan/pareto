@@ -1,6 +1,6 @@
 import { database } from "../search/db";
 import { validateResume } from "./parse";
-import { supabaseResumeStorage, type ResumeStorage } from "./storage";
+import { supabaseResumeStorage, type ResumeStorage, StorageFailure } from "./storage";
 
 /**
  * Recovery of metadata created just before a process crash in the middle
@@ -28,9 +28,11 @@ export async function recoverInterruptedUploads(
       const bytes = await storage.read(doc.storageKey);
       const checked = validateResume(doc.fileName, doc.mimeType, bytes);
       valid = checked.sha256 === doc.sha256;
-    } catch {
-      // Bucket inaccessible, file never reached Storage, or damaged bytes.
-      // Fail closed rather than assuming a valid upload exists.
+    } catch (error) {
+      // Never misclassify a temporary Storage outage or private bucket
+      // misconfiguration as a permanently missing source. Retry on next sweep.
+      if (error instanceof StorageFailure) continue;
+      // Missing object / invalid source under an otherwise available adapter.
     }
     if (!valid) {
       const updated = await db.resumeDocument.updateMany({
