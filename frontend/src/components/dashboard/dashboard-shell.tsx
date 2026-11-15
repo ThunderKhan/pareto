@@ -94,7 +94,7 @@ export default function DashboardShell({ children, user }: {
     <aside id="pareto-navigation" className={"pareto-sidebar" + (mobileOpen ? " pareto-sidebar--open" : "")}
       aria-label="Recruiter navigation">
       <div className="pareto-sidebar__header">
-        <Link href="/dashboard" onClick={() => setMobileOpen(false)} tabIndex={collapsed ? -1 : undefined}
+        <Link href="/dashboard" onClick={() => setMobileOpen(false)}
           className="pareto-sidebar__brand" aria-label="Pareto workspace">
           <Image src="/brand/pareto-mark.svg" alt="" width={34} height={34} unoptimized />
           <span>pareto<span className="pareto-brand-dot">.</span></span>

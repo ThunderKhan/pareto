@@ -12,7 +12,6 @@
 /* Desktop collapse never changes the layout model (or display:none on text).
    Fade the labels while the actual grid column resizes. */
 @media (min-width: 881px) {
-  .pareto-sidebar { overflow-x: clip; }
   .pareto-sidebar__header {
     padding-inline: 0;
     gap: 8px;
@@ -22,15 +21,19 @@
     max-width: 180px;
     overflow: hidden;
     opacity: 1;
+    visibility: visible;
     white-space: nowrap;
     transition: max-width 220ms cubic-bezier(.22, 1, .36, 1),
-                opacity 150ms ease;
+                opacity 150ms ease, visibility 0s linear 0s;
   }
   .pareto-sidebar__brand img { flex: none; }
   .pareto-app--collapsed .pareto-sidebar__brand {
     max-width: 0;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
+    transition: max-width 220ms cubic-bezier(.22, 1, .36, 1),
+                opacity 150ms ease, visibility 0s linear 220ms;
   }
   /* The legacy collapsed layout used display:none, which snapped text away
      before the column could animate. Keep the text clipped with its parent. */
@@ -69,9 +72,14 @@
     transition: opacity 145ms ease, max-height 250ms ease,
                 margin 250ms ease, visibility 0s linear 0s;
   }
-  .pareto-nav__link { justify-content: flex-start; }
+  .pareto-nav__link {
+    justify-content: flex-start;
+    transition: gap 240ms cubic-bezier(.22, 1, .36, 1),
+                padding 240ms cubic-bezier(.22, 1, .36, 1), background 150ms ease;
+  }
   .pareto-app--collapsed .pareto-nav__link {
     justify-content: flex-start;
+    gap: 0;
   }
   .pareto-account__identity {
     display: grid;
@@ -124,13 +132,15 @@
   .pareto-app--collapsed .pareto-nav__note { display: flex; max-height: 0; }
   .pareto-app--collapsed .pareto-account summary {
     justify-content: flex-start;
-    transition: padding 250ms cubic-bezier(.22, 1, .36, 1);
+    gap: 0;
+    transition: padding 250ms cubic-bezier(.22, 1, .36, 1),
+                gap 250ms cubic-bezier(.22, 1, .36, 1);
   }
   .pareto-sidebar__toggle--desktop,
   .pareto-nav__link,
   .pareto-account summary {
-    transition: padding 240ms cubic-bezier(.22,1,.36,1), background 150ms ease,
-                color 150ms ease;
+    transition: padding 240ms cubic-bezier(.22,1,.36,1), gap 240ms cubic-bezier(.22,1,.36,1),
+                background 150ms ease, color 150ms ease;
   }
 }
 @media (max-width: 880px) {
