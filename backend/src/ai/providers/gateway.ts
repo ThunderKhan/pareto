@@ -8,7 +8,13 @@ import { durableQuotaEnabled, reserveDurableAiAttempt } from "./durable-quota";
 import { providerCircuitBreaker } from "./circuit-breaker";
 import { availableProviders, type JsonProvider } from "./http";
 
-const TOTAL_DEADLINE_MS = 15000;
+/** Operator-adjustable request budget: defaults retain previous gateway behavior. */
+function timeoutMs(name: string, fallback: number, min: number, max: number): number {
+  const raw = process.env[name];
+  if (raw === undefined) return fallback;
+  const value = Number(raw);
+  return Number.isInteger(value) && value >= min && value <= max ? value : fallback;
+}
 export type AiCallContext = { ownerId?: string; taskId?: AiTaskId };
 /** One model attempt per provider. Secondary is allowed only for transient/schema errors. */
 export async function proposeStructured<T extends object>(
@@ -24,10 +30,13 @@ export async function proposeStructured<T extends object>(
   if (input.length > config.maxInputChars + 512 || system.length > 12000)
     throw new AiFailure("BAD_INPUT", false);
   const requestId = randomUUID(), started = Date.now();
+  const deadline = timeoutMs("AI_TOTAL_DEADLINE_MS", 15000, 1000, 20000);
+  const primaryBudget = timeoutMs("AI_PRIMARY_TIMEOUT_MS", 9000, 500, 9000);
+  const fallbackBudget = timeoutMs("AI_FALLBACK_TIMEOUT_MS", 6000, 500, 9000);
   const selected = process.env.AI_FALLBACK_ENABLED === "false" ? providers.slice(0, 1) : providers.slice(0, 2);
   let last = new AiFailure("OUTPUT_INVALID", false);
   for (const [index, provider] of selected.entries()) {
-    const remaining = TOTAL_DEADLINE_MS - (Date.now() - started);
+    const remaining = deadline - (Date.now() - started);
     if (remaining < 100) { last = new AiFailure("TIMEOUT"); break; }
     if (provider.providerName && !providerCircuitBreaker.allows(provider.providerName)) {
       last = new AiFailure("PROVIDER_5XX");
@@ -39,7 +48,7 @@ export async function proposeStructured<T extends object>(
     try {
       if (durableQuotaEnabled())
         await reserveDurableAiAttempt(context.ownerId ?? "operator-probe");
-      const response = await provider(system, input, Math.min(9000, remaining), config.maxOutputTokens);
+      const response = await provider(system, input, Math.min(index === 0 ? primaryBudget : fallbackBudget, remaining), config.maxOutputTokens);
       // Task-specific decoded output cap is stricter for short review tasks.
       let decodedBytes: number;
       try { decodedBytes = Buffer.byteLength(JSON.stringify(response.raw), "utf8"); }
