@@ -4,11 +4,22 @@
 **Feature ID:** FLAG-FR-01 / Pareto Frontier  
 **Product:** Pareto — Trustume AI Hackathon 2026, Problem Statement 1  
 **Owner:** std::zero · Backend + Frontend workstreams  
-**Status:** APPROVED DESIGN / IMPLEMENTATION PROPOSAL — not evidence that the Frontier itself is already coded  
+**Status:** IMPLEMENTED ON MAIN (PR #30) — CI verified; live signed-in Supabase demo validation remains pending  
 **Target:** 15 November 2026, before the 17:00 IST code-freeze gate  
 **Source of truth:** This document for the Frontier; docs/PRD.md for organizer requirements and backend/src/search/evaluate.ts for eligibility semantics.
 
-> **One flagship, not four loosely connected widgets.** We are building a single recruiter decision experience that combines existing Search Health Diagnostics (DIF-FR-01), What-If Hiring Simulator (DIF-FR-02), and Near-Match Counterfactual Explanations (DIF-FR-03). Natural-language search, human confirmation, explainability, and Find Candidates Like Me remain non-negotiable organizer flows. This document specifies new work; it does not certify it as implemented.
+> **One flagship, not four loosely connected widgets.** We are building a single recruiter decision experience that combines existing Search Health Diagnostics (DIF-FR-01), What-If Hiring Simulator (DIF-FR-02), and Near-Match Counterfactual Explanations (DIF-FR-03). Natural-language search, human confirmation, explainability, and Find Candidates Like Me remain non-negotiable organizer flows. This document records the original design and the implemented scope. Live signed-in Supabase acceptance remains a separate release check.
+
+## Implementation evidence (15 November 2026)
+
+- **Merged:** [PR #30](https://github.com/ThunderKhan/pareto/pull/30), merge commit `c75ddcd0033ae86b5ca8bf103b587d03c127eaf0`.
+- **Verified CI:** [GitHub Actions run #43687878536](https://github.com/ThunderKhan/pareto/actions/runs/43687878536) passed: **246 backend tests passed, 6 skipped**, **56 Playwright browser tests passed**, Prisma migration/seed, typecheck, production build, Docker image build, signed-out runtime access-denial smoke.
+- **Backend implementation:** `backend/src/search/frontier.ts`, `backend/src/search/frontier.test.ts`, owner-scoped `searchFrontier` service and strict authenticated `POST /api/v1/search` with `action: "frontier"`.
+- **Frontend implementation:** `frontend/src/components/search/pareto-frontier.tsx` and `frontier.css`, mounted in `workspace.tsx` after confirmed results. Review passes a complete proposed criteria draft into the existing explicit confirmation flow.
+- **Verified behaviors:** actual candidate partitions, tested bounded single/pair relaxations, non-dominance under per-rule partial order, reference exclusion, owner access separation, no preview revision writes, stale-version failure, deterministic output and optimized/full-evaluator equivalence on synthetic fixtures.
+- **Release caveat:** CI's credentialed recruiter-live job was **skipped**. A signed-in Supabase browser run with real owner-scoped credentials, deployed environment and demo smoke test must still be performed before declaring production/demo readiness.
+- **Scope note:** the existing Search Health and What-If widgets remain below the new primary Frontier module for compatibility. The optional data-visualization graph, full historical snapshotting, arbitrary recruiter weights and exhaustive multi-objective optimization were **not** implemented.
+- **Algorithm detail:** current implementation evaluates up to 48 single variants and up to 24 pairs of distinct rule keys from its bounded representatives; it does not claim global optimality or search outside its owned 1,000-profile limit.
 
 ## 0. Executive decision
 
