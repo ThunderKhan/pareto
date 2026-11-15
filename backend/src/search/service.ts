@@ -6,6 +6,7 @@ import type { Prisma } from "../generated/prisma/client";
 import { explainNearMatch } from "./counterfactual";
 import { diagnoseSearch } from "./diagnostics";
 import { compareSearches } from "./simulator";
+import { computeFrontier } from "./frontier";
 import { rankWithSemantic } from "./semantic";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
@@ -203,4 +204,23 @@ export async function simulateSearch(
     throw new SearchError(409, "This search changed during simulation. Reload the latest revision.");
   }
   return { sessionId, version: state.version, ...comparison };
+}
+
+/** Preview bounded, owner-scoped hiring trade-offs; never creates search revisions. */
+export async function searchFrontier(
+  ownerId: string, sessionId: string, expectedVersion: number, maxStrategies = 5,
+) {
+  const state = await activeSearch(ownerId, sessionId);
+  if (state.version !== expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
+  const rows = await database().candidate.findMany({
+    where: { ownerId }, include: { skills }, take: 1001,
+  });
+  if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
+  const report = computeFrontier(rows.map(profile), state.criteria, state.referenceId, maxStrategies);
+  const latest = await activeSearch(ownerId, sessionId);
+  if (latest.version !== state.version) {
+    throw new SearchError(409, "This search changed during analysis. Reload the latest revision.");
+  }
+  return { sessionId: state.sessionId, version: state.version,
+    computedAt: new Date().toISOString(), ...report };
 }
