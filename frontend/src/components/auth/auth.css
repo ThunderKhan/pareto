@@ -153,6 +153,26 @@
   letter-spacing: -.015em;
 }
 .auth-field input::placeholder { color: #5b6b80; opacity: 1; }
+
+/* Round 02 #09: Chromium paints saved email autofill on the inner input only.
+   Repaint that native autofill layer to match the containing auth-field surface.
+   Keep autocomplete/password-manager support and the separate focus ring intact. */
+.auth-field input:-webkit-autofill,
+.auth-field input:-webkit-autofill:hover,
+.auth-field input:-webkit-autofill:focus,
+.auth-field input:-webkit-autofill:active {
+  -webkit-text-fill-color: #020e24;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #020e24;
+  border-radius: 0;
+  transition: background-color 99999s ease-out 0s;
+}
+.auth-field input:autofill {
+  color: #020e24;
+  background: #ffffff;
+}
+
 .auth-field span {
   order: 1;
   flex: none;
