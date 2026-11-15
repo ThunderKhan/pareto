@@ -27,6 +27,10 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
   const [review, setReview] = useState<ReviewState | null>(null);
   const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [draft, setDraft] = useState<ReviewedProfile>({ ...blank });
+  // Preserve the user's comma/space keystrokes; normalized arrays are only the typed payload.
+  const [skillsInput, setSkillsInput] = useState("");
+  const [rolesInput, setRolesInput] = useState("");
+  const [certInput, setCertInput] = useState("");
   const [attested, setAttested] = useState(false);
   const [action, setAction] = useState<ReviewAction>("correct");
   const [reason, setReason] = useState("");
@@ -54,6 +58,9 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
       setDraft(state.profile ? { ...state.profile,
         skills: state.profile.skills ? [...state.profile.skills] : null,
         pastRoles: [...state.profile.pastRoles], certifications: [...state.profile.certifications] } : { ...blank });
+      setSkillsInput(state.profile?.skills?.join(", ") ?? "");
+      setRolesInput(state.profile?.pastRoles.join(", ") ?? "");
+      setCertInput(state.profile?.certifications.join(", ") ?? "");
       setAttested(false); setReason(""); setConfirmReject(false);
       setConflict(false);
     } catch (cause) {
@@ -93,6 +100,8 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
     setConfirmReject(false);
     setMessage("");
   }
+
+  const parseList = (value: string) => value.split(",").map(item => item.trim()).filter(Boolean);
 
   function validateProfile() {
     if (!draft.displayName.trim() || draft.displayName.trim().length > 120) return "Enter a documented name (1–120 characters).";
@@ -212,22 +221,25 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
             </label>
             <label>Skills evidence
               <select value={draft.skills === null ? "unknown" : "documented"}
-                onChange={event => update("skills", event.target.value === "unknown" ? null : [])}>
+                onChange={event => { setSkillsInput(""); update("skills", event.target.value === "unknown" ? null : []); }}>
                 <option value="unknown">Not documented (unknown)</option>
                 <option value="documented">Reviewed list (may be empty)</option>
               </select>
             </label>
             {draft.skills !== null && <label>Skills (comma-separated; up to 25)
-              <input value={draft.skills.join(", ")} onChange={event => update("skills",
-                event.target.value.split(",").map(s => s.trim()).filter(Boolean))}/>
+              <input value={skillsInput} onChange={event => {
+                setSkillsInput(event.target.value); update("skills", parseList(event.target.value));
+              }}/>
             </label>}
             <label>Previous roles (comma-separated)
-              <input value={draft.pastRoles.join(", ")} onChange={event => update("pastRoles",
-                event.target.value.split(",").map(s => s.trim()).filter(Boolean))}/>
+              <input value={rolesInput} onChange={event => {
+                setRolesInput(event.target.value); update("pastRoles", parseList(event.target.value));
+              }}/>
             </label>
             <label>Certifications (comma-separated)
-              <input value={draft.certifications.join(", ")} onChange={event => update("certifications",
-                event.target.value.split(",").map(s => s.trim()).filter(Boolean))}/>
+              <input value={certInput} onChange={event => {
+                setCertInput(event.target.value); update("certifications", parseList(event.target.value));
+              }}/>
             </label>
           </div>
           <div className="import-review-actions">
@@ -246,10 +258,11 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
               <input type="checkbox" checked={attested} onChange={event => setAttested(event.target.checked)}/>
               I checked the original source document.
             </label>
+            {action === "approve" && changed && <p className="import-caution">You edited the draft. Choose Save corrections to persist these changes, or refresh the current extraction before approving unchanged data.</p>}
             {action === "reject" && <p className="import-caution">Rejecting removes the candidate from searches. The private document and audit trail remain. A later source-checked correction can restore a profile.</p>}
             <div className="import-actions">
               <button type="button" className="import-button" disabled={!attested || busy || conflict ||
-                (action === "approve" && !review.profile) || (action === "correct" && !changed) ||
+                (action === "approve" && (!review.profile || changed)) || (action === "correct" && !changed) ||
                 (action !== "approve" && (reason.trim().length < 8 || reason.trim().length > 250))}
                 onClick={() => void submit(action)}>
                 {busy ? "Saving review…" : action === "correct" ? "Save source-checked corrections" :

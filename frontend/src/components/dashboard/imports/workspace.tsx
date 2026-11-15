@@ -11,7 +11,7 @@ import {
 } from "./api";
 import "./imports.css";
 
-type Upload = { id: string; file: File; status: "selected" | "invalid" | "uploading" | "accepted" | "duplicate" | "failed";
+type Upload = { id: string; file: File; status: "selected" | "invalid" | "uploading" | "accepted" | "duplicate" | "failed" | "uncertain";
   note: string; documentId?: string };
 type UploadResponse = { duplicate: boolean; document: ResumeDocument };
 const activeStatuses = new Set(["QUEUED", "RUNNING", "RETRY_SCHEDULED"]);
@@ -80,7 +80,12 @@ export default function ResumeImports() {
   }, [refresh]);
 
   function onFiles(event: ChangeEvent<HTMLInputElement>) {
-    const next = Array.from(event.target.files ?? []).map((file,index) => {
+    const selected = Array.from(event.target.files ?? []);
+    if (selected.length > 50) {
+      setError("Select up to 50 resumes at once. Each file is uploaded independently.");
+      setUploads([]); return;
+    }
+    const next = selected.map((file,index) => {
       const problem = fileValidation(file);
       return { id: file.name + ":" + file.lastModified + ":" + index, file,
         status: (problem ? "invalid" : "selected") as Upload["status"], note: problem ?? "" };
@@ -111,8 +116,8 @@ export default function ResumeImports() {
       } catch (cause) {
         const uncertain = !(cause instanceof ImportAPIError);
         setUploads(previous => previous.map(row => row.id === entry.id ? {
-          ...row, status: "failed",
-          note: uncertain ? "Upload status uncertain. Refresh import history before resending." : errorText(cause),
+          ...row, status: uncertain ? "uncertain" : "failed",
+          note: uncertain ? "Upload status uncertain. Refresh import history and reselect the file before sending it again." : errorText(cause),
         } : row));
       }
     };
