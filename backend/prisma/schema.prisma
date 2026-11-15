@@ -215,6 +215,7 @@ model IngestionJob {
   attempts         Int                @default(0)
   maxAttempts      Int                @default(3)
   manualRetries    Int                @default(0)
+  generation       Int                @default(0)
   runAfter         DateTime           @default(now())
   workerId         String?
   leaseToken       String?            @unique
@@ -259,6 +260,7 @@ model IngestionAttempt {
   jobId         String
   job           IngestionJob            @relation(fields: [jobId], references: [id], onDelete: Cascade)
   attempt       Int
+  generation    Int                     @default(0)
   leaseToken    String
   workerId      String
   outcome       IngestionAttemptOutcome @default(RUNNING)
@@ -266,6 +268,6 @@ model IngestionAttempt {
   startedAt     DateTime                @default(now())
   finishedAt    DateTime?
 
-  @@unique([jobId, attempt])
+  @@unique([jobId, generation, attempt])
   @@index([jobId, startedAt])
 }

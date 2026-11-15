@@ -28,6 +28,7 @@ CREATE TABLE "IngestionJob" (
   "attempts" INTEGER NOT NULL DEFAULT 0,
   "maxAttempts" INTEGER NOT NULL DEFAULT 3,
   "manualRetries" INTEGER NOT NULL DEFAULT 0,
+  "generation" INTEGER NOT NULL DEFAULT 0,
   "runAfter" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "workerId" TEXT,
   "leaseToken" TEXT,
@@ -60,6 +61,7 @@ CREATE TABLE "IngestionAttempt" (
   "id" TEXT NOT NULL,
   "jobId" TEXT NOT NULL,
   "attempt" INTEGER NOT NULL,
+  "generation" INTEGER NOT NULL DEFAULT 0,
   "leaseToken" TEXT NOT NULL,
   "workerId" TEXT NOT NULL,
   "outcome" "IngestionAttemptOutcome" NOT NULL DEFAULT 'RUNNING',
@@ -70,7 +72,7 @@ CREATE TABLE "IngestionAttempt" (
   CONSTRAINT "IngestionAttempt_jobId_fkey"
     FOREIGN KEY ("jobId") REFERENCES "IngestionJob"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE UNIQUE INDEX "IngestionAttempt_jobId_attempt_key" ON "IngestionAttempt"("jobId","attempt");
+CREATE UNIQUE INDEX "IngestionAttempt_jobId_generation_attempt_key" ON "IngestionAttempt"("jobId","generation","attempt");
 CREATE INDEX "IngestionAttempt_jobId_startedAt_idx" ON "IngestionAttempt"("jobId","startedAt");
 
 -- These records contain resume processing and owner-identity metadata.

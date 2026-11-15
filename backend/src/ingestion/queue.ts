@@ -9,7 +9,7 @@ export class LeaseLost extends Error {
   constructor() { super("The worker no longer owns the job lease."); }
 }
 export type ClaimedJob = { id: string; ownerId: string; documentId: string; leaseToken: string;
-  attempts: number; maxAttempts: number; cancelRequested: boolean };
+  attempts: number; maxAttempts: number; generation: number; cancelRequested: boolean };
 export const MAX_BATCH_DOCUMENTS = 50;
 export const LEASE_SECONDS = 120;
 const MAX_MANUAL_RETRIES = 2;
@@ -127,10 +127,10 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
         "startedAt"=COALESCE(j."startedAt",NOW()), "updatedAt"=NOW()
       FROM next_job n WHERE j."id"=n."id"
       RETURNING j."id", j."ownerId", j."documentId", j."leaseToken", j."attempts",
-        j."maxAttempts", j."cancelRequested"
+        j."maxAttempts", j."generation", j."cancelRequested"
     ), audit AS (
-      INSERT INTO "IngestionAttempt" ("id","jobId","attempt","leaseToken","workerId","outcome","startedAt")
-      SELECT ${attemptId}, c."id",c."attempts",${token},${workerId},'RUNNING',NOW() FROM claimed c
+      INSERT INTO "IngestionAttempt" ("id","jobId","attempt","generation","leaseToken","workerId","outcome","startedAt")
+      SELECT ${attemptId}, c."id",c."attempts",c."generation",${token},${workerId},'RUNNING',NOW() FROM claimed c
       RETURNING "jobId"
     )
     SELECT c.* FROM claimed c JOIN audit a ON a."jobId"=c."id"`;
@@ -278,7 +278,8 @@ export async function retryQueuedDocument(ownerId: string, documentId: string) {
     const changed = await tx.ingestionJob.updateMany({ where: { id: job.id, ownerId,
       status: job.status, manualRetries: job.manualRetries },
       data: { status: "QUEUED", stage: "QUEUED", attempts: 0,
-        manualRetries: { increment: 1 }, runAfter: new Date(),
+        manualRetries: { increment: 1 }, generation: { increment: 1 },
+        runAfter: new Date(),
         lastErrorCode: null, cancelRequested: false, finishedAt: null } });
     if (!changed.count) throw new JobConflict(409, "JOB_CHANGED", "Reload job status.");
     await tx.resumeDocument.update({ where: { id: documentId },
