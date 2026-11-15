@@ -50,7 +50,8 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   expect(initial.map(rule => rule.field).sort()).toEqual(["city", "experience", "notice", "role", "skill"]);
   expect(initial.every(rule => rule.mode === "required")).toBe(true);
 
-  await page.getByRole("button", { name: "Edit criterion 4: Notice period" }).click();
+  const noticeRule = page.locator(".search-rule--card").filter({ has: page.locator(".search-rule__number", { hasText: "Notice period" }) });
+  await noticeRule.getByRole("button", { name: /Edit criterion/ }).click();
   await page.getByLabel("Maximum (days)").fill("45");
   await page.getByRole("button", { name: "Confirm Search" }).click();
   const confirmed = page.getByRole("region", { name: "Confirmed results" });
