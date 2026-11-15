@@ -8,11 +8,11 @@
 >
 > **Source:** User's ten numbered feedback messages and accompanying screenshots in the Frontend 03 conversation on 15 November 2026.
 >
-> **Status:** **Round 02 #01–#05 implemented in code on `main` after explicit approval. #06–#10 remain pending. Live signed-in visual QA is still required; #10's full audit has not started.**
+> **Status:** **All #01–#10 implemented in code on `main`, with a source-level Impeccable/Unslop audit documented. Standard CI passed on the combined implementation; signed-in visual acceptance and actual browser autofill checks remain pending.**
 >
 > **Implementation tracking:** [Round 02 implementation ledger](./2026-11-15-recruiter-workspace-round-02-implementation-ledger.md).
 
-**This is a NEW round, distinct from** [Round 01 feedback](./2026-11-15-recruiter-workspace-ui-feedback-round-01-10.md) **and** [its implementation history](./2026-11-15-recruiter-workspace-implementation-01-09.md). The previous round's ten numbers must not be confused with this round's ten numbers. The initial capture preceded implementation, as requested. The user subsequently **authorized only #01–#05**, which are now implemented on `main`. **Do not start #06–#10 without a separate instruction.** Feedback #10's comprehensive audit remains unstarted.
+**This is a NEW round, distinct from** [Round 01 feedback](./2026-11-15-recruiter-workspace-ui-feedback-round-01-10.md) **and** [its implementation history](./2026-11-15-recruiter-workspace-implementation-01-09.md). The previous round's ten numbers must not be confused with this round's ten numbers. The initial capture preceded implementation, as requested. The user first approved **#01–#05**, then explicitly approved **#06–#10**. All ten have now been implemented in source on `main`. The #10 audit was a **manual source-level** application of published Impeccable and Unslop guidance; standalone detector tooling and live authenticated screenshot checks were not available.
 
 ## Feedback index
 
@@ -23,11 +23,11 @@
 | 03 | Account settings > Notifications | Vertically align each checkbox with its label | Implemented in code; signed-in visual QA pending |
 | 04 | Authenticated app theme | Replace pervasive bluish dark surfaces with an intentionally designed premium near-black scheme | Implemented in code; signed-in visual QA pending |
 | 05 | Empty AI candidate search | Replace generic blue orb with original Parito mascot, preferably in a circle | Implemented in code; signed-in visual QA pending |
-| 06 | Hiring-brief composer | Replace tall form-like input with compact ChatGPT-style expanding chat composer | Recorded |
-| 07 | Reference candidate selection | Redesign the oversized in-timeline Reference form and avoid awkward nested scrollbars | Planned, unimplemented |
-| 08 | Manual criteria / draft review | Redesign oversized spreadsheet-like criteria editor, preferably a drawer/sheet | Planned, unimplemented |
-| 09 | Login email input | Remove or seamlessly integrate partial blue browser-autofill background | Recorded |
-| 10 | Entire authenticated UX + auth/dropdowns | Full Impeccable + Unslop/anti-UI-slop audit; implement grounded findings only after go-ahead | Audit pending |
+| 06 | Hiring-brief composer | Replace tall form-like input with compact ChatGPT-style expanding chat composer | Implemented in code; authenticated QA pending |
+| 07 | Reference candidate selection | Redesign the oversized in-timeline Reference form and avoid awkward nested scrollbars | Implemented in code; authenticated QA pending |
+| 08 | Manual criteria / draft review | Redesign oversized spreadsheet-like criteria editor, preferably a drawer/sheet | Implemented in code; authenticated QA pending |
+| 09 | Login email input | Remove or seamlessly integrate partial blue browser-autofill background | CSS implemented; actual saved autofill QA pending |
+| 10 | Entire authenticated UX + auth/dropdowns | Full Impeccable + Unslop/anti-UI-slop audit; implement grounded findings only after go-ahead | Manual source audit and prioritized fixes implemented; live QA pending |
 
 ---
 
@@ -218,20 +218,20 @@
 9. **Data/security:** no unrequested Prisma migrations, new AI providers, sharing/authorization changes, synthetic records or unapproved deployments.
 10. **User approval required:** This file is a durable handoff only. **Do not start implementation until the user expressly says to.**
 
-## Checklists — all pending
+## Implementation checklist — all ten implemented in source; live visual verification outstanding
 
 - [x] #01 Profile-header Parito avatar composition fixed
 - [x] #02 Left-side Parito added beside grouped assistant responses
 - [x] #03 Notification checkbox rows vertically aligned
 - [x] #04 Near-black graphite dark system implemented (live visual QA still pending)
 - [x] #05 Generic search orb replaced with recognizable Parito
-- [ ] #06 Compact auto-growing chat composer shipped
-- [ ] #07 Reference picker redesigned, keyboard/mobile tested
-- [ ] #08 One clean manual/AI criteria editor drawer/sheet shipped
-- [ ] #09 Login autofill background corrected and verified
-- [ ] #10 Full Impeccable/Unslop audit performed, findings documented, authorized fixes implemented
+- [x] #06 Compact auto-growing chat composer shipped
+- [x] #07 Reference picker redesigned and keyboard/mobile checks added (live run pending)
+- [x] #08 Unified criteria drawer/sheet shipped; explicit confirmation preserved
+- [x] #09 Login autofill CSS corrected (real saved-autofill verification pending)
+- [x] #10 Manual Impeccable/Unslop source audit documented and prioritized fixes implemented; CLI/live browser not run
 
-**Round 02 status after implementation authorization:** **10/10 recorded; #01–#05 implemented in code, #06–#10 pending. Live signed-in visual QA remains. Full audit #10 not started.** Previous Round 01 implementation is unaffected.
+**Round 02 status after second authorization:** **10/10 recorded; 10/10 implemented in source on `main`. Published-guidance source audit completed and documented. Live authenticated visual QA remains outstanding.** Previous Round 01 implementation is unaffected.
 
 ## Implementation update — authorized feedback #01–#05
 
@@ -242,4 +242,16 @@ On 15 November 2026 the user explicitly authorized implementation of **only** it
 - [`08d4866`](https://github.com/ThunderKhan/pareto/commit/08d4866a554f7282ce0a055c3f2e9728df777440): graphite near-black dark theme for existing authenticated routes and menus, preserving existing Light/Dark/System preference logic.
 - [`858e795`](https://github.com/ThunderKhan/pareto/commit/858e795cdf83e8b69ce4486032b26708e39e41b3): added authenticated Playwright assertions for mascot framing, notification row geometry, dark theme and chat placement; these tests need dedicated recruiter credentials to execute.
 
-Standard CI for the UI implementation passed. The **authenticated browser suite is configured to skip without dedicated Supabase credentials**, so implementation should not be described as fully screenshot-verified yet. No work on #06–#10 is authorized by this update.
+Standard CI for the #01–#05 implementation passed. The **authenticated browser suite is configured to skip without dedicated Supabase credentials**, so implementation should not be described as fully screenshot-verified yet. A separate subsequent user instruction authorized #06–#10, documented below.
+
+## Implementation update — authorized feedback #06–#10
+
+The user explicitly authorized the second batch after #01–#05. Completed code work:
+
+- **#06:** `frontend/src/components/search/workspace.tsx` and `round-02.css`: short placeholder, one-row auto-growing chat textarea, compact toolbar, unchanged Enter/Shift+Enter/AI-provider behavior.
+- **#07:** Same search workspace: bounded, on-demand owner-scoped name lookup, keyboard ArrowDown/Escape, outside-click close, candidate role/location rows, preserved reference-based draft path.
+- **#08:** Reused `CriteriaEditor` now renders structured rule cards. A single right-side review drawer (mobile full screen) covers manual/AI/refinement/suggestion drafts with explicit Confirm Search/Discard, focus trap, responsive layout, and existing version/request-ID protections.
+- **#09:** `frontend/src/components/auth/auth.css` normalizes Chromium autofill's inner-input paint to the containing white auth field without disabling autocomplete or password managers.
+- **#10:** `docs/FRONTEND-IMPECCABLE-UNSLOP-AUDIT-ROUND-02.md` contains the source-level prioritized audit and implementation/verification evidence. The cross-route fixes include an invisible mobile New search action, loading vs empty candidate library, Escape/outside dropdown dismissal, selected-row semantics, and keyboard focus/metadata legibility.
+
+**Audit caveat:** Impeccable/Unslop published design guidance was applied manually to repository source and the user's screenshots; their standalone detector/CLI and a live signed-in screenshot loop were **not** run. Authenticated tests were added and will execute when the dedicated recruiter credentials are configured. **No new database migration** was introduced.
