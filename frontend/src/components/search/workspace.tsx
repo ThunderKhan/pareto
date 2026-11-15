@@ -17,6 +17,7 @@ import "./frontier.css";
 import "./round-02.css";
 import "./round-03-motion.css";
 import "./conversation-layout.css";
+import "./review-phase1.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -192,7 +193,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     if (!isDraftOpen) return;
     const origin = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const dialog = draftDialogRef.current;
-    dialog?.querySelector<HTMLElement>(".search-rule__fields select, .search-editor__add, .pareto-draft-close")?.focus();
+    dialog?.querySelector<HTMLElement>(".review-row__edit, .search-editor__add, .pareto-draft-close")?.focus();
     const keys = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); if (!busy) closeDraft(); return; }
       if (event.key !== "Tab" || !dialog) return;
@@ -354,6 +355,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       (before ? describe(before) + " (" + before.mode + ")" : "Absent") + " → " +
       (after ? describe(after) + " (" + after.mode + ")" : "Removed")] : [];
   });
+  const draftValid = draft !== undefined && criteriaSchema.safeParse(draft.criteria).success;
   const similarityOnly = Boolean(results?.referenceId) && results?.criteria.every(rule => rule.mode === "preferred");
   const conversationStarted = Boolean(results || draft || lastRequest || busy || alert || message || initialSession || initialReference);
 
@@ -528,13 +530,14 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         </header>
         <form className="pareto-draft-form" onSubmit={confirm}>
           <div className="pareto-draft-scroll">
-            <p className="pareto-draft-intro">Review what is required and what is preferred. The current search stays unchanged until you confirm.</p>
+            <p className="pareto-draft-intro">Review the AI suggestion, adjust priorities, and confirm only what you intend to search. Nothing is applied until you confirm.</p>
             {draft.reference && <details className="pareto-draft-context">
               <summary>Reference profile · {draft.reference.displayName}</summary><ProfileFacts profile={draft.reference}/>
             </details>}
-            {draft.warnings.length > 0 && <ul className="pareto-chat__warnings">
-              {draft.warnings.map((warning,index) => <li key={index}>{warning}</li>)}
-            </ul>}
+            {draft.warnings.length > 0 && <section className="pareto-draft-notes" aria-label="Extraction review notes">
+              <h3>Review notes</h3>
+              <ul>{draft.warnings.map((warning,index) => <li key={index}>{warning}</li>)}</ul>
+            </section>}
             {changes.length > 0 && <div className="pareto-draft-changes">
               <h3>Proposed changes</h3>
               <ul>{changes.map(change => <li key={change}>{change}</li>)}</ul>
@@ -543,11 +546,11 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
               onChange={criteria => setDraft({ ...draft, criteria, requestId: crypto.randomUUID() })}/>
           </div>
           <footer className="pareto-draft-footer">
-            <p>Changes are saved only when you confirm.</p>
+            <p>{draftValid ? "No search runs until you confirm." : "Resolve the highlighted criteria before confirming."}</p>
             <div className="pareto-draft-actions">
               <button type="button" disabled={busy} className="pareto-draft-discard"
                 onClick={discardDraft}>Discard draft</button>
-              <button type="submit" disabled={busy || !draft.criteria.length} className="pareto-draft-confirm">
+              <button type="submit" disabled={busy || !draftValid} className="pareto-draft-confirm">
                 Confirm Search
               </button>
             </div>
