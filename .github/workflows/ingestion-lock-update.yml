@@ -1,0 +1,33 @@
+name: Prepare locked ingestion dependencies
+on:
+  push:
+    branches:
+      - feat/private-resume-ingestion
+permissions:
+  contents: write
+jobs:
+  locked-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.1 --activate
+      - name: Generate dependency lockfile with pinned packages
+        run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+      - name: Commit generated lockfile to feature branch
+        shell: bash
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "build(ingestion): lock PDF DOCX and Supabase Storage dependencies"
+          git push origin HEAD:feat/private-resume-ingestion
