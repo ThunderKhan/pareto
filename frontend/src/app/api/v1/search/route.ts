@@ -6,6 +6,7 @@ import {
 } from "@pareto/backend/search/server";
 import { interpret, interpretRefinement } from "@pareto/backend/search/interpret";
 import { recruiter } from "@/lib/auth";
+import { isSameOriginMutation } from "@/lib/request-origin";
 
 const id = z.string().min(1).max(120);
 const revision = z.number().int().positive();
@@ -25,16 +26,8 @@ function json(body: unknown, status = 200) {
 }
 
 function assertSafeOrigin(request: Request) {
-  if (request.headers.get("sec-fetch-site") === "cross-site")
-    throw new SearchError(403, "Cross-site requests are not allowed.");
-  const origin = request.headers.get("origin");
-  if (!origin) return;
-  try {
-    if (new URL(origin).origin === new URL(request.url).origin) return;
-  } catch {
-    // Invalid Origin must not bypass protection.
-  }
-  throw new SearchError(403, "Cross-origin requests are not allowed.");
+  if (!isSameOriginMutation(request))
+    throw new SearchError(403, "Cross-origin requests are not allowed.");
 }
 
 async function authorized(operation: (ownerId: string) => Promise<unknown>) {
