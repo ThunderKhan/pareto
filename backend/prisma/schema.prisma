@@ -296,6 +296,7 @@ enum ResumeAuditAction {
   REVIEW_REQUIRED
   HUMAN_CORRECTED
   HUMAN_APPROVED
+  HUMAN_REJECTED
 }
 
 /// Immutable, private field-level extraction / human-correction audit.

@@ -2,7 +2,7 @@
 -- Do not expose profile snapshots or sensitive inferred fields via Supabase Data API.
 CREATE TYPE "ResumeReviewState" AS ENUM ('UNREVIEWED','NEEDS_REVIEW','HUMAN_VERIFIED');
 CREATE TYPE "ResumeAuditAction" AS ENUM (
-  'MODEL_EXTRACTED','REVIEW_REQUIRED','HUMAN_CORRECTED','HUMAN_APPROVED'
+  'MODEL_EXTRACTED','REVIEW_REQUIRED','HUMAN_CORRECTED','HUMAN_APPROVED','HUMAN_REJECTED'
 );
 ALTER TABLE "ResumeDocument"
   ADD COLUMN "reviewState" "ResumeReviewState" NOT NULL DEFAULT 'UNREVIEWED',
