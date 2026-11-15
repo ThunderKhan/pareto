@@ -22,6 +22,19 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
+function assertSafeOrigin(request: Request) {
+  if (request.headers.get("sec-fetch-site") === "cross-site")
+    throw new SearchError(403, "Cross-site requests are not allowed.");
+  const origin = request.headers.get("origin");
+  if (!origin) return;
+  try {
+    if (new URL(origin).origin === new URL(request.url).origin) return;
+  } catch {
+    // Invalid Origin must not bypass protection.
+  }
+  throw new SearchError(403, "Cross-origin requests are not allowed.");
+}
+
 async function authorized(operation: (ownerId: string) => Promise<unknown>) {
   const requestId = crypto.randomUUID();
   try {
@@ -56,6 +69,7 @@ export function GET(request: Request) {
 
 export function POST(request: Request) {
   return authorized(async ownerId => {
+    assertSafeOrigin(request);
     if (!request.headers.get("content-type")?.startsWith("application/json")) throw new SearchError(415, "Send a JSON request.");
     // Read a bounded body even when Content-Length is missing.
     const reader = request.body?.getReader();
