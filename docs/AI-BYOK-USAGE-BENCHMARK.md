@@ -1,6 +1,6 @@
 # Sprint B / D / E — BYOK, AI usage metadata, and offline benchmarks
 
-**Scope:** Backend + owner-authenticated API contracts. No production credentials, schema, or services were changed. No frontend settings navigation is modified while the independent frontend worker is operating.
+**Scope:** Backend + authenticated owner-only API contracts, plus a standalone AI settings screen at `/dashboard/ai-settings`. No production credentials, schema, or services were changed. Existing frontend profile/navigation files are not modified while the independent frontend worker is operating.
 
 ## B — Bring Your Own Key (Gemini and Groq)
 
@@ -20,7 +20,7 @@ Authenticated API route: `/api/v1/account/ai/providers` (owner-only, no-store, s
 
 **No silent billing fallback:** once BYOK is selected, Pareto uses only that user's connected providers (Gemini, Groq); a missing/invalid personal credential yields an error rather than automatically charging a platform-owned credential. Optional Gemini embeddings also respect the selected credential source. Platform concurrency/owner call limits still apply, even with BYOK. A single user's key remains accessible to their authorized backend workflows only, not to other recruiters or other users' REST sessions. Immediate in-flight requests may complete after a key is deleted.
 
-The frontend worker can add the UI on Settings using this endpoint; this PR does not modify shared dashboard navigation. Existing API/worker processes need a restart after adding server secrets. **Do not claim KMS-backed protection**: this version uses independent AES-GCM encryption with a server-managed master key.
+The account now has a standalone `/dashboard/ai-settings` screen with a credential form, connect/verify/remove controls, mode selection, and aggregated usage. The frontend worker can link it into shared Settings navigation without conflicting with this sprint. This PR does not modify shared dashboard navigation. Existing API/worker processes need a restart after adding server secrets. **Do not claim KMS-backed protection**: this version uses independent AES-GCM encryption with a server-managed master key.
 
 ## D — Usage and cost metadata
 
@@ -51,4 +51,4 @@ pnpm --filter @pareto/backend ingest:bench:offline --docs 500 --search 1000 --ru
 - Determine and verify **current** provider pricing before enabling any cost estimates. Do not paste credentials into code, CI, logs or messages.
 - Conduct a deployed benchmark only after operations are verified; record successful uploaded documents, actual model quality, rate-limits and timings.
 
-**Not implemented in this sprint:** an xAI/Grok adapter, frontend Settings panel, KMS-backed master-key management, master-key rotation automation, money-denominated hard spending limits, a 500-file live import, a production upload load test, or deployment updates.
+**Not implemented in this sprint:** an xAI/Grok adapter, shared Settings navigation integration, KMS-backed master-key management, master-key rotation automation, money-denominated hard spending limits, a 500-file live import, a production upload load test, or deployment updates.
