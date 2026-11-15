@@ -63,7 +63,7 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
     reviewReasons: parsed.warnings,
   } });
   let result: ResumeExtraction;
-  try { result = await extractResumeProfile(parsed, providers); }
+  try { result = await extractResumeProfile(parsed, providers, ownerId); }
   catch {
     result = { profile: null, evidence: [], provider: null, needsReview: true,
       warnings: ["Structured extraction was unavailable; retry after checking the model configuration."] };

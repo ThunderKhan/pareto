@@ -54,7 +54,7 @@ export function checkSkillEvidence(skill: string, quote: string): "supported" | 
       || new RegExp("\\b(?:do not know|don't know|not proficient in)\\s+" + escaped + "(?![\\p{L}\\p{N}])", "iu").test(quote);
   });
   if (negative) return "contradicted";
-  if (/\b(?:want to learn|learning|plan to learn|interested in learning|aspiring to learn|will learn)\b/i.test(quote))
+  if (/\b(?:want to learn|learning|plan(?:ning|s)? to learn|interested in learning|aspiring to learn|will learn|studying)\b/i.test(quote))
     return "unknown";
   if (/\b(?:job requirements?|we are hiring|must have|required skills|ideal candidate)\s*:/i.test(quote))
     return "unknown";

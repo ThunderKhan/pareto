@@ -16,7 +16,7 @@ describe("AI drafts cannot authorize search or invent unsupported fields", () =>
       raw: { criteria: [{ field: "age", mode: "required", minAge: 18 }], warnings: [] }, provider: "Gemini",
     });
     await expect(proposeSearchDraft("Find Java developers", [invalid]))
-      .rejects.toMatchObject({ code: "OUTPUT_INVALID" });
+      .rejects.toMatchObject({ code: "SEMANTIC_UNVERIFIED" });
     const valid = vi.fn().mockResolvedValue({
       raw: { criteria: [
         { field: "skill", mode: "required", value: "Java" },

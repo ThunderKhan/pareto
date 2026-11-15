@@ -62,7 +62,7 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
   const call: JsonProvider = async (system, input, timeoutMs = 9000) => {
     const isGemini = name === "Gemini";
     const endpoint = isGemini
-      ? `https://generativelanguage.googleapis.com/v1beta/models/\${encodeURIComponent(model)}:generateContent`
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
       : "https://api.groq.com/openai/v1/chat/completions";
     const payload = isGemini
       ? { systemInstruction: { parts: [{ text: system }] },
@@ -75,7 +75,7 @@ function providerCall({ name, key, model }: ProviderConfig): JsonProvider {
       response = await fetch(endpoint, {
         method: "POST", signal: AbortSignal.timeout(Math.max(100, Math.min(timeoutMs, 9000))),
         headers: { "Content-Type": "application/json",
-          ...(isGemini ? { "x-goog-api-key": key } : { Authorization: `Bearer \${key}` }) },
+          ...(isGemini ? { "x-goog-api-key": key } : { Authorization: `Bearer ${key}` }) },
         body: JSON.stringify(payload),
       });
     } catch (error) { throw classifyProviderError(error); }
