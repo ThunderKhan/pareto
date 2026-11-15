@@ -9,7 +9,7 @@ function configured(): ProviderConfig[] {
     { name: "Groq", key: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL },
   ];
   return values.filter((p): p is ProviderConfig =>
-    Boolean(p.key && p.model && /^[a-zA-Z0-9_.:-]{1,100}$/.test(p.model)));
+    Boolean(p.key && p.model && /^[a-zA-Z0-9_./:-]{1,120}$/.test(p.model)));
 }
 
 /** Fixed provider origins: no user-supplied URL or model tools are accepted. */
