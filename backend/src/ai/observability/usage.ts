@@ -5,6 +5,9 @@ export type SafeUsageEvent = Readonly<{
   taskId: AiTaskId;
   provider: "Gemini" | "Groq";
   requestId: string;
+  modelId?: string;
+  promptVersion: string;
+  schemaVersion: string;
   latencyMs: number;
   outcome: "ok" | AiErrorCode;
   inputTokens?: number;
