@@ -363,4 +363,48 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
       expect(strategy.impact.newlyEligibleExamples.every(person => person.id !== reference.id)).toBe(true);
     }
   });
+
+  it("invalidates a confirmed search snapshot on cross-request candidate mutations", async () => {
+    const flag = process.env.PARETO_SEARCH_SNAPSHOT_CACHE_ENABLED;
+    const db = database();
+    const candidateId = randomUUID();
+    try {
+      process.env.PARETO_SEARCH_SNAPSHOT_CACHE_ENABLED = "true";
+      const saved = await confirmSearch(owner, {
+        requestId: randomUUID(),
+        criteria: [{ field: "role", mode: "required", value: "Backend Engineer" }],
+      });
+      sessions.add(saved.sessionId);
+      const original = await searchResults(owner, saved.sessionId);
+      const originalCount = original.total;
+      const again = await searchResults(owner, saved.sessionId);
+      expect(again.total).toBe(originalCount);
+      const readEpoch = async () => {
+        const rows = await db.$queryRawUnsafe<Array<{ version: bigint }>>(
+          'SELECT "version" FROM "CandidateSearchEpoch" WHERE "ownerId" = $1', owner,
+        );
+        return rows[0]?.version ?? 0n;
+      };
+      const before = await readEpoch();
+      await db.candidate.create({ data: {
+        id: candidateId, ownerId: owner, displayName: "Temporary Epoch Candidate",
+        roleTitle: "Backend Engineer",
+      } });
+      const added = await readEpoch();
+      expect(added).toBeGreaterThan(before);
+      const changed = await searchResults(owner, saved.sessionId);
+      expect(changed.total).toBe(originalCount + 1);
+      expect(changed.counts.ELIGIBLE).toBe(original.counts.ELIGIBLE + 1);
+      await db.candidate.update({ where: { id: candidateId }, data: { roleTitle: "Unrelated Role" } });
+      const updated = await readEpoch();
+      expect(updated).toBeGreaterThan(added);
+      const reevaluated = await searchResults(owner, saved.sessionId);
+      expect(reevaluated.total).toBe(originalCount + 1);
+      expect(reevaluated.counts.ELIGIBLE).toBe(original.counts.ELIGIBLE);
+    } finally {
+      await db.candidate.deleteMany({ where: { id: candidateId, ownerId: owner } });
+      if (flag === undefined) delete process.env.PARETO_SEARCH_SNAPSHOT_CACHE_ENABLED;
+      else process.env.PARETO_SEARCH_SNAPSHOT_CACHE_ENABLED = flag;
+    }
+  });
 });

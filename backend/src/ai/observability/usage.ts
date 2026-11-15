@@ -34,3 +34,22 @@ export function localUsageSnapshot(): Readonly<{
     recordedOutputTokens: recent.reduce((n, e) => n + (e.outputTokens ?? 0), 0),
   };
 }
+
+
+export type ProviderLatencySnapshot = Record<"Gemini" | "Groq", {
+  samples: number; failures: number; p50Ms: number | null; p95Ms: number | null;
+}>;
+/** Process-only summary: no request, owner, model, input or response identity. */
+export function localProviderLatencySnapshot(): ProviderLatencySnapshot {
+  const result = {} as ProviderLatencySnapshot;
+  for (const provider of ["Gemini", "Groq"] as const) {
+    const rows = recent.filter(event => event.provider === provider);
+    const times = rows.map(event => event.latencyMs)
+      .filter(ms => Number.isFinite(ms) && ms >= 0).sort((a, b) => a - b);
+    const percentile = (q: number) => times.length ? times[Math.ceil(times.length * q) - 1] : null;
+    result[provider] = { samples: rows.length,
+      failures: rows.filter(event => event.outcome !== "ok").length,
+      p50Ms: percentile(0.5), p95Ms: percentile(0.95) };
+  }
+  return result;
+}

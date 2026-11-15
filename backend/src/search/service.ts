@@ -8,6 +8,8 @@ import { diagnoseSearch } from "./diagnostics";
 import { compareSearches } from "./simulator";
 import { computeFrontier } from "./frontier";
 import { rankWithSemantic } from "./semantic";
+import { VersionedSnapshotCache } from "./snapshot-cache";
+import { recordSearchTiming } from "./performance";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
 type Candidate = Prisma.CandidateGetPayload<{ include: { skills: typeof skills } }>;
@@ -74,18 +76,68 @@ export async function activeSearch(ownerId: string, id: string) {
   };
 }
 
-async function compute(ownerId: string, criteria: Rule[], referenceId: string | null, offset = 0) {
+type Ranked = Awaited<ReturnType<typeof rankWithSemantic>>;
+type Snapshot = {
+  counts: { ELIGIBLE: number; NEEDS_REVIEW: number; INELIGIBLE: number };
+  results: Ranked; total: number; evaluatorVersion: string;
+};
+// Bounded by entry count and maximum 1,000 candidates per owner. No shared tenant cache.
+const snapshots = new VersionedSnapshotCache<Snapshot>(24, 45_000);
+function rankingVersion(): string {
+  return evaluatorVersion + ":" + (
+    process.env.PARETO_SEMANTIC_SEARCH === "1" && process.env.AI_ENABLED !== "false"
+      ? "semantic-v1" : "deterministic-v1");
+}
+function page(snapshot: Snapshot, offset = 0) {
+  return { ...snapshot, results: snapshot.results.slice(offset, offset + 20) };
+}
+/** The epoch is bumped in the database by Candidate, CandidateSkill, Skill and
+ * CandidateEmbedding triggers across ALL API/worker replicas. Missing migrations
+ * or a disabled flag fail open to an uncached calculation, never stale data.
+ */
+async function datasetEpoch(ownerId: string): Promise<string | null> {
+  if (process.env.PARETO_SEARCH_SNAPSHOT_CACHE_ENABLED !== "true") return null;
+  try {
+    const rows = await database().$queryRaw<Array<{ version: string }>>`SELECT "version"::text AS "version" FROM "CandidateSearchEpoch" WHERE "ownerId" = ${ownerId}`;
+    return rows[0]?.version ?? "0";
+  } catch { return null; }
+}
+async function computeSnapshot(ownerId: string, criteria: Rule[], referenceId: string | null): Promise<Snapshot> {
+  const started = Date.now();
+  const dbStarted = Date.now();
   const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
+  recordSearchTiming("search.candidates", Date.now() - dbStarted);
   if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
+  const rankStarted = Date.now();
   const results = await rankWithSemantic(ownerId, rows.map(profile), criteria, referenceId);
+  recordSearchTiming("search.rank", Date.now() - rankStarted);
   const counts = { ELIGIBLE: 0, NEEDS_REVIEW: 0, INELIGIBLE: 0 };
   for (const result of results) counts[result.eligibility]++;
-  return { counts, results: results.slice(offset, offset + 20), total: results.length, evaluatorVersion };
+  recordSearchTiming("search.total", Date.now() - started);
+  return { counts, results, total: results.length, evaluatorVersion };
 }
-
+async function cachedSearchResults(ownerId: string, sessionId: string, version: number,
+  criteria: Rule[], referenceId: string | null, offset = 0) {
+  const started = Date.now();
+  const epoch = await datasetEpoch(ownerId);
+  if (epoch !== null) {
+    const hit = snapshots.get(ownerId, sessionId, version, epoch, rankingVersion());
+    if (hit) {
+      recordSearchTiming("search.cache-lookup", Date.now() - started);
+      return page(hit, offset);
+    }
+  }
+  recordSearchTiming("search.cache-lookup", Date.now() - started);
+  const snapshot = await computeSnapshot(ownerId, criteria, referenceId);
+  // A concurrent candidate or embedding change may invalidate this computation.
+  if (epoch !== null && await datasetEpoch(ownerId) === epoch)
+    snapshots.set(ownerId, sessionId, version, epoch, rankingVersion(), snapshot);
+  return page(snapshot, offset);
+}
 export async function searchResults(ownerId: string, sessionId: string, offset = 0) {
   const state = await activeSearch(ownerId, sessionId);
-  return { ...state, ...await compute(ownerId, state.criteria, state.referenceId, offset) };
+  return { ...state, ...await cachedSearchResults(ownerId, state.sessionId, state.version,
+    state.criteria, state.referenceId, offset) };
 }
 
 type Confirmation = { requestId: string; criteria: Rule[]; referenceId?: string; sessionId?: string; expectedVersion?: number };
@@ -116,7 +168,8 @@ export async function confirmSearch(ownerId: string, input: Confirmation) {
     if (prior && prior.version !== input.expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
     const version = (prior?.version ?? 0) + 1;
     // Evaluate before writing so an unavailable dataset cannot create a confirmed revision.
-    const result = await compute(ownerId, criteria, referenceId);
+    const calculatedEpoch = await datasetEpoch(ownerId);
+    const snapshot = await computeSnapshot(ownerId, criteria, referenceId);
     try {
       saved = await db.$transaction(async tx => {
         let id = sessionId;
@@ -144,13 +197,16 @@ export async function confirmSearch(ownerId: string, input: Confirmation) {
         }
         return { sessionId: id, version };
       });
-      return { ...saved, criteria, referenceId, ...result };
+      if (calculatedEpoch !== null && await datasetEpoch(ownerId) === calculatedEpoch)
+        snapshots.set(ownerId, saved.sessionId, saved.version, calculatedEpoch, rankingVersion(), snapshot);
+      return { ...saved, criteria, referenceId, ...page(snapshot) };
     } catch (error) {
       saved = await existing();
       if (!saved) throw error;
     }
   }
-  return { ...saved, criteria, referenceId, ...await compute(ownerId, criteria, referenceId) };
+  return { ...saved, criteria, referenceId, ...await cachedSearchResults(ownerId, saved.sessionId,
+    saved.version, criteria, referenceId) };
 }
 
 

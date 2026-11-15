@@ -45,6 +45,28 @@ describe("bounded provider gateway", () => {
     expect(model).toHaveBeenCalledOnce();
   });
 
+  it("supports bounded, operator-tunable per-provider timeout budgets", async () => {
+    const original = process.env.AI_PRIMARY_TIMEOUT_MS;
+    const fallbackOriginal = process.env.AI_FALLBACK_TIMEOUT_MS;
+    try {
+      process.env.AI_PRIMARY_TIMEOUT_MS = "3200";
+      process.env.AI_FALLBACK_TIMEOUT_MS = "2400";
+      const failing = vi.fn().mockRejectedValue(classifyHttpStatus(429));
+      const succeeding = vi.fn().mockResolvedValue({ raw: { valid: true }, provider: "Groq" });
+      await proposeStructured("instructions", "data", accept, [failing, succeeding]);
+      expect(failing.mock.calls[0][2]).toBe(3200);
+      expect(succeeding.mock.calls[0][2]).toBeLessThanOrEqual(2400);
+      process.env.AI_PRIMARY_TIMEOUT_MS = "not-a-timeout";
+      const single = vi.fn().mockResolvedValue({ raw: { valid: true }, provider: "Gemini" });
+      await proposeStructured("instructions", "data", accept, [single]);
+      expect(single.mock.calls[0][2]).toBe(9000);
+    } finally {
+      if (original === undefined) delete process.env.AI_PRIMARY_TIMEOUT_MS;
+      else process.env.AI_PRIMARY_TIMEOUT_MS = original;
+      if (fallbackOriginal === undefined) delete process.env.AI_FALLBACK_TIMEOUT_MS;
+      else process.env.AI_FALLBACK_TIMEOUT_MS = fallbackOriginal;
+    }
+  });
   it("passes task-specific bounded output limits to model adapters", async () => {
     const provider = vi.fn().mockResolvedValue({ raw: { valid: true }, provider: "Gemini" });
     await proposeStructured("instructions", "data", accept, [provider], { taskId: "search.interpret.v1" });
