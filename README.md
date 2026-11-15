@@ -42,8 +42,8 @@ Use **PowerShell** in the repository root. Install Node.js **22.18+**, Docker De
 ```powershell
 git clone https://github.com/ThunderKhan/pareto.git
 cd pareto
-git fetch origin
-git switch --track origin/integration/release-20261114
+git switch main
+git pull --ff-only origin main
 node --version
 corepack enable
 corepack prepare pnpm@10.15.1 --activate
@@ -58,7 +58,7 @@ pnpm db:deploy
 pnpm dev
 ```
 
-Visit **http://localhost:3000**. Keep the `pnpm dev` terminal running. If you already created the integration tracking branch, use `git switch integration/release-20261114` instead of the `--track` command; don't merge or reset `main`.
+Visit **http://localhost:3000**. Keep the `pnpm dev` terminal running. If you already have a local checkout, preserve uncommitted changes before running `git switch main` and `git pull --ff-only origin main`.
 
 ### Two separate local environment files
 
