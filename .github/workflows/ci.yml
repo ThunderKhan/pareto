@@ -7,6 +7,7 @@ on:
       - feat/homepage-v2
       - main
       - integration/release-20261114
+      - feat/private-resume-ingestion
   pull_request:
     branches:
       - main
