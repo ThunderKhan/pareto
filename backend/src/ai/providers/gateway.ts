@@ -44,6 +44,7 @@ export async function proposeStructured<T extends object>(
       recordSafeUsage({
         taskId, requestId, provider: response.provider === "Groq" ? "Groq" : "Gemini",
         outcome: "ok", latencyMs: Date.now() - attemptStarted,
+        modelId: response.modelId, promptVersion: config.promptVersion, schemaVersion: config.schemaVersion,
         inputTokens: response.inputTokens, outputTokens: response.outputTokens,
       });
       return { ...proposal, provider: response.provider };
@@ -51,7 +52,8 @@ export async function proposeStructured<T extends object>(
       last = classifyProviderError(error);
       if (provider.providerName) providerCircuitBreaker.onFailure(provider.providerName, last.code);
       recordSafeUsage({ taskId, requestId, provider: provider.providerName ?? (index === 0 ? "Gemini" : "Groq"),
-        outcome: last.code, latencyMs: Date.now() - attemptStarted });
+        outcome: last.code, latencyMs: Date.now() - attemptStarted,
+        promptVersion: config.promptVersion, schemaVersion: config.schemaVersion });
       if (!canFallback(last.code) || index === selected.length - 1) break;
     } finally { release(); }
   }
