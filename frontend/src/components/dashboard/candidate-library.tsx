@@ -15,7 +15,7 @@ async function get<T>(query: string): Promise<T> {
   return data as T;
 }
 
-export default function CandidateLibrary() {
+export default function CandidateLibrary({ initialCandidateId }: { initialCandidateId?: string }) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Summary[]>([]);
   const [selected, setSelected] = useState<Profile | null>(null);
@@ -28,8 +28,13 @@ export default function CandidateLibrary() {
     void get<Summary[]>("?q=").then(value => { if (live) setItems(value); })
       .catch(reason => { if (live) setError(reason instanceof Error ? reason.message : "Unable to load candidates."); })
       .finally(() => { if (live) setInitialLoading(false); });
+    if (initialCandidateId) {
+      void get<Profile>("?candidate=" + encodeURIComponent(initialCandidateId))
+        .then(value => { if (live) setSelected(value); })
+        .catch(reason => { if (live) setError(reason instanceof Error ? reason.message : "Candidate profile unavailable."); });
+    }
     return () => { live = false; };
-  }, []);
+  }, [initialCandidateId]);
 
   async function search(event: FormEvent) {
     event.preventDefault();

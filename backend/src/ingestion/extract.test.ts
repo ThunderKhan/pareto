@@ -79,4 +79,25 @@ describe("evidence-backed resume extraction", () => {
     expect(result.profile?.noticePeriodDays).toBeNull();
     expect(result.needsReview).toBe(true);
   });
+  it("rejects unsupported numerical facts and explicit negative skills despite matching quotes", () => {
+    const source = "Asha Nair | Senior Java Developer | No Java experience | 30 day project | 8 years at college";
+    const other: ParsedResume = { text: source, pages: [{ number: 1, text: source }], warnings: [], truncated: false };
+    const proposal = raw();
+    proposal.skills = ["Java"];
+    proposal.noticePeriodDays = 30;
+    proposal.experienceMonths = 96;
+    proposal.evidence = [
+      { field: "displayName", quote: "Asha Nair" },
+      { field: "skill:Java", quote: "No Java experience" },
+      { field: "noticePeriodDays", quote: "30 day project" },
+      { field: "experienceMonths", quote: "8 years at college" },
+    ];
+    const result = validateExtractedProfile(proposal, other, "Gemini");
+    expect(result.profile?.skills).toEqual([]);
+    expect(result.profile?.skillsKnown).toBe(false);
+    expect(result.profile?.noticePeriodDays).toBeNull();
+    expect(result.profile?.experienceMonths).toBeNull();
+    expect(result.needsReview).toBe(true);
+  });
+
 });

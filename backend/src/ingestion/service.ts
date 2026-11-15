@@ -1,4 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
+import { isResumeIngestionEnabled } from "./policy";
 import { database } from "../search/db";
 import { skillKey } from "../search/criteria";
 import { extractResumeProfile, type ResumeExtraction } from "./extract";
@@ -63,7 +64,7 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
     reviewReasons: parsed.warnings,
   } });
   let result: ResumeExtraction;
-  try { result = await extractResumeProfile(parsed, providers); }
+  try { result = await extractResumeProfile(parsed, providers, ownerId); }
   catch {
     result = { profile: null, evidence: [], provider: null, needsReview: true,
       warnings: ["Structured extraction was unavailable; retry after checking the model configuration."] };
@@ -125,6 +126,7 @@ export async function uploadResume(
   storage: ResumeStorage = supabaseResumeStorage(),
   providers?: JsonProvider[],
 ) {
+  if (!isResumeIngestionEnabled()) throw new IngestionError(503, "INGESTION_DISABLED", "Resume ingestion is temporarily paused.");
   const checked = validateResume(fileName, mimeType, bytes);
   const db = database();
   const existing = await db.resumeDocument.findUnique({
@@ -193,6 +195,7 @@ export async function retryResume(
   ownerId: string, id: string, storage: ResumeStorage = supabaseResumeStorage(),
   providers?: JsonProvider[],
 ) {
+  if (!isResumeIngestionEnabled()) throw new IngestionError(503, "INGESTION_DISABLED", "Resume ingestion is temporarily paused.");
   const db = database();
   const entry = await db.resumeDocument.findFirst({
     where: { id, ownerId },
@@ -258,6 +261,7 @@ export async function queueResumeUpload(
   ownerId: string, fileName: string, mimeType: string, bytes: Buffer,
   storage: ResumeStorage = supabaseResumeStorage(),
 ) {
+  if (!isResumeIngestionEnabled()) throw new IngestionError(503, "INGESTION_DISABLED", "Resume ingestion is temporarily paused.");
   const file = validateResume(fileName, mimeType, bytes);
   const db = database();
   const existing = await db.resumeDocument.findUnique({

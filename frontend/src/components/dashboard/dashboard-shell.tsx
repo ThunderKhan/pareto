@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  CaretDown, House, MagnifyingGlass, SidebarSimple,
+  CaretDown, FileArrowUp, House, MagnifyingGlass, SidebarSimple,
   UserCircle, UsersThree, X,
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
@@ -27,6 +27,7 @@ const navigation = [
   { label: "Overview", href: "/dashboard", Icon: House },
   { label: "AI candidate search", href: "/dashboard/search", Icon: MagnifyingGlass },
   { label: "Candidates", href: "/dashboard/candidates", Icon: UsersThree },
+  { label: "Import resumes", href: "/dashboard/candidates/import", Icon: FileArrowUp },
 ];
 
 function identityName(user: RecruiterIdentity) {
@@ -109,7 +110,7 @@ export default function DashboardShell({ children, user }: {
         <p className="pareto-nav__eyebrow">WORKSPACE</p>
         <nav className="pareto-nav" aria-label="Dashboard navigation">
           {navigation.map(({label,href,Icon}) => {
-            const active = href === "/dashboard" ? path === href : path === href || path.startsWith(href + "/");
+            const active = href === "/dashboard" || href === "/dashboard/candidates" ? path === href : path === href || path.startsWith(href + "/");
             return <Link key={href} href={href} title={collapsed ? label : undefined}
               aria-label={collapsed ? label : undefined}
               aria-current={active ? "page" : undefined} onClick={() => setMobileOpen(false)}

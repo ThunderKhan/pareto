@@ -83,8 +83,9 @@
 .pareto-chat--fresh .pareto-chat__timeline { flex: 0 0 auto; min-height: 0;
   overflow: visible; padding: 0; }
 .pareto-chat--fresh .pareto-chat__empty { margin: 0; padding: 0 8px;
-  gap: 12px; }
-.pareto-chat__empty h2 { margin: 12px 0 0; }
+  gap: 8px; }
+.pareto-chat--fresh .pareto-avatar--hero { width: clamp(120px, 12vw, 154px); }
+.pareto-chat__empty h2 { margin: 6px 0 0; }
 .pareto-chat--fresh .pareto-chat__composer { position: relative; bottom: auto; width: 100%;
   max-width: 850px; align-self: center; }
 .pareto-chat--active { gap: 0; }
@@ -94,7 +95,7 @@
 .pareto-chat__composer { transition: box-shadow .2s ease, border-color .2s ease; }
 @media (max-height: 620px) {
   .pareto-chat--fresh { gap: 13px; }
-  .pareto-chat--fresh .pareto-avatar--hero { width: 54px; height: 54px; padding: 3px; }
+  .pareto-chat--fresh .pareto-avatar--hero { width: 86px; height: auto; padding: 0; }
   .pareto-chat__empty h2 { font-size: clamp(1.7rem,4vw,2.6rem); }
   .pareto-chat__composer textarea { min-height: 42px; }
 }
@@ -120,6 +121,6 @@
 .pareto-chat__assistant-content > .pareto-chat__processing { min-height: 39px; }
 @media (max-width: 560px) {
   .pareto-chat__assistant-turn { grid-template-columns: 32px minmax(0,1fr); gap: 9px; }
-  .pareto-chat__assistant-icon .pareto-avatar--chat { width: 32px; height: 32px; padding: 2px; }
+  .pareto-chat__assistant-icon .pareto-avatar--chat { width: 32px; height: 32px; padding: 0; }
   .pareto-chat__assistant-content { gap: 12px; }
 }

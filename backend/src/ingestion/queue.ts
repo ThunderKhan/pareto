@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isResumeIngestionEnabled } from "./policy";
 import { database } from "../search/db";
 import type { Prisma } from "../generated/prisma/client";
 
@@ -64,6 +65,7 @@ export async function listJobs(ownerId: string) {
     orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 100 });
 }
 export async function scheduleBatch(ownerId: string, documentIds: string[], runAfter: Date, label?: string) {
+  if (!isResumeIngestionEnabled()) throw new JobConflict(503, "INGESTION_DISABLED", "Resume ingestion is temporarily paused.");
   if (!documentIds.length || documentIds.length > MAX_BATCH_DOCUMENTS ||
       new Set(documentIds).size !== documentIds.length ||
       documentIds.some(x => !/^[0-9a-f-]{36}$/i.test(x)))
@@ -309,6 +311,7 @@ export async function recoverUnqueuedDocuments(limit = 25) {
   });
 }
 export async function retryQueuedDocument(ownerId: string, documentId: string) {
+  if (!isResumeIngestionEnabled()) throw new JobConflict(503, "INGESTION_DISABLED", "Resume ingestion is temporarily paused.");
   return database().$transaction(async tx => {
     const job = await tx.ingestionJob.findFirst({
       where: { ownerId, documentId },

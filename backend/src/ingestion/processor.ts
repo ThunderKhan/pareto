@@ -39,7 +39,7 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
     metrics.sourceChars = parsed.text.length;
     await changeStage(job, "EXTRACTING");
     const modelStartedAt = Date.now();
-    const result = await extractResumeProfile(parsed, deps.providers);
+    const result = await extractResumeProfile(parsed, deps.providers, job.ownerId);
     metrics.modelMs = result.provider ? Date.now() - modelStartedAt : undefined;
     metrics.provider = result.provider;
     metrics.evidenceCount = result.evidence.length;
@@ -102,15 +102,15 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
         reason: result.needsReview ? "Automated extraction requires human verification." : null,
       } });
     });
-    // Only index after the fenced transaction commits. Failed embedding calls
-    // never roll back an ingestion job; the idempotent backfill repairs gaps.
-    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    // Refresh the retrieval cache only after the fenced profile transaction commits.
+    // This is best effort: any failure leaves the verified profile intact; backfill repairs gaps.
+    if (process.env.AI_ENABLED !== "false" && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       try {
-        const indexed = await database().candidate.findFirst({
+        const candidate = await database().candidate.findFirst({
           where: { ownerId: job.ownerId, sourceDocumentId: job.documentId }, select: { id: true },
         });
-        if (indexed) await indexCandidate(job.ownerId, indexed.id);
-      } catch { /* Offline/rate limited: deterministic search remains available. */ }
+        if (candidate) await indexCandidate(job.ownerId, candidate.id);
+      } catch { /* Retrieval cache unavailable; deterministic search is unaffected. */ }
     }
     return result.needsReview ? "NEEDS_REVIEW" as const : "READY" as const;
   } catch (err) {

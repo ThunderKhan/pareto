@@ -22,6 +22,19 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
+function assertSafeOrigin(request: Request) {
+  if (request.headers.get("sec-fetch-site") === "cross-site")
+    throw new SearchError(403, "Cross-site requests are not allowed.");
+  const origin = request.headers.get("origin");
+  if (!origin) return;
+  try {
+    if (new URL(origin).origin === new URL(request.url).origin) return;
+  } catch {
+    // Invalid Origin must not bypass protection.
+  }
+  throw new SearchError(403, "Cross-origin requests are not allowed.");
+}
+
 async function authorized(operation: (ownerId: string) => Promise<unknown>) {
   const requestId = crypto.randomUUID();
   try {
@@ -56,6 +69,7 @@ export function GET(request: Request) {
 
 export function POST(request: Request) {
   return authorized(async ownerId => {
+    assertSafeOrigin(request);
     if (!request.headers.get("content-type")?.startsWith("application/json")) throw new SearchError(415, "Send a JSON request.");
     // Read a bounded body even when Content-Length is missing.
     const reader = request.body?.getReader();
@@ -80,7 +94,7 @@ export function POST(request: Request) {
     catch { throw new SearchError(400, "Send a valid JSON request."); }
     const data = input.parse(raw);
     switch (data.action) {
-      case "interpret": return interpret(data.prompt);
+      case "interpret": return interpret(data.prompt, undefined, ownerId);
       case "reference": return referenceDraft(ownerId, data.candidateId);
       case "simulate": return simulateSearch(ownerId, data.sessionId, data.expectedVersion, data.criteria);
       case "confirm":
@@ -91,7 +105,7 @@ export function POST(request: Request) {
       case "refine": {
         const state = await activeSearch(ownerId, data.sessionId);
         if (state.version !== data.expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
-        return interpretRefinement(data.prompt, state.criteria);
+        return interpretRefinement(data.prompt, state.criteria, undefined, ownerId);
       }
     }
   });

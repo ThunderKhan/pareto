@@ -1,7 +1,7 @@
 # Pareto — End-to-End AI Engineering Implementation Plan
 
-**Status:** APPROVED DIRECTION / IMPLEMENTATION NOT STARTED  
-**Owner:** std::zero / Pareto engineering · **Created:** 2026-11-15  
+**Status:** APPROVED DIRECTION / IMPLEMENTATION IN PROGRESS (NOT RELEASE-READY)  
+**Owner:** std::zero / Pareto engineering · **Created:** 2026-11-15 · **Implementation evidence:** PR #16 (typed tasks/security), PR #18 (runtime/evals), ingestion PR #13→#14→#17 (separate)  
 **Audience:** Next backend/AI implementation worker, reviewer, frontend integrator, and demo operator  
 **Scope:** Production-oriented safeguards for Gemini/Groq-backed search interpretation, conversational refinement, and resume-to-profile extraction; safe integration with deterministic recruiter search.  
 **Authoritative related specifications:** [PRD](PRD.md) (AI-FR-01/02, MATCH-FR-01/02, DATA-FR-01/02, ORG-FR-01–06), [ARCHITECTURE](ARCHITECTURE.md) (§12–20), [IMPLEMENTATION](IMPLEMENTATION.md), [MVP](MVP.md), and [resume-ingestion contract](https://github.com/ThunderKhan/pareto/blob/feat/private-resume-ingestion/docs/RESUME-INGESTION.md) **on PR #13 until merged**.

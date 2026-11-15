@@ -119,7 +119,7 @@ export async function rankWithSemantic(
   ownerId: string, candidates: CandidateProfile[], rules: Rule[], referenceId?: string | null,
   embed: Embedder = geminiEmbed,
 ) {
-  if (process.env.PARETO_SEMANTIC_SEARCH === "0") return hybridRank(candidates, rules, new Map(), referenceId);
+  if (process.env.AI_ENABLED === "false" || process.env.PARETO_SEMANTIC_SEARCH === "0") return hybridRank(candidates, rules, new Map(), referenceId);
   if (embed === geminiEmbed && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     return hybridRank(candidates, rules, new Map(), referenceId);
   }
