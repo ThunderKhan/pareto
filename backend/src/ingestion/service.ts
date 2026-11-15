@@ -2,6 +2,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { database } from "../search/db";
 import { skillKey } from "../search/criteria";
 import { extractResumeProfile, type ResumeExtraction } from "./extract";
+import type { JsonProvider } from "../search/interpret";
 import { parseResume, validateResume, type CheckedResume, ResumeInputError } from "./parse";
 import { supabaseResumeStorage, type ResumeStorage, StorageFailure } from "./storage";
 
@@ -35,7 +36,7 @@ export async function resumeImport(ownerId: string, id: string) {
   return doc;
 }
 
-async function completeExtraction(ownerId: string, id: string, file: CheckedResume) {
+async function completeExtraction(ownerId: string, id: string, file: CheckedResume, providers?: JsonProvider[]) {
   const db = database();
   let parsed;
   try {
@@ -58,7 +59,7 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
     reviewReasons: parsed.warnings,
   } });
   let result: ResumeExtraction;
-  try { result = await extractResumeProfile(parsed); }
+  try { result = await extractResumeProfile(parsed, providers); }
   catch {
     result = { profile: null, evidence: [], provider: null, needsReview: true,
       warnings: ["Structured extraction was unavailable; retry after checking the model configuration."] };
@@ -118,6 +119,7 @@ async function completeExtraction(ownerId: string, id: string, file: CheckedResu
 export async function uploadResume(
   ownerId: string, fileName: string, mimeType: string, bytes: Buffer,
   storage: ResumeStorage = supabaseResumeStorage(),
+  providers?: JsonProvider[],
 ) {
   const checked = validateResume(fileName, mimeType, bytes);
   const db = database();
@@ -153,11 +155,12 @@ export async function uploadResume(
     } });
     return { duplicate: false, document: await resumeImport(ownerId, id) };
   }
-  return { duplicate: false, document: await completeExtraction(ownerId, id, checked) };
+  return { duplicate: false, document: await completeExtraction(ownerId, id, checked, providers) };
 }
 
 export async function retryResume(
   ownerId: string, id: string, storage: ResumeStorage = supabaseResumeStorage(),
+  providers?: JsonProvider[],
 ) {
   const db = database();
   const entry = await db.resumeDocument.findFirst({
@@ -193,7 +196,7 @@ export async function retryResume(
     } });
     return resumeImport(ownerId, id);
   }
-  return completeExtraction(ownerId, id, file);
+  return completeExtraction(ownerId, id, file, providers);
 }
 
 export async function resumeDownload(
