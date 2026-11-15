@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowClockwise, ArrowRight, MagnifyingGlass, PencilSimple, Sparkle, UsersThree } from "@phosphor-icons/react";
+import { ArrowClockwise, PencilSimple, Sparkle, UsersThree } from "@phosphor-icons/react";
 import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
 import CriteriaEditor, { labels } from "./criteria-editor";
@@ -178,15 +178,6 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       {!results && !draft && !lastRequest && <div className="pareto-chat__empty">
         <SearchOrb />
         <h2>Who are we looking for?</h2>
-        <p>Describe a role in your own words. Pareto will propose criteria for you to review—nothing is searched until you confirm.</p>
-        <div className="pareto-chat__suggestions">
-          <button type="button" onClick={() => setPrompt("Find senior Java developers in Hyderabad with 6–10 years of experience and AWS.")}>
-            Senior Java developers <ArrowRight size={13} aria-hidden="true"/>
-          </button>
-          <button type="button" onClick={() => setReferenceOpen(true)}>
-            Find candidates like someone <ArrowRight size={13} aria-hidden="true"/>
-          </button>
-        </div>
       </div>}
       {lastRequest && <div className="pareto-chat__request">
         <span className="pareto-chat__caption">YOUR REQUEST</span>
@@ -299,10 +290,8 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <button type="submit" className="pareto-chat__send" disabled={busy || (results ? followup : prompt).trim().length < 3}>
           {results ? <ArrowClockwise size={17} aria-hidden="true"/> : <Sparkle size={17} aria-hidden="true"/>}
           {results ? "Propose refinement" : "Extract criteria"}
-          <ArrowRight size={15} aria-hidden="true"/>
         </button>
       </div>
     </form>
-    <p className="pareto-chat__footnote"><MagnifyingGlass size={12} aria-hidden="true"/> AI suggests criteria. Only you can confirm a candidate search.</p>
   </div>;
 }
