@@ -20,13 +20,13 @@ export function recordSafeUsage(event: SafeUsageEvent) {
   if (recent.length > 256) recent.splice(0, recent.length - 256);
 }
 export function localUsageSnapshot(): Readonly<{
-  attempts: number; failed: number; fallbackAttempts: number;
+  attempts: number; failed: number; groqAttempts: number;
   recordedInputTokens: number; recordedOutputTokens: number;
 }> {
   return {
     attempts: recent.length,
     failed: recent.filter(e => e.outcome !== "ok").length,
-    fallbackAttempts: recent.filter(e => e.provider === "Groq").length,
+    groqAttempts: recent.filter(e => e.provider === "Groq").length,
     recordedInputTokens: recent.reduce((n, e) => n + (e.inputTokens ?? 0), 0),
     recordedOutputTokens: recent.reduce((n, e) => n + (e.outputTokens ?? 0), 0),
   };
