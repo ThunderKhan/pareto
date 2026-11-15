@@ -10,11 +10,13 @@ on:
       - feat/private-resume-ingestion
       - feat/durable-resume-batch-workers
       - feat/ingestion-quality-audit
+      - feat/ai-resume-evidence
   pull_request:
     branches:
       - main
       - feat/private-resume-ingestion
       - feat/durable-resume-batch-workers
+      - feat/ingestion-quality-audit
   workflow_dispatch:
 
 permissions:
