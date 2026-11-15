@@ -22,14 +22,14 @@ describe("synthetic, OFFLINE model proposal contract corpus", () => {
   for (const sample of requests) {
     it(`validates \${sample.id}`, async () => {
       const model = async () => ({ raw: sample.proposal, provider: "Gemini" });
-      const draft = await proposeSearchDraft(sample.prompt, [model]);
+      const draft = await proposeSearchDraft(sample.prompt, [model], sample.id);
       expect(draft.criteria).toEqual(criteriaSchema.parse(sample.proposal.criteria));
     });
   }
   for (const sample of refinements) {
     it(`preserves unmodified rules in \${sample.id}`, async () => {
       const model = async () => ({ raw: sample.proposal, provider: "Gemini" });
-      const draft = await proposeRefinementDraft(sample.prompt, sample.current, [model]);
+      const draft = await proposeRefinementDraft(sample.prompt, sample.current, [model], sample.id);
       expect(draft.criteria.length).toBeGreaterThan(0);
       if (!sample.proposal.operations.length) {
         expect(draft.changed).toBe(false);
