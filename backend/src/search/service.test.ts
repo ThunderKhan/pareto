@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { database } from "./db";
 import { criteriaSchema } from "./criteria";
 import { interpret, interpretRefinement } from "./interpret";
-import { activeSearch, candidateFor, candidateList, confirmSearch, referenceDraft, searchResults } from "./service";
+import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults } from "./service";
 
 const integrationUrl = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -142,6 +142,8 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     const initial = { requestId: randomUUID(), criteria };
     const confirmed = await confirmSearch(owner, initial);
     sessions.add(confirmed.sessionId);
+    expect((await recentSearches(owner)).some(item => item.id === confirmed.sessionId && item.version === 1)).toBe(true);
+    expect(await recentSearches(stranger)).toEqual([]);
     expect(confirmed.counts).toEqual({ ELIGIBLE: 3, NEEDS_REVIEW: 1, INELIGIBLE: 44 });
     expect((await confirmSearch(owner, initial)).sessionId).toBe(confirmed.sessionId);
     await expect(activeSearch(stranger, confirmed.sessionId)).rejects.toMatchObject({ status: 404 });

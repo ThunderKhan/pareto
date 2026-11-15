@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ArrowRight, CaretDown, House, MagnifyingGlass, SidebarSimple,
   UserCircle, UsersThree, X,
@@ -40,6 +40,23 @@ export default function DashboardShell({ children, user }: {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [recent, setRecent] = useState<{ id: string; title: string; version: number }[]>([]);
+  useEffect(() => {
+    let mounted = true;
+    const load = () => {
+      void fetch("/api/v1/search?history=1", { cache: "no-store" })
+        .then(response => response.ok ? response.json() : [])
+        .then((items: unknown) => {
+          if (!mounted || !Array.isArray(items)) return;
+          setRecent(items.filter((item): item is { id: string; title: string; version: number } =>
+            item && typeof item === "object" && typeof item.id === "string" &&
+            typeof item.title === "string" && typeof item.version === "number"));
+        }).catch(() => { /* Search history does not block navigation. */ });
+    };
+    load();
+    window.addEventListener("pareto:search-confirmed", load);
+    return () => { mounted = false; window.removeEventListener("pareto:search-confirmed", load); };
+  }, [path]);
   const current = navigation.find(item => item.href === path) ??
     navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
     navigation[0];
@@ -73,6 +90,14 @@ export default function DashboardShell({ children, user }: {
             </Link>;
           })}
         </nav>
+        {recent.length > 0 && <div className="pareto-recent">
+          <p className="pareto-nav__eyebrow">RECENT SEARCHES</p>
+          {recent.map(item => <Link key={item.id} title={item.title} className="pareto-recent__item"
+            onClick={() => setMobileOpen(false)}
+            href={"/dashboard/search?session=" + encodeURIComponent(item.id)}>
+            <span>{item.title}</span><small>v{item.version}</small>
+          </Link>)}
+        </div>}
         <div className="pareto-nav__note">
           <span className="pareto-nav__note-dot" aria-hidden="true" />
           <p>Human-confirmed search. Evidence you can inspect.</p>

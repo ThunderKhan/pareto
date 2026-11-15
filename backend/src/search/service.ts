@@ -40,6 +40,24 @@ export async function referenceDraft(ownerId: string, id: string) {
   return { candidate, criteria: criteriaSchema.parse(rules) };
 }
 
+/** Recent confirmed search sessions, scoped to their recruiter. */
+export async function recentSearches(ownerId: string) {
+  const sessions = await database().searchSession.findMany({
+    where: { ownerId }, take: 12,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    include: { revisions: { take: 1, orderBy: { version: "desc" } } },
+  });
+  return sessions.filter(session => session.revisions.length).map(session => {
+    const rules = criteriaSchema.parse(session.revisions[0].criteria);
+    const role = rules.find(rule => rule.field === "role");
+    const city = rules.find(rule => rule.field === "city");
+    const title = [role?.field === "role" ? role.value :
+      session.referenceCandidateId ? "Similar candidates" : "Candidate search",
+      city?.field === "city" ? city.value : ""].filter(Boolean).join(" · ");
+    return { id: session.id, title, version: session.latestVersion, createdAt: session.createdAt.toISOString() };
+  });
+}
+
 export async function activeSearch(ownerId: string, id: string) {
   const session = await database().searchSession.findFirst({
     where: { id, ownerId }, include: { revisions: { orderBy: { version: "desc" }, take: 1 } },
