@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AiFailure } from "../ai/contracts/errors";
 import { skillKey } from "../search/criteria";
 import { verifyResumeClaim } from "../ai/quality/resume-evidence";
 import { proposeResumeFacts } from "../ai/tasks/resume-extract";
@@ -160,10 +161,16 @@ export async function extractResumeProfile(
   providers: JsonProvider[] = configuredProviders(),
   ownerId?: string,
 ): Promise<ResumeExtraction> {
-  if (!providers.length) return {
-    profile: null, evidence: [], provider: null, needsReview: true,
-    warnings: ["AI provider not configured. Extracted text is stored; retry when configured."],
-  };
+  if (!providers.length) {
+    // Worker-owned jobs must wait for configuration instead of exhausting
+    // their finite processing retry budget. Legacy offline callers still get
+    // the review result they expect.
+    if (ownerId) throw new AiFailure("AUTH_CONFIG", false);
+    return {
+      profile: null, evidence: [], provider: null, needsReview: true,
+      warnings: ["AI provider not configured. Extracted text is stored; retry when configured."],
+    };
+  }
   try {
     const result = await proposeResumeFacts(parsed.text, raw => {
       // Strict Zod schema and original-source semantic validation run inside
@@ -175,7 +182,11 @@ export async function extractResumeProfile(
       result.warnings.push("Only the first 16,000 characters were submitted for extraction.");
     }
     return result;
-  } catch {
+  } catch (error) {
+    // These are operational capacity/configuration failures, not bad resumes.
+    // The worker defers the job without consuming its processing retry budget.
+    if (error instanceof AiFailure &&
+        ["BUDGET_EXCEEDED", "RATE_LIMIT", "AUTH_CONFIG"].includes(error.code)) throw error;
     // Never log raw resume, prompt, provider response, credentials or model text.
     return { profile: null, evidence: [], provider: null, needsReview: true,
       warnings: ["AI extraction was unavailable or failed validation. Retry later."] };
