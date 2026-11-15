@@ -44,6 +44,7 @@ test("confirmed search previews are measured, review-only and discardable", asyn
   await expect(results).toContainText("3 eligible");
   expect(analysisRequests).toBe(0); // No eager analysis of private records.
 
+  await results.getByTestId("secondary-search-tools").locator("summary").click();
   const health = results.getByTestId("search-health");
   await health.getByRole("button", { name: /Analyze search health/ }).click();
   await expect(health.getByRole("heading", { name: "Search health" })).toBeVisible();

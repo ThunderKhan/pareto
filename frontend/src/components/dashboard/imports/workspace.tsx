@@ -11,6 +11,7 @@ import {
 } from "./api";
 import "./imports.css";
 import "./continuity-phase3.css";
+import "./imports-unified.css";
 
 type Upload = { id: string; file: File; status: "selected" | "invalid" | "uploading" | "accepted" | "duplicate" | "failed" | "uncertain";
   note: string; documentId?: string };
@@ -206,8 +207,8 @@ export default function ResumeImports() {
   return <div className="import-workspace" data-testid="resume-imports">
     <section className="import-upload import-section" aria-labelledby="import-upload-title">
       <div className="import-upload__head">
-        <div><span className="import-kicker"><ShieldCheck size={15} aria-hidden="true"/> PRIVATE DOCUMENTS</span>
-          <h2 id="import-upload-title">Bring candidates into focus.</h2>
+        <div><span className="import-kicker"><ShieldCheck size={15} aria-hidden="true"/> Private documents</span>
+          <h2 id="import-upload-title">Import candidate resumes</h2>
           <p>Upload source resumes securely. AI-assisted extraction preserves evidence and flags undocumented fields for human review.</p>
         </div>
         <FileArrowUp size={33} weight="thin" aria-hidden="true"/>
@@ -244,8 +245,8 @@ export default function ResumeImports() {
     {!initialLoading && (reviewable.length > 0 || investigate.length > 0 || processing.length > 0 || rejected.length > 0) &&
       <section className="import-section import-continuity" aria-label="Resume import next steps" data-testid="import-next-steps">
         <div className="import-section__title"><div>
-          <span className="import-kicker">YOUR WORK QUEUE</span>
-          <h2>Continue where you left off.</h2>
+          <span className="import-kicker">Your work queue</span>
+          <h2>Continue where you left off</h2>
           <p className="import-muted">Latest 50 owned imports. Status refreshes while this page is visible.</p>
         </div></div>
         <div className="import-continuity__counts">
@@ -292,7 +293,7 @@ export default function ResumeImports() {
         {!documents.length ? <div className="import-empty">
           <FolderOpen size={27} aria-hidden="true"/>
           <p>No resumes imported yet. Choose a source file above to begin.</p>
-        </div> : <div className="import-table-wrap">
+        </div> : <div className="import-table-wrap" role="region" aria-label="Scrollable import table" tabIndex={0}>
           <table className="import-table" aria-label="Recent resume imports">
             <thead><tr><th scope="col">Batch</th><th scope="col">Source</th><th scope="col">Job status</th><th scope="col">Verification</th><th scope="col">Actions</th></tr></thead>
             <tbody>{documents.map(doc => <tr key={doc.id}>

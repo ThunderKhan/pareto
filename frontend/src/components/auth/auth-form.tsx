@@ -7,6 +7,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
 import AuthArtwork from "./auth-artwork";
 import "./auth.css";
+import "./auth-unified.css";
 
 type Mode = "login" | "signup";
 type AuthMessage = { text: string; error: boolean };

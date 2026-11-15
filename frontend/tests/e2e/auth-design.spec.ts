@@ -123,7 +123,8 @@ test("auth controls show keyboard focus and expose readable input text", async (
   const placeholderColor = await page.getByLabel("Email").evaluate(el =>
     getComputedStyle(el, "::placeholder").color
   );
-  expect(placeholderColor).toBe("rgb(91, 107, 128)");
+  // The placeholder intentionally uses the landing-page muted ink token (#52616e).
+  expect(placeholderColor).toBe("rgb(82, 97, 110)");
   const labelSize = await page.locator(".auth-field span").first().evaluate(el =>
     parseFloat(getComputedStyle(el).fontSize)
   );

@@ -1,0 +1,55 @@
+/* Pareto sign-in + sign-up · audited brand alignment.
+ * Preserves the deliberate shader artwork, authentication flow and form states.
+ * The public landing's STK Earl / ink / paper / warm neutral tokens are authoritative. */
+.auth-shell {
+  --auth-ink: var(--pareto-ink);
+  --auth-blue: var(--pareto-accent);
+  --auth-outline: #d5d1c9;
+  --auth-page: var(--pareto-canvas);
+  font-family: var(--pareto-text);
+}
+.auth-sheet { background: var(--pareto-canvas); border-color: var(--pareto-line); border-radius: 16px; }
+.auth-brand { color: var(--pareto-ink); }
+.auth-intro h1 { color: var(--pareto-ink); letter-spacing: -.04em; }
+.auth-intro p { color: var(--pareto-body); letter-spacing: 0; line-height: 1.55; }
+.auth-social {
+  background: var(--pareto-surface);
+  color: var(--pareto-ink);
+  border-color: var(--auth-outline);
+  border-radius: 12px;
+  font-weight: 550;
+}
+.auth-social:hover:not(:disabled) { background: var(--pareto-warm); border-color: var(--pareto-muted); }
+.auth-divider { color: var(--pareto-muted); }
+.auth-divider::before, .auth-divider::after { background: var(--pareto-line); }
+.auth-field { background: var(--pareto-surface); border-color: var(--auth-outline); border-radius: 12px; }
+.auth-field:focus-within { border-color: var(--pareto-accent); box-shadow: 0 0 0 3px rgb(70 123 235 / .13); }
+.auth-field input { color: var(--pareto-ink); letter-spacing: 0; }
+.auth-field input::placeholder { color: var(--pareto-muted); }
+.auth-field span { color: var(--pareto-body); }
+.auth-field input:not(:placeholder-shown) + span { color: var(--pareto-muted); }
+.auth-show-password, .auth-switch { color: var(--pareto-muted); }
+.auth-forgot, .auth-switch a { color: var(--pareto-ink); text-underline-offset: 3px; }
+.auth-submit { background: var(--pareto-ink); border-radius: 12px; font-weight: 600; }
+.auth-submit:hover:not(:disabled) { background: #18304a; }
+.auth-message, .auth-card__notice {
+  background: var(--pareto-warm); color: var(--pareto-body);
+  border: 1px solid var(--pareto-line); border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.auth-message--error { color: #9a3333; border-color: #b99292; }
+.auth-shell a:focus-visible,
+.auth-shell button:focus-visible,
+.auth-config-details summary:focus-visible { outline: 3px solid var(--pareto-accent); outline-offset: 3px; }
+.auth-shell :is(button, input, a) { -webkit-tap-highlight-color: transparent; }
+.auth-show-password { padding-inline: 8px; }
+.auth-shell :is(.auth-social, .auth-submit) { min-height: 44px; }
+@media (max-width: 599px) {
+  .auth-shell { padding: 0; }
+  .auth-sheet { border: 0; border-radius: 0; }
+  .auth-sheet__header { padding-inline: 24px; }
+  .auth-sheet__center { padding-inline: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-shell :is(.auth-field, .auth-social, .auth-submit) { transition: none; }
+}

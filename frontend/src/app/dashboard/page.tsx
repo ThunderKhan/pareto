@@ -6,8 +6,6 @@ import { recentSearches } from "@pareto/backend/search/server";
 export default async function DashboardPage() {
   const user = await recruiter();
   if (!user) redirect("/login?next=/dashboard");
-  const first = user.user_metadata?.first_name;
-  const firstName = typeof first === "string" ? first.trim() : "";
   let recent: Awaited<ReturnType<typeof recentSearches>> = [];
   let historyError = false;
 
@@ -22,7 +20,8 @@ export default async function DashboardPage() {
   return <main className="pareto-main pareto-main--overview">
     <header className="pareto-overview-header">
       <div>
-        <h1 className="pareto-page-title">{firstName ? `Welcome back, ${firstName}.` : "Welcome back."}</h1>
+        <h1 className="pareto-page-title">Your recruiting workspace</h1>
+        <p className="pareto-page-lede">Review confirmed searches and return to the candidates behind each decision.</p>
       </div>
       <Link href="/dashboard/search" className="pareto-overview-new">New candidate search</Link>
     </header>
@@ -30,6 +29,7 @@ export default async function DashboardPage() {
     <section className="pareto-overview-history" aria-labelledby="overview-recent">
       <div className="pareto-overview-history__heading">
         <h2 id="overview-recent">Recent searches</h2>
+        <p className="pareto-overview-history__description">Saved requirements and their latest confirmed revisions</p>
       </div>
       {historyError ? <p className="pareto-overview-history__empty" role="alert">
         Your recent searches couldn&rsquo;t be loaded. Please try again in a moment.

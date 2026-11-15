@@ -16,6 +16,7 @@ import "./workspace-dark.css";
 import "./dashboard.css";
 import "./audit-polish.css";
 import "./round-03.css";
+import "./craft-unified.css";
 
 type RecruiterIdentity = {
   email: string;

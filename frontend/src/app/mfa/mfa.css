@@ -2,16 +2,18 @@
   padding: 28px 16px; background: #fffdf9; color: #020e24; }
 .pareto-mfa-card { width: min(100%,440px); padding: clamp(25px,5vw,45px);
   background: white; border: 1px solid #e7e1d8; border-radius: 16px; }
-.pareto-mfa-brand { display: inline-flex; align-items: center; gap: 7px; font: 400 27px/1 Georgia,serif; }
+.pareto-mfa-brand { display: inline-flex; align-items: center; gap: 7px; font: 400 27px/1 var(--pareto-display); }
 .pareto-mfa-brand span { color: #467beb; }
-.pareto-mfa-card h1 { font: 400 clamp(2.1rem,5vw,3.1rem)/1.1 Georgia,serif; margin: 37px 0 11px; }
+.pareto-mfa-card h1 { font: 400 clamp(2.1rem,5vw,3.1rem)/1.1 var(--pareto-display); margin: 37px 0 11px; }
 .pareto-mfa-card p { color: #52616e; font-size: 14px; line-height: 1.6; }
 .pareto-mfa-card form { display: grid; gap: 13px; margin-top: 27px; }
 .pareto-mfa-card label { font-size: 13px; font-weight: 650; }
-.pareto-mfa-card input { min-height: 49px; border: 1px solid #bdc7d4; border-radius: 9px;
+.pareto-mfa-card input { min-height: 49px; border: 1px solid #d5d1c9; border-radius: 9px;
   padding: 12px 14px; font-size: 20px; letter-spacing: .24em; }
 .pareto-mfa-card input:focus-visible { outline: 2px solid #467beb; outline-offset: 3px; }
 .pareto-mfa-card button { background: #020e24; color: white; min-height: 47px;
   border-radius: 10px; padding: 12px; font-weight: 650; }
 .pareto-mfa-card button:disabled { opacity: .6; cursor: not-allowed; }
+.pareto-mfa-card button:hover:not(:disabled) { background: #18304a; }
+.pareto-mfa-card :is(a, button):focus-visible { outline: 3px solid var(--pareto-accent); outline-offset: 3px; }
 .pareto-mfa-card .pareto-mfa-error { color: #a21c1c; }

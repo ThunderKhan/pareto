@@ -72,11 +72,11 @@ jobs:
         run: pnpm --filter @pareto/frontend exec playwright install --with-deps chromium
       - name: Playwright browser tests
         run: pnpm test:e2e
-      - name: Upload homepage screenshots and Playwright diagnostics
-        if: always() && (github.ref_name == 'feat/homepage-v2' || github.ref_name == 'main')
+      - name: Upload cross-route browser screenshots and Playwright diagnostics
+        if: always() && (github.event_name == 'pull_request' || github.ref_name == 'feat/homepage-v2' || github.ref_name == 'main')
         uses: actions/upload-artifact@v4
         with:
-          name: pareto-homepage-v2-browser-evidence
+          name: pareto-ui-browser-evidence
           path: |
             frontend/test-results/
             frontend/playwright-report/
