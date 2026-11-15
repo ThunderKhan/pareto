@@ -12,7 +12,7 @@ describe("actual provider HTTP request construction (offline)", () => {
     vi.stubEnv("GEMINI_MODEL", "gemini-2.5-flash");
     vi.stubEnv("GROQ_API_KEY", "");
     vi.stubEnv("GROQ_MODEL", "");
-    const mock = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+    const mock = vi.fn(async (url: string | Request | URL, init?: RequestInit) => {
       expect(url).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent");
       const headers = new Headers(init?.headers);
       expect(headers.get("x-goog-api-key")).toBe("synthetic-gemini-key");
@@ -41,7 +41,7 @@ describe("actual provider HTTP request construction (offline)", () => {
     vi.stubEnv("GEMINI_MODEL", "");
     vi.stubEnv("GROQ_API_KEY", "synthetic-groq-key");
     vi.stubEnv("GROQ_MODEL", "openai/gpt-oss-20b");
-    const mock = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+    const mock = vi.fn(async (url: string | Request | URL, init?: RequestInit) => {
       expect(url).toBe("https://api.groq.com/openai/v1/chat/completions");
       expect(new Headers(init?.headers).get("Authorization")).toBe("Bearer synthetic-groq-key");
       const body = JSON.parse(String(init?.body));
