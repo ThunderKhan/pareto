@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   CaretDown, House, MagnifyingGlass, SidebarSimple,
   UserCircle, UsersThree, X,
@@ -14,6 +14,7 @@ import ParitoAvatar from "./parito-avatar";
 import "./workspace-tokens.css";
 import "./workspace-dark.css";
 import "./dashboard.css";
+import "./audit-polish.css";
 
 type RecruiterIdentity = {
   email: string;
@@ -38,6 +39,7 @@ export default function DashboardShell({ children, user }: {
   const path = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const accountRef = useRef<HTMLDetailsElement>(null);
   const [recent, setRecent] = useState<{ id: string; title: string; version: number }[]>([]);
   useEffect(() => {
     let mounted = true;
@@ -63,6 +65,27 @@ export default function DashboardShell({ children, user }: {
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
   }, [mobileOpen]);
+
+  // Keep the account control usable without a mouse and prevent a stranded popup.
+  useEffect(() => {
+    const outside = (event: PointerEvent) => {
+      const menu = accountRef.current;
+      if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      const menu = accountRef.current;
+      if (!menu?.open || event.key !== "Escape") return;
+      event.preventDefault();
+      menu.open = false;
+      menu.querySelector<HTMLElement>("summary")?.focus();
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
 
   const current = navigation.find(item => item.href === path) ??
     navigation.find(item => item.href !== "/dashboard" && path.startsWith(item.href + "/")) ??
@@ -106,7 +129,7 @@ export default function DashboardShell({ children, user }: {
           </Link>)}
         </div>}
       </div>
-      <details className="pareto-account">
+      <details ref={accountRef} className="pareto-account">
         <summary aria-label={"Account menu for " + identityName(user)}>
           <ParitoAvatar />
           <span className="pareto-account__identity">
@@ -116,7 +139,10 @@ export default function DashboardShell({ children, user }: {
           <CaretDown size={16} className="pareto-account__caret" aria-hidden="true" />
         </summary>
         <div className="pareto-account__actions">
-          <Link href="/dashboard/profile" onClick={() => setMobileOpen(false)}><UserCircle size={17}/> Account settings</Link>
+          <Link href="/dashboard/profile" onClick={() => {
+            setMobileOpen(false);
+            if (accountRef.current) accountRef.current.open = false;
+          }}><UserCircle size={17}/> Account settings</Link>
           <SignOutButton />
         </div>
       </details>
