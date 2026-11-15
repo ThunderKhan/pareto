@@ -10,6 +10,9 @@ import {
   scheduleBatch, listBatches, jobHistory, retryDelaySeconds, configLimit, LeaseLost,
 } from "./queue";
 import { workOnce } from "./runner";
+import { recoverInterruptedUploads } from "./reconcile";
+import { validateResume } from "./parse";
+import { randomUUID } from "node:crypto";
 
 const url = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -70,7 +73,7 @@ describe("queue scheduling calculations", () => {
 });
 
 describe.skipIf(!url)("PostgreSQL durable ingestion queue", () => {
-  const db = database();
+  const db = url ? database() : (undefined as never);
   const ids: string[] = [], batchIds: string[] = [];
   afterAll(async () => {
     await db.candidate.deleteMany({ where: { sourceDocumentId: { in: ids } } });
@@ -245,4 +248,38 @@ describe.skipIf(!url)("PostgreSQL durable ingestion queue", () => {
     await processClaim(next!, { storage, providers: [provider] });
     expect((await resumeImport(owner, created.document.id)).status).toBe("READY");
   });
+  it("reconciles crashed HTTP uploads and marks truly missing objects for reupload", async () => {
+    const { storage } = vault();
+    const id = randomUUID(), key = owner + "/" + id + ".txt";
+    const source = validateResume("interrupted.txt", "text/plain", fixture("m"));
+    ids.push(id);
+    await storage.upload(key, source);
+    await db.resumeDocument.create({ data: {
+      id, ownerId: owner, fileName: "interrupted.txt", kind: "TXT",
+      mimeType: "text/plain", byteSize: source.bytes.length,
+      sha256: source.sha256, storageKey: key, status: "RECEIVED",
+      updatedAt: new Date(Date.now()-420000), attempts: 0,
+    } });
+    const recovered = await recoverInterruptedUploads(storage, 300000);
+    expect(recovered.recovered).toBeGreaterThanOrEqual(1);
+    expect(await db.ingestionJob.count({ where: { documentId: id } })).toBe(1);
+    expect((await resumeImport(owner, id)).status).toBe("STORED");
+    await workOnce("recovered-upload", {global:1,perOwner:1}, {storage,providers:[provider]});
+    expect((await resumeImport(owner,id)).status).toBe("READY");
+
+    const lostId = randomUUID();
+    ids.push(lostId);
+    await db.resumeDocument.create({ data: {
+      id: lostId, ownerId: owner, fileName: "missing.txt", kind: "TXT",
+      mimeType: "text/plain", byteSize: source.bytes.length,
+      sha256: "f".repeat(64), storageKey: owner+"/"+lostId+".txt",
+      status: "RECEIVED", updatedAt: new Date(Date.now()-420000), attempts: 0,
+    } });
+    const lost = await recoverInterruptedUploads(storage,300000);
+    expect(lost.requiresReupload).toBeGreaterThanOrEqual(1);
+    expect((await resumeImport(owner,lostId))).toMatchObject({
+      status: "FAILED", errorCode: "REUPLOAD_REQUIRED", ingestionJob: null,
+    });
+  });
+
 });
