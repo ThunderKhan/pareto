@@ -70,7 +70,7 @@ export default function CandidateLibrary({ initialCandidateId }: { initialCandid
       {error && <p role="alert" className="search-error">{error}</p>}
       {(busy || initialLoading) && <p role="status">Loading candidates…</p>}
       {!initialLoading && <p className="pareto-candidates__count" aria-live="polite">
-        {items.length} profile{items.length === 1 ? "" : "s"} shown · up to 50 per search
+        {items.length} profile{items.length === 1 ? "" : "s"} shown (first 50)
       </p>}
       <div className="pareto-candidates__rows">
         {items.map(item => <button type="button" key={item.id} disabled={busy}
@@ -83,7 +83,8 @@ export default function CandidateLibrary({ initialCandidateId }: { initialCandid
         </button>)}
         {!busy && !initialLoading && !items.length && <div className="pareto-candidates__empty">
           <UsersThree size={26} aria-hidden="true"/>
-          <p>No candidates found. Try another name or confirm this workspace has imported profiles.</p>
+          <p>No matching candidate records. Try another name or add profiles to your workspace.</p>
+          <Link className="pareto-candidates__empty-action" href="/dashboard/candidates/import">Import resumes</Link>
         </div>}
       </div>
     </section>
@@ -95,7 +96,7 @@ export default function CandidateLibrary({ initialCandidateId }: { initialCandid
         <dl>{Object.entries({
           "Experience": selected.experienceMonths === null ? "Not documented" : String(selected.experienceMonths) + " months",
           "Notice period": selected.noticePeriodDays === null ? "Not documented" : String(selected.noticePeriodDays) + " days",
-          "Skills": selected.skills?.join(", ") || "Not documented",
+          "Skills": selected.skills === null ? "Not documented" : selected.skills.length ? selected.skills.join(", ") : "None recorded",
           "Industry": selected.industry || "Not documented",
           "Education": selected.education || "Not documented",
           "Employment type": selected.employmentType || "Not documented",
@@ -107,7 +108,7 @@ export default function CandidateLibrary({ initialCandidateId }: { initialCandid
         </Link>
       </> : <div className="pareto-candidates__empty">
         <UsersThree size={30} aria-hidden="true"/>
-        <h2>Explore candidate details.</h2>
+        <h2>Select a candidate</h2>
         <p>Select a candidate to inspect documented evidence and start a similarity search.</p>
       </div>}
     </section>
