@@ -1,3 +1,4 @@
+import { rejectCrossOriginMutation } from "@/lib/request-origin";
 import { z } from "@pareto/backend/search";
 import { resumeImports, queueResumeUpload } from "@pareto/backend/ingestion/server";
 import { MAX_UPLOAD_BODY_BYTES, ResumeInputError } from "@pareto/backend/ingestion/parse";
@@ -75,6 +76,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const forbidden = rejectCrossOriginMutation(request);
+  if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return respond({ error: "Sign in to upload resumes." }, 401);
   try {

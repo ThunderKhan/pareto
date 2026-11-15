@@ -1,3 +1,4 @@
+import { rejectCrossOriginMutation } from "@/lib/request-origin";
 import { z } from "@pareto/backend/search";
 import { recruiter } from "@/lib/auth";
 import { logger } from "@pareto/backend";
@@ -24,6 +25,8 @@ export async function GET() {
   catch (error) { return failed(error); }
 }
 export async function POST(request: Request) {
+  const forbidden = rejectCrossOriginMutation(request);
+  if (forbidden) return forbidden;
   const user = await recruiter();
   if (!user) return respond({ error: "Sign in to schedule resume batches." }, 401);
   try {

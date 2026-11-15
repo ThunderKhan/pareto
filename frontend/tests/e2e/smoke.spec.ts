@@ -140,3 +140,21 @@ test("Parito avatar uses the existing branded mascot asset", async ({ request })
   expect(svg).toContain("Pareto mascot holding a candidate profile");
   expect(svg).toContain('viewBox="0 0 240 225"');
 });
+
+
+test("resume mutation endpoints reject cross-origin browser requests before handling a body", async ({ request }) => {
+  const endpoints = [
+    "/api/v1/imports",
+    "/api/v1/imports/batches",
+    "/api/v1/imports/00000000-0000-4000-8000-000000000000",
+    "/api/v1/imports/00000000-0000-4000-8000-000000000000/profile",
+  ];
+  for (const endpoint of endpoints) {
+    const response = await request.post(endpoint, {
+      headers: { Origin: "https://untrusted.example", "Sec-Fetch-Site": "cross-site" },
+      data: "untrusted request",
+    });
+    expect(response.status(), endpoint).toBe(403);
+    expect(await response.json()).toMatchObject({ code: "CROSS_ORIGIN" });
+  }
+});
