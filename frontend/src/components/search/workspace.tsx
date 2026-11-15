@@ -58,7 +58,8 @@ function ProfileFacts({ profile }: { profile: Profile }) {
       "Current role": profile.roleTitle, City: profile.city,
       Experience: profile.experienceMonths === null ? null : profile.experienceMonths + " months",
       "Notice period": profile.noticePeriodDays === null ? null : profile.noticePeriodDays + " days",
-      Skills: profile.skills?.join(", "), Industry: profile.industry, Education: profile.education,
+      Skills: profile.skills === null ? null : profile.skills.length ? profile.skills.join(", ") : "None recorded",
+      Industry: profile.industry, Education: profile.education,
       "Employment type": profile.employmentType, "Previous roles": profile.pastRoles.join(", "),
       Certifications: profile.certifications.join(", "),
     }).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || "Not documented"}</dd></div>)}
