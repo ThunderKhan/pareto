@@ -692,7 +692,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
               onChange={criteria => setDraft({ ...draft, criteria, requestId: crypto.randomUUID() })}/>
           </div>
           <footer className="pareto-draft-footer">
-            <p>{draftValid ? "No search runs until you confirm." : "Resolve the highlighted criteria before confirming."}</p>
+            <p role={busy ? "status" : undefined}>{busy ? "Saving this confirmed search and checking candidate records…" : draftValid ? "No search runs until you confirm." : "Resolve the highlighted criteria before confirming."}</p>
             <div className="pareto-draft-actions">
               <button type="button" disabled={busy} className="pareto-draft-discard"
                 onClick={discardDraft}>Discard draft</button>
