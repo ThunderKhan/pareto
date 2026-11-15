@@ -5,6 +5,7 @@ import {
   SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults,
 } from "@pareto/backend/search/server";
 import { interpret, interpretRefinement } from "@pareto/backend/search/interpret";
+import { simulateSearch } from "@pareto/backend/search/server";
 import { recruiter } from "@/lib/auth";
 
 const id = z.string().min(1).max(120);
@@ -13,6 +14,7 @@ const input = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("interpret"), prompt: promptSchema }),
   z.strictObject({ action: z.literal("reference"), candidateId: id }),
   z.strictObject({ action: z.literal("refine"), sessionId: id, expectedVersion: revision, prompt: promptSchema }),
+  z.strictObject({ action: z.literal("simulate"), sessionId: id, expectedVersion: revision, criteria: criteriaSchema }),
   z.strictObject({ action: z.literal("confirm"), criteria: criteriaSchema, requestId: z.uuid(),
     referenceId: id.optional(), sessionId: id.optional(), expectedVersion: revision.optional() }),
 ]);
@@ -81,6 +83,7 @@ export function POST(request: Request) {
           throw new SearchError(422, "Revision confirmation requires a session ID and its expected version.");
         }
         return confirmSearch(ownerId, data);
+      case "simulate": return simulateSearch(ownerId, data.sessionId, data.expectedVersion, data.criteria);
       case "refine": {
         const state = await activeSearch(ownerId, data.sessionId);
         if (state.version !== data.expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");

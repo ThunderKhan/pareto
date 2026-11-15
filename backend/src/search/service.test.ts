@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { database } from "./db";
 import { criteriaSchema } from "./criteria";
 import { interpret, interpretRefinement } from "./interpret";
-import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults } from "./service";
+import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, simulateSearch } from "./service";
 
 const integrationUrl = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -16,6 +16,50 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     const db = database();
     await db.searchSession.deleteMany({ where: { ownerId: owner, id: { in: [...sessions] } } });
     await db.$disconnect();
+  });
+
+  it("compares confirmed criteria on real seeded PostgreSQL without saving any hypothetical revision or notification", async () => {
+    const original = criteriaSchema.parse([
+      { field: "role", mode: "required", value: "Senior Java Developer" },
+      { field: "city", mode: "required", value: "Hyderabad" },
+      { field: "experience", mode: "required", minMonths: 72, maxMonths: 120 },
+      { field: "notice", mode: "required", maxDays: 30 },
+    ]);
+    const confirmed = await confirmSearch(owner, { requestId: randomUUID(), criteria: original });
+    sessions.add(confirmed.sessionId);
+    expect(confirmed.counts.ELIGIBLE).toBe(3);
+    const proposed = original.map(rule => rule.field === "notice" ? { ...rule, maxDays: 45 } : rule);
+    const db = database();
+    const beforeRevisions = await db.searchRevision.count({ where: { sessionId: confirmed.sessionId } });
+    const beforeNotifications = await db.recruiterNotification.count({
+      where: { sessionId: confirmed.sessionId },
+    });
+
+    const comparison = await simulateSearch(owner, confirmed.sessionId, confirmed.version, proposed);
+    expect(comparison).toMatchObject({
+      sessionId: confirmed.sessionId, version: 1, status: "PREVIEW_ONLY", totalCandidates: 48,
+      original: { counts: confirmed.counts, criteria: original },
+      proposed: { counts: { ELIGIBLE: 4 } },
+      delta: { exactMatches: 1 },
+      groups: { newlyEligible: { count: 1 } },
+    });
+    expect(comparison.groups.newlyEligible.examples[0]).toMatchObject({
+      displayName: "Meera Iyer", before: { eligibility: "INELIGIBLE" },
+      after: { eligibility: "ELIGIBLE" },
+    });
+    expect(comparison.groups.newlyEligible.examples[0].before.details).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "noticePeriodDays", outcome: "FAIL", actual: 31 }),
+    ]));
+    expect(comparison.groups.newlyEligible.examples[0].after.details).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "noticePeriodDays", outcome: "MATCH", actual: 31 }),
+    ]));
+    expect(await db.searchRevision.count({ where: { sessionId: confirmed.sessionId } })).toBe(beforeRevisions);
+    expect(await db.recruiterNotification.count({ where: { sessionId: confirmed.sessionId } })).toBe(beforeNotifications);
+    expect(await activeSearch(owner, confirmed.sessionId)).toMatchObject({ version: 1, criteria: original });
+    expect((await searchResults(owner, confirmed.sessionId)).counts).toEqual(confirmed.counts);
+    await expect(simulateSearch(stranger, confirmed.sessionId, 1, proposed)).rejects.toMatchObject({ status: 404 });
+    await expect(simulateSearch(owner, confirmed.sessionId, 2, proposed)).rejects.toMatchObject({ status: 409 });
+    await expect(simulateSearch(owner, "absent-session", 1, proposed)).rejects.toMatchObject({ status: 404 });
   });
 
   it("keeps 48 stable synthetic candidates and 129 skill links after repeat seeding", async () => {

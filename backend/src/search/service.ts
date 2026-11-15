@@ -3,6 +3,7 @@ import { database } from "./db";
 import { criteriaSchema, type Rule } from "./criteria";
 import { evaluatorVersion, rank, referenceCriteria } from "./evaluate";
 import type { Prisma } from "../generated/prisma/client";
+import { compareSearches } from "./simulator";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
 type Candidate = Prisma.CandidateGetPayload<{ include: { skills: typeof skills } }>;
@@ -146,4 +147,23 @@ export async function confirmSearch(ownerId: string, input: Confirmation) {
     }
   }
   return { ...saved, criteria, referenceId, ...await compute(ownerId, criteria, referenceId) };
+}
+
+
+/**
+ * Compare a complete hypothetical criteria set with an owned, CONFIRMED
+ * search. This deliberately does not call confirmSearch or write a revision.
+ */
+export async function simulateSearch(ownerId: string, sessionId: string, expectedVersion: number, proposedCriteria: Rule[]) {
+  const state = await activeSearch(ownerId, sessionId);
+  if (state.version !== expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
+  const criteria = criteriaSchema.parse(proposedCriteria);
+  const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
+  if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
+  // A single fetched set is evaluated twice; no drift from separate database
+  // reads. Re-check the version in case a separate tab confirmed a revision.
+  const comparison = compareSearches(rows.map(profile), state.criteria, criteria, state.referenceId);
+  const latest = await activeSearch(ownerId, sessionId);
+  if (latest.version !== expectedVersion) throw new SearchError(409, "This search changed during simulation. Reload the latest revision.");
+  return { sessionId, version: state.version, ...comparison };
 }
