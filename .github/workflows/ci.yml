@@ -9,10 +9,12 @@ on:
       - integration/release-20261114
       - feat/private-resume-ingestion
       - feat/durable-resume-batch-workers
+      - feat/ingestion-quality-audit
   pull_request:
     branches:
       - main
       - feat/private-resume-ingestion
+      - feat/durable-resume-batch-workers
   workflow_dispatch:
 
 permissions:
@@ -57,6 +59,8 @@ jobs:
           pnpm db:seed
       - name: Lint, typecheck, and unit and PostgreSQL tests
         run: pnpm check
+      - name: Run offline synthetic extraction-quality evaluation (no model keys)
+        run: pnpm --filter @pareto/backend ingest:evaluate
       - name: Verify independent ingestion worker runtime against PostgreSQL
         run: pnpm ingest:worker
         env:
