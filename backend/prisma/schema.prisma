@@ -325,3 +325,14 @@ model ResumeProfileAudit {
   @@index([ownerId, createdAt])
   @@index([documentId, createdAt])
 }
+
+/// Hourly AI attempt reservations shared by all application replicas.
+model AiRequestQuota {
+  scope       String
+  subject     String
+  windowStart DateTime @db.Timestamp(3)
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamp(3)
+
+  @@id([scope, subject, windowStart])
+}

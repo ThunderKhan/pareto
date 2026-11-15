@@ -4,6 +4,7 @@ import type { AiTaskId } from "../contracts/task";
 import { taskDefinition } from "../registry";
 import { recordSafeUsage } from "../observability/usage";
 import { aiProcessLimiter } from "./budgets";
+import { durableQuotaEnabled, reserveDurableAiAttempt } from "./durable-quota";
 import { providerCircuitBreaker } from "./circuit-breaker";
 import { availableProviders, type JsonProvider } from "./http";
 
@@ -36,6 +37,8 @@ export async function proposeStructured<T extends object>(
     const release = aiProcessLimiter.acquire(context.ownerId ?? "unscoped");
     const attemptStarted = Date.now();
     try {
+      if (durableQuotaEnabled())
+        await reserveDurableAiAttempt(context.ownerId ?? "operator-probe");
       const response = await provider(system, input, Math.min(9000, remaining), config.maxOutputTokens);
       let proposal: T;
       try { proposal = validate(response.raw); }
