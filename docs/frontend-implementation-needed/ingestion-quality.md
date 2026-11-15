@@ -1,7 +1,7 @@
 # Ingestion Tracking + Data Quality — Frontend Implementation Needed
 
 **Product:** Pareto · **Backend:** `feat/ingestion-quality-audit` (depends on worker PR #14 and ingestion PR #13).  
-**Status:** Backend implemented on a separate branch; **frontend not implemented**.  
+**Status:** Backend merged to `main`; frontend implementation on PR #20; live authenticated verification pending.  
 **Place in:** recruiter-only `/dashboard/candidates/import`, extending [batch-processing.md](batch-processing.md) and [ingestion.md](ingestion.md). Match Pareto's established ivory/navy/cobalt navigation and compact tables.
 
 ## Goal
@@ -89,3 +89,7 @@ Do not automatically infer a missing notice period is zero. For `skills`, `null`
 - [ ] Existing import, search, diagnostics, simulator and near-match regressions pass.
 
 **Technical reference:** [INGESTION-QUALITY-AUDIT.md](../INGESTION-QUALITY-AUDIT.md).
+
+## Delivered frontend (PR #20)
+
+The importer detail surface provides the complete typed profile editor, nullable unknowns (including unknown-vs-empty skills), required explicit source attestation, optimistic `reviewVersion` compare-and-swap, correction and rejection reasons, approval/rejection confirmation, conflict reload, and chronological audit before/after values. Changed-source quotes are deleted by the backend, not fabricated by the browser. `metrics.tsx` displays actual owner-scoped attempt durations and review activity with returned accuracy caveats. Signed-in approval/correction/rejection and live provider quality require an authorized dedicated recruiter/bucket/worker environment; CI only verifies the code and signed-out API security boundary.

@@ -31,6 +31,22 @@ We intentionally use **one deployable Next.js application**. The `frontend/src/a
 
 Pareto is one Next.js application with a separate reusable TypeScript backend package. The recruiter signs in with **Supabase Auth**; server-side requests resolve the authenticated user and scope Prisma candidate and search queries to that user's ID in **PostgreSQL**. Gemini (primary) and Groq (fallback) can translate a hiring brief into validated, **editable** criteria, but do not generate candidate records or scores. The recruiter explicitly confirms a draft before the deterministic matcher retrieves and ranks real seeded candidate rows and explains each MATCH, FAIL, and UNKNOWN. Confirmed sessions persist revisions for conversational follow-ups, and reference-profile searches rank other candidates by documented attributes.
 
+### Private resume imports and human review
+
+The recruiter workspace now has **Candidates → Import resumes** (`/dashboard/candidates/import`). Authenticated users can upload PDF (4 MiB), DOCX (2 MiB) or TXT (512 KiB), follow durable queue stages, schedule batches, inspect exact source evidence and processing attempts, and explicitly approve, correct or reject extracted profiles with versioned audit history. This is an evidence-and-review UI, **not** an assurance of AI accuracy or a live configured Storage/provider integration.
+
+For a dedicated Pareto Supabase project (never an unrelated VSPH/IET database): configure a **private** `pareto-private-resumes` Storage bucket and server-only credentials per [resume ingestion runbook](docs/RESUME-INGESTION.md); apply the repo's versioned migrations; configure AI model keys if you want extraction; run the web server **and** an independently supervised background worker:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm db:generate
+pnpm db:deploy
+pnpm --filter @pareto/backend storage:setup  # only after verifying the correct private Supabase project
+pnpm --filter @pareto/backend ingest:worker  # separate long-running process (not a web request)
+```
+
+A stopped worker leaves jobs truthfully `QUEUED`; absence of model credentials yields review/failure states, never fabricated candidate completions. See [durable queue runbook](docs/RESUME-BATCH-PROCESSING.md) and [review/quality audit](docs/INGESTION-QUALITY-AUDIT.md). The authenticated full flow requires dedicated real test credentials; CI's signed-out browser checks cannot prove production readiness.
+
 **Demo data:** 48 deterministic synthetic candidate records; no applicant/resume uploads. Only the public marketing preview is illustrative client-side sample data, clearly labelled as such. Missing credentials never unlock the protected workspace.
 ## Requirements
 
