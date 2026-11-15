@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { database } from "../search/db";
 import { logger } from "../index";
 import { processClaim, type ProcessingDependencies } from "./processor";
+import { recoverInterruptedUploads } from "./reconcile";
 import { claimJob, heartbeatJob, recoverExpiredJobs, recoverUnqueuedDocuments,
   finishJob, LeaseLost, configLimit, type ClaimedJob } from "./queue";
 
@@ -67,6 +68,7 @@ export async function runWorker(options: WorkerOptions, deps: ProcessingDependen
       try {
         await recoverExpiredJobs();
         await recoverUnqueuedDocuments();
+        await recoverInterruptedUploads(deps.storage);
       } catch {
         logger.warn({ event: "ingestion_recovery_failed" }, "Ingestion recovery will retry.");
       }
