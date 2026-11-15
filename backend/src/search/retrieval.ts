@@ -77,7 +77,7 @@ export function hybridRank(
     const id = result.candidate.id;
     const l = lexRank.get(id) ?? baseline.length;
     const s = semRank.get(id) ?? l;
-    const hybridScore = 0.5 / (60 + l) + 0.5 / (60 + s);
+    const hybridScore = 0.35 / (60 + l) + 0.65 / (60 + s);
     return { ...result, retrieval: {
       lexicalScore: lex.get(id) ?? 0,
       semanticSimilarity: similarities.get(id) ?? null,

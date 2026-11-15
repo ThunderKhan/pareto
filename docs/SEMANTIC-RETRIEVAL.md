@@ -14,7 +14,7 @@ Scope: 768-dimensional Gemini embeddings, private PostgreSQL pgvector HNSW index
 ## Ranking and safety
 
 1. The deterministic evaluator still computes MATCH, FAIL and UNKNOWN, preserving ELIGIBLE, NEEDS_REVIEW and INELIGIBLE.
-2. Preserve order by eligibility, required criteria met, and preferred criteria met. Only ties are reranked using 0.5 lexical RRF + 0.5 semantic RRF (k=60). Candidate IDs are the stable final tie break.
+2. Preserve order by eligibility, required criteria met, and preferred criteria met. Only ties are reranked using 0.35 lexical RRF + 0.65 semantic RRF (k=60). Candidate IDs are the stable final tie break.
 3. Excluded skill rules never enter the semantic query. Those rules stay in the deterministic evaluator.
 4. Missing or stale embedding entries use lexical rank only. With no valid index, key or provider response, the **original** deterministic ordering is returned.
 5. Never present a vector similarity as proof of a candidate skill or eligibility.
