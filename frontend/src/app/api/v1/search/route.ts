@@ -94,7 +94,7 @@ export function POST(request: Request) {
     catch { throw new SearchError(400, "Send a valid JSON request."); }
     const data = input.parse(raw);
     switch (data.action) {
-      case "interpret": return interpret(data.prompt);
+      case "interpret": return interpret(data.prompt, undefined, ownerId);
       case "reference": return referenceDraft(ownerId, data.candidateId);
       case "simulate": return simulateSearch(ownerId, data.sessionId, data.expectedVersion, data.criteria);
       case "confirm":
@@ -105,7 +105,7 @@ export function POST(request: Request) {
       case "refine": {
         const state = await activeSearch(ownerId, data.sessionId);
         if (state.version !== data.expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
-        return interpretRefinement(data.prompt, state.criteria);
+        return interpretRefinement(data.prompt, state.criteria, undefined, ownerId);
       }
     }
   });
