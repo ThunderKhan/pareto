@@ -4,6 +4,7 @@ import type { AiTaskId } from "../contracts/task";
 import { taskDefinition } from "../registry";
 import { recordSafeUsage } from "../observability/usage";
 import { aiProcessLimiter } from "./budgets";
+import { providerCircuitBreaker } from "./circuit-breaker";
 import { availableProviders, type JsonProvider } from "./http";
 
 const TOTAL_DEADLINE_MS = 15000;
@@ -27,6 +28,10 @@ export async function proposeStructured<T extends object>(
   for (const [index, provider] of selected.entries()) {
     const remaining = TOTAL_DEADLINE_MS - (Date.now() - started);
     if (remaining < 100) { last = new AiFailure("TIMEOUT"); break; }
+    if (provider.providerName && !providerCircuitBreaker.allows(provider.providerName)) {
+      last = new AiFailure("PROVIDER_5XX");
+      continue;
+    }
     // Each fallback consumes a separate budget reservation. This is per-process only.
     const release = aiProcessLimiter.acquire(context.ownerId ?? "unscoped");
     const attemptStarted = Date.now();
@@ -35,6 +40,7 @@ export async function proposeStructured<T extends object>(
       let proposal: T;
       try { proposal = validate(response.raw); }
       catch { throw new AiFailure("OUTPUT_INVALID", false); }
+      if (provider.providerName) providerCircuitBreaker.onSuccess(provider.providerName);
       recordSafeUsage({
         taskId, requestId, provider: response.provider === "Groq" ? "Groq" : "Gemini",
         outcome: "ok", latencyMs: Date.now() - attemptStarted,
@@ -43,6 +49,7 @@ export async function proposeStructured<T extends object>(
       return { ...proposal, provider: response.provider };
     } catch (error) {
       last = classifyProviderError(error);
+      if (provider.providerName) providerCircuitBreaker.onFailure(provider.providerName, last.code);
       recordSafeUsage({ taskId, requestId, provider: provider.providerName ?? (index === 0 ? "Gemini" : "Groq"),
         outcome: last.code, latencyMs: Date.now() - attemptStarted });
       if (!canFallback(last.code) || index === selected.length - 1) break;
