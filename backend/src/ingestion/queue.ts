@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { isResumeIngestionEnabled } from "./policy";
 import { database } from "../search/db";
-import type { Prisma } from "../generated/prisma/client";
+import { durableQuotaEnabled } from "../ai/providers/durable-quota";
+import { Prisma } from "../generated/prisma/client";
 
 export class JobConflict extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -20,6 +21,13 @@ export function configLimit(name: string, fallback: number, min: number, max: nu
   const n = Number(raw);
   if (!Number.isSafeInteger(n) || n < min || n > max) throw new Error(name + " must be " + min + "–" + max);
   return n;
+}
+/** Capacity delays are deliberately much longer than document processing retries.
+ * Hourly limits are not a malformed-resume condition. Jitter spreads reclaims.
+ */
+export function capacityDelaySeconds(code: "BUDGET_EXCEEDED"|"RATE_LIMIT"|"AUTH_CONFIG", jitter = 0) {
+  const base = code === "BUDGET_EXCEEDED" ? 3900 : code === "RATE_LIMIT" ? 1800 : 3600;
+  return base + Math.round(Math.max(0, Math.min(1, jitter)) * 120);
 }
 export function retryDelaySeconds(attempt: number, jitter = 0) {
   if (!Number.isInteger(attempt) || attempt < 1) throw new Error("Invalid attempt.");
@@ -56,7 +64,7 @@ export async function jobHistory(ownerId: string, documentId: string) {
       durationMs: true, parseMs: true, modelMs: true, persistMs: true,
       sourceChars: true, evidenceCount: true, verifiedFields: true,
       provider: true, extractorVersion: true },
-      orderBy: { attempt: "asc" as const } } } });
+      orderBy: [{ startedAt: "asc" as const }, { id: "asc" as const }] } } });
   if (!job) throw new JobConflict(404, "NOT_FOUND", "Import job not found.");
   return job;
 }
@@ -111,6 +119,18 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
   if (!workerId || workerId.length > 100 || limits.global < 1 || limits.perOwner < 1)
     throw new Error("Invalid worker capacity settings.");
   const token = randomUUID(), attemptId = randomUUID();
+  const quotaEnabled = durableQuotaEnabled();
+  const ownerCap = quotaEnabled ? configLimit("AI_MAX_CALLS_PER_RECRUITER_HOUR", 40, 1, 10000) : 40;
+  const globalCap = quotaEnabled ? configLimit("AI_MAX_GLOBAL_CALLS_PER_HOUR", 2000, 1, 500000) : 2000;
+  // A disabled optional quota must not require its migration to exist.
+  const quotaFilter = quotaEnabled ? Prisma.sql`
+    AND COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
+      WHERE q."scope"='global' AND q."subject"='__global__'
+        AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${globalCap}
+    AND COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
+      WHERE q."scope"='owner' AND q."subject"=j."ownerId"
+        AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${ownerCap}
+  ` : Prisma.empty;
   const rows = await database().$queryRaw<ClaimedJob[]>`
     WITH gate AS MATERIALIZED (SELECT pg_try_advisory_xact_lock(61423, 2026) AS ok),
     next_job AS MATERIALIZED (
@@ -118,6 +138,11 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
       WHERE g.ok AND j."status" IN ('QUEUED','RETRY_SCHEDULED')
         AND j."runAfter"<=NOW() AND j."attempts"<j."maxAttempts"
         AND j."cancelRequested"=false
+        -- With the durable AI quota enabled, leave excess work queued rather
+        -- than claiming hundreds of jobs just to discover the hourly limit.
+        -- The gateway still reserves the actual call atomically: this read is
+        -- only a cheap admission hint and is never treated as a reservation.
+        ${quotaFilter}
         AND (SELECT COUNT(*) FROM "IngestionJob" r
            WHERE r."status"='RUNNING' AND r."leaseExpiresAt">NOW()) < ${limits.global}
         AND (SELECT COUNT(*) FROM "IngestionJob" o
@@ -260,6 +285,36 @@ export async function failJob(job: ClaimedJob, code: string, retryable: boolean,
       leaseToken: job.leaseToken, outcome: "RUNNING" },
       data: { outcome: "RETRY", errorCode: code, finishedAt: new Date(),
         ...measured(metrics) } });
+  });
+}
+/** Delay an operational AI capacity/configuration problem without consuming
+ * document-processing retries. Each claim has an immutable audit row; advance
+ * generation so another attempt=1 can be claimed without violating uniqueness.
+ * This does NOT refund billable provider calls, which have their own quota log.
+ */
+export async function deferCapacityJob(job: ClaimedJob,
+  code: "BUDGET_EXCEEDED"|"RATE_LIMIT"|"AUTH_CONFIG",
+  delaySeconds = capacityDelaySeconds(code, Math.random()), metrics?: AttemptMetrics) {
+  if (!Number.isSafeInteger(delaySeconds) || delaySeconds < 1 || delaySeconds > 7200)
+    throw new Error("Invalid capacity defer interval.");
+  return database().$transaction(async tx => {
+    const owned = await tx.$queryRaw<{id:string}[]>`
+      UPDATE "IngestionJob" SET "status"='RETRY_SCHEDULED', "stage"='QUEUED',
+        "runAfter"=NOW()+(${delaySeconds}::int * INTERVAL '1 second'),
+        "attempts"="attempts"-1, "generation"="generation"+1,
+        "leaseToken"=NULL, "leaseExpiresAt"=NULL, "workerId"=NULL,
+        "heartbeatAt"=NULL, "lastErrorCode"=${code}, "updatedAt"=NOW()
+      WHERE "id"=${job.id} AND "leaseToken"=${job.leaseToken}
+        AND "status"='RUNNING' AND "leaseExpiresAt">NOW()
+        AND "cancelRequested"=false AND "attempts"=${job.attempts} AND "attempts">0
+      RETURNING "id"`;
+    if (owned.length !== 1) throw new LeaseLost();
+    await tx.resumeDocument.update({ where: { id: job.documentId },
+      data: { status: "STORED", attempts: job.attempts-1, errorCode: code,
+        reviewReasons: ["AI processing is temporarily unavailable; this job will resume automatically."] } });
+    await tx.ingestionAttempt.updateMany({ where: { jobId: job.id,
+      leaseToken: job.leaseToken, outcome: "RUNNING" },
+      data: { outcome: "RETRY", errorCode: code, finishedAt: new Date(), ...measured(metrics) } });
   });
 }
 /** Recover interrupted attempts, respecting the attempt budget and fencing. */

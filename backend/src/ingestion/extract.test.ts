@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AiFailure } from "../ai/contracts/errors";
 import { extractResumeProfile, validateExtractedProfile } from "./extract";
 import type { ParsedResume } from "./parse";
 
@@ -70,6 +71,16 @@ describe("evidence-backed resume extraction", () => {
     expect(result.profile?.displayName).toBe("Asha Nair");
     expect(result.provider).toBe("Groq");
     expect((await extractResumeProfile(parsed, [])).needsReview).toBe(true);
+  });
+  it("preserves upstream capacity failures for the queued worker to defer", async () => {
+    await expect(extractResumeProfile(parsed, [], "owner-for-queue"))
+      .rejects.toMatchObject({ code: "AUTH_CONFIG" });
+    await expect(extractResumeProfile(parsed, [
+      async () => { throw new AiFailure("BUDGET_EXCEEDED", false); },
+    ], "owner-for-queue")).rejects.toMatchObject({ code: "BUDGET_EXCEEDED" });
+    await expect(extractResumeProfile(parsed, [
+      async () => { throw new AiFailure("RATE_LIMIT"); },
+    ], "owner-for-queue")).rejects.toMatchObject({ code: "RATE_LIMIT" });
   });
   it("does not accept evidence excerpts absent from the source", () => {
     const payload = raw();

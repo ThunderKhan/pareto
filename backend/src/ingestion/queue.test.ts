@@ -7,12 +7,13 @@ import { processClaim } from "./processor";
 import {
   claimJob, heartbeatJob, changeStage, finishJob, failJob, recoverExpiredJobs,
   recoverUnqueuedDocuments, retryQueuedDocument, cancelQueuedDocument,
-  scheduleBatch, listBatches, jobHistory, retryDelaySeconds, configLimit, LeaseLost,
+  scheduleBatch, listBatches, jobHistory, retryDelaySeconds, capacityDelaySeconds, configLimit, LeaseLost,
 } from "./queue";
 import { workOnce } from "./runner";
 import { recoverInterruptedUploads } from "./reconcile";
 import { validateResume } from "./parse";
 import { randomUUID } from "node:crypto";
+import { AiFailure } from "../ai/contracts/errors";
 
 const url = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -57,6 +58,13 @@ describe("queue scheduling calculations", () => {
     expect(retryDelaySeconds(3, 1)).toBe(25);
     expect(retryDelaySeconds(20, 1)).toBe(300);
     expect(() => retryDelaySeconds(0)).toThrow();
+  });
+  it("backs off AI quota and provider rate limits instead of retrying in seconds", () => {
+    expect(capacityDelaySeconds("BUDGET_EXCEEDED", 0)).toBe(3900);
+    expect(capacityDelaySeconds("BUDGET_EXCEEDED", 1)).toBe(4020);
+    expect(capacityDelaySeconds("RATE_LIMIT", 0)).toBe(1800);
+    expect(capacityDelaySeconds("AUTH_CONFIG", 0)).toBe(3600);
+    expect(capacityDelaySeconds("RATE_LIMIT", 100)).toBe(1920);
   });
   it("validates all configured worker resource limits", () => {
     const saved = process.env.INGEST_WORKER_CONCURRENCY;
@@ -225,6 +233,44 @@ describe.skipIf(!url)("PostgreSQL durable ingestion queue", () => {
     expect((await jobHistory(owner, created.document.id)).history).toHaveLength(4);
     expect(await db.candidate.count({ where: { sourceDocumentId: created.document.id } })).toBe(1);
     await expect(retryQueuedDocument(owner, created.document.id)).rejects.toMatchObject({ status: 409 });
+  });
+  it("defers quota exhaustion without using the processing retry budget or allowing stale writes", async () => {
+    const { storage } = vault();
+    const created = await queue("quota-" + randomUUID().slice(0, 8), owner, storage);
+    const blocked: JsonProvider = async () => { throw new AiFailure("BUDGET_EXCEEDED", false); };
+    const first = await claimJob("quota-first", { global: 1, perOwner: 1 });
+    expect(first?.documentId).toBe(created.document.id);
+    expect(await processClaim(first!, { storage, providers: [blocked] })).toBe("DEFERRED");
+    let job = await db.ingestionJob.findUniqueOrThrow({ where: { documentId: created.document.id } });
+    expect(job).toMatchObject({ status: "RETRY_SCHEDULED", attempts: 0,
+      generation: 1, lastErrorCode: "BUDGET_EXCEEDED" });
+    expect(job.runAfter.getTime()).toBeGreaterThan(Date.now() + 60 * 60 * 1000);
+    await expect(finishJob(first!, "READY", { status: "READY" }))
+      .rejects.toBeInstanceOf(LeaseLost);
+    expect(await db.candidate.count({ where: { sourceDocumentId: created.document.id } })).toBe(0);
+    await db.ingestionJob.update({ where: { id: first!.id },
+      data: { runAfter: new Date(Date.now() - 1000) } });
+    const second = await claimJob("quota-second", { global: 1, perOwner: 1 });
+    expect(second).toMatchObject({ documentId: created.document.id, attempts: 1, generation: 1 });
+    expect(await processClaim(second!, { storage, providers: [provider] })).toBe("READY");
+    job = await db.ingestionJob.findUniqueOrThrow({ where: { id: second!.id } });
+    expect(job).toMatchObject({ status: "READY", attempts: 1 });
+    expect((await jobHistory(owner, created.document.id)).history.map(x => [x.outcome, x.errorCode]))
+      .toEqual([["RETRY", "BUDGET_EXCEEDED"], ["READY", null]]);
+    expect(await db.candidate.count({ where: { sourceDocumentId: created.document.id } })).toBe(1);
+  });
+  it("defers upstream 429 rather than treating rate limiting as bad resume evidence", async () => {
+    const { storage } = vault();
+    const created = await queue("rate-" + randomUUID().slice(0, 8), owner, storage);
+    const rateLimited: JsonProvider = async () => { throw new AiFailure("RATE_LIMIT"); };
+    const claimed = await claimJob("rate-limit", { global: 1, perOwner: 1 });
+    expect(claimed?.documentId).toBe(created.document.id);
+    expect(await processClaim(claimed!, { storage, providers: [rateLimited] })).toBe("DEFERRED");
+    const job = await db.ingestionJob.findUniqueOrThrow({ where: { documentId: created.document.id } });
+    expect(job).toMatchObject({ status: "RETRY_SCHEDULED", attempts: 0,
+      generation: 1, lastErrorCode: "RATE_LIMIT" });
+    expect(job.runAfter.getTime()).toBeGreaterThan(Date.now() + 25 * 60 * 1000);
+    expect(await db.candidate.count({ where: { sourceDocumentId: created.document.id } })).toBe(0);
   });
   it("can cancel queued jobs without processing, and prevents cancellation of completed jobs", async () => {
     const { storage } = vault();

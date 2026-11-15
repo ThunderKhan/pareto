@@ -1,4 +1,5 @@
 import { database } from "../search/db";
+import { AiFailure } from "../ai/contracts/errors";
 import { shouldIndexResumeCandidate } from "./policy";
 import { indexCandidate } from "../search/semantic";
 import { skillKey } from "../search/criteria";
@@ -6,7 +7,7 @@ import type { JsonProvider } from "../search/interpret";
 import { extractResumeProfile } from "./extract";
 import { parseResume, validateResume, ResumeInputError } from "./parse";
 import { supabaseResumeStorage, type ResumeStorage, StorageFailure } from "./storage";
-import { changeStage, failJob, finishJob, LeaseLost, type ClaimedJob, type AttemptMetrics } from "./queue";
+import { changeStage, deferCapacityJob, failJob, finishJob, LeaseLost, type ClaimedJob, type AttemptMetrics } from "./queue";
 
 export type ProcessingDependencies = {
   storage?: ResumeStorage;
@@ -118,7 +119,15 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
     if (err instanceof LeaseLost) return "LOST_LEASE" as const;
     metrics.durationMs = Date.now() - attemptStartedAt;
     try {
-      if (err instanceof ResumeInputError) {
+      if (err instanceof AiFailure &&
+          ["BUDGET_EXCEEDED", "RATE_LIMIT", "AUTH_CONFIG"].includes(err.code)) {
+        // Provider quota/configuration problems are not resume-quality failures.
+        // Durable rate limits and provider calls remain separately accounted for;
+        // only the document-processing retry allowance is preserved.
+        await deferCapacityJob(job, err.code as "BUDGET_EXCEEDED"|"RATE_LIMIT"|"AUTH_CONFIG",
+          undefined, metrics);
+        return "DEFERRED" as const;
+      } else if (err instanceof ResumeInputError) {
         await failJob(job, err.code, false, err.code === "NO_READABLE_TEXT", Math.random(), metrics);
       } else if (err instanceof BadOriginal) {
         await failJob(job, "SOURCE_INVALID", false, false, Math.random(), metrics);
