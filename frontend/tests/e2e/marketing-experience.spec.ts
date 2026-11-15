@@ -713,7 +713,8 @@ test("OpenTag-inspired hero buttons match measured mobile and desktop styles", a
     expect(metrics.primary.background).toBe("rgb(2, 14, 36)");
     for (const button of [metrics.secondary, metrics.primary]) {
       expect(button.radius).toBe(width < 640 ? "10px" : "12px");
-      expect(button.height).toBe(width < 640 ? 40 : 42);
+      // Preserve the measured layout while meeting the 44px touch target on every viewport.
+      expect(button.height).toBe(44);
       expect(button.fontSize).toBe(width < 640 ? "15px" : "16px");
     }
   }
