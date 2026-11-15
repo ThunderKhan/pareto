@@ -68,16 +68,23 @@ test("Parito composition, aligned notifications, graphite theme and chat avatar"
   await expect(hero.locator("img")).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
 
   await page.getByRole("button", { name: "Enter criteria manually" }).click();
-  const response = page.locator(".pareto-chat__assistant-turn");
-  await expect(response.getByRole("heading", { name: "Review draft criteria" })).toBeVisible();
-  await expect(response.locator(".pareto-avatar--chat img")).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
-  const assistantIcon = await response.locator(".pareto-chat__assistant-icon").boundingBox();
-  const draftPanel = await response.locator(".pareto-chat__draft").boundingBox();
-  expect(assistantIcon).not.toBeNull();
-  expect(draftPanel).not.toBeNull();
-  expect(assistantIcon!.x + assistantIcon!.width).toBeLessThanOrEqual(draftPanel!.x);
-
+  const review = page.getByRole("dialog", { name: "Review draft criteria" });
+  await expect(review.getByRole("heading", { name: "Review draft criteria" })).toBeVisible();
+  await expect(page.locator(".pareto-chat__draft")).toHaveCount(0);
+  await expect(review.getByRole("button", { name: "Discard draft" })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(response.locator(".pareto-avatar--chat")).toBeVisible();
+  await expect(review).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(false);
+  await review.getByRole("button", { name: "Discard draft" }).click();
+  await expect(review).toHaveCount(0);
+
+  // Assistant content still carries Parito when a previously confirmed session exists.
+  const response = await page.context().request.get("/api/v1/search?history=1");
+  expect(response.status()).toBe(200);
+  const history = await response.json() as { id: string }[];
+  if (history.length) {
+    await page.goto("/dashboard/search?session=" + encodeURIComponent(history[0].id));
+    await expect(page.locator(".pareto-chat__assistant-turn .pareto-avatar--chat img"))
+      .toHaveAttribute("src", "/mascot/pareto-mascot.svg");
+  }
 });
