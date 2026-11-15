@@ -94,6 +94,27 @@ describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
       .rejects.toMatchObject({ status: 409 });
   });
 
+  it("recovers the same failed Storage upload after private-bucket setup", async () => {
+    const db = database();
+    const bytes = Buffer.from(resumeText + "A5");
+    const unavailable: ResumeStorage = {
+      async upload() { throw Error("bucket missing"); },
+      async read() { throw Error("bucket missing"); },
+      async signedUrl() { throw Error("bucket missing"); },
+      async remove() {},
+    };
+    const failed = await uploadResume(owner, "restorable.txt", "text/plain", bytes, unavailable, [provider]);
+    created.push(failed.document.id);
+    expect(failed.document).toMatchObject({ status: "FAILED", errorCode: "STORAGE_FAILED" });
+    const vault = storage();
+    const recovered = await uploadResume(owner, "restorable.txt", "text/plain", bytes, vault, [provider]);
+    expect(recovered).toMatchObject({
+      duplicate: false,
+      document: { id: failed.document.id, status: "READY", attempts: 2 },
+    });
+    expect(await db.resumeDocument.count({ where: { ownerId: owner, sha256: failed.document.sha256 } })).toBe(1);
+  });
+
   it("isolates identical resume hashes between different recruiters", async () => {
     const db = database();
     const a = storage(), b = storage();
