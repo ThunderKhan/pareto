@@ -31,7 +31,7 @@ export async function recoverInterruptedUploads(
     } catch (error) {
       // Never misclassify a temporary Storage outage or private bucket
       // misconfiguration as a permanently missing source. Retry on next sweep.
-      if (error instanceof StorageFailure) continue;
+      if (error instanceof StorageFailure && error.code !== "SOURCE_NOT_FOUND") continue;
       // Missing object / invalid source under an otherwise available adapter.
     }
     if (!valid) {

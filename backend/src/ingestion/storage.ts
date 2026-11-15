@@ -10,7 +10,7 @@ export const RESUME_MIME_TYPES = [
 
 export class StorageFailure extends Error {
   constructor(public code: "STORAGE_UNCONFIGURED" | "BUCKET_NOT_PRIVATE" |
-    "BUCKET_MISSING" | "STORAGE_FAILED", message: string) { super(message); }
+    "BUCKET_MISSING" | "SOURCE_NOT_FOUND" | "STORAGE_FAILED", message: string) { super(message); }
 }
 
 export type ResumeStorage = {
@@ -73,7 +73,12 @@ export function supabaseResumeStorage(): ResumeStorage {
     async read(key) {
       await privateOnly();
       const { data, error } = await bucket.download(key);
-      if (error || !data) throw new StorageFailure("STORAGE_FAILED", "Stored resume could not be read.");
+      if (error || !data) {
+        if (error && (String(error.statusCode) === "404" ||
+            String(error.statusCode) === "400" && /not found/i.test(error.message)))
+          throw new StorageFailure("SOURCE_NOT_FOUND", "Stored resume was not found.");
+        throw new StorageFailure("STORAGE_FAILED", "Stored resume could not be read.");
+      }
       const dataBytes = Buffer.from(await data.arrayBuffer());
       if (dataBytes.length > 4 * 1024 * 1024) throw new StorageFailure("STORAGE_FAILED",
         "Stored resume exceeds the supported size.");
