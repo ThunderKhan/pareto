@@ -222,3 +222,74 @@
  .pareto-overview-new { width: 100%; }
  .pareto-overview-history { margin-top: 26px; }
 }
+
+
+/* Feedback 09: real recruiter account settings and in-app notifications. */
+.pareto-profile-card { max-width: 850px; }
+.pareto-workspace-memberships { margin-top: 26px; padding-top: 23px; border-top: 1px solid var(--ws-edge); }
+.pareto-workspace-memberships h3, .pareto-profile-security-controls h3 {
+  font-size: 14px; font-weight: 700; color: var(--ws-ink); margin: 0 0 12px;
+}
+.pareto-workspace-memberships dl { display: grid; gap: 8px; margin: 0 0 20px; }
+.pareto-workspace-memberships dl > div { padding: 13px 16px; background: var(--ws-panel);
+  border: 1px solid var(--ws-edge); border-radius: 10px; }
+.pareto-workspace-memberships dt { font-size: 13px; font-weight: 650; color: var(--ws-ink); }
+.pareto-workspace-memberships dd { font-size: 12px; margin: 4px 0 0; color: var(--ws-muted); }
+.pareto-setting-checkbox { display: flex !important; align-items: flex-start; gap: 11px; font-weight: 500 !important;
+  line-height: 1.5; cursor: pointer; }
+.pareto-setting-checkbox input[type=checkbox] { width: 19px; height: 19px; flex: none;
+  accent-color: var(--ws-blue); margin-top: 2px; }
+.pareto-profile-security-controls { display: grid; gap: 28px; margin-top: 24px; }
+.pareto-profile-security-controls > section { padding-top: 24px; border-top: 1px solid var(--ws-edge); }
+.pareto-profile-security-controls p { color: var(--ws-muted); font-size: 12px; line-height: 1.6; }
+.pareto-profile-security-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.pareto-app .pareto-secondary-action,
+.pareto-app .pareto-profile-form button.pareto-secondary-action {
+  display: inline-flex; min-height: 43px; justify-content: center; align-items: center;
+  padding: 10px 14px; background: var(--ws-panel); color: var(--ws-ink);
+  border: 1px solid var(--ws-control); border-radius: 10px;
+  font-size: 12px; font-weight: 650;
+}
+.pareto-app .pareto-secondary-action:hover:not(:disabled),
+.pareto-app .pareto-profile-form button.pareto-secondary-action:hover:not(:disabled) {
+  background: var(--ws-hover); border-color: var(--ws-blue);
+}
+.pareto-mfa-enrollment img { width: 168px; height: 168px; background: #fff; padding: 7px; border-radius: 12px; }
+.pareto-mfa-enrollment details { color: var(--ws-muted); font-size: 12px; overflow-wrap: anywhere; }
+.pareto-mfa-enrollment summary { cursor: pointer; }
+.pareto-mfa-enrollment code { display: block; background: var(--ws-panel); margin-top: 8px; padding: 10px; border-radius: 8px; }
+.pareto-security-enabled { color: var(--ws-success) !important; }
+.pareto-profile-form input[type=checkbox] { display: inline; }
+.pareto-notifications { position: relative; flex: none; }
+.pareto-notifications summary { list-style: none; display: inline-flex; justify-content: center;
+  align-items: center; border-radius: 10px; min-height: 42px; width: 42px;
+  color: var(--ws-muted); cursor: pointer; }
+.pareto-notifications summary::-webkit-details-marker { display: none; }
+.pareto-notifications summary:hover, .pareto-notifications[open] summary { background: var(--ws-hover); color: var(--ws-ink); }
+.pareto-notifications__unread { background: var(--ws-blue); color: #081426; border-radius: 99px;
+  min-width: 16px; padding-inline: 3px; font-size: 10px; font-weight: 800;
+  margin-left: -3px; margin-top: -18px; }
+.pareto-notifications__panel { position: absolute; top: calc(100% + 13px); right: 0;
+  width: min(350px,calc(100vw - 24px)); max-height: min(480px,70dvh); overflow-y: auto;
+  background: var(--ws-surface); border: 1px solid var(--ws-edge);
+  border-radius: 13px; box-shadow: var(--ws-shadow); padding: 13px; z-index: 55; color: var(--ws-ink); }
+.pareto-notifications__panel header { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border-bottom: 1px solid var(--ws-edge); padding: 4px 4px 12px; }
+.pareto-notifications__panel h2 { font-size: 14px; font-weight: 750; margin: 0; }
+.pareto-notifications__panel button { color: var(--ws-blue); font-weight: 650; font-size: 11px; background: none; border: 0; }
+.pareto-notifications__panel button:disabled { opacity: .5; }
+.pareto-notifications__panel ul { list-style: none; margin: 0; padding: 0; }
+.pareto-notifications__panel li { display: grid; gap: 6px; padding: 11px 5px; border-bottom: 1px solid var(--ws-edge); }
+.pareto-notifications__panel li:last-child { border: 0; }
+.pareto-notifications__panel li a { font-size: 13px; font-weight: 650; line-height: 1.45; }
+.pareto-notifications__panel li a:hover { color: var(--ws-blue); text-decoration: underline; }
+.pareto-notifications__panel li small { font-size: 11px; color: var(--ws-subtle); }
+.pareto-notifications__panel li button { justify-self: start; padding: 3px 0; }
+.pareto-notifications__item--unread { background: var(--ws-active); border-radius: 8px; }
+.pareto-notifications__empty, .pareto-notifications__error { padding: 21px 5px; margin: 0; font-size: 12px; color: var(--ws-muted); }
+.pareto-notifications__error { color: var(--ws-danger); }
+.pareto-profile-card .pareto-profile-form small { color: var(--ws-muted); font-size: 12px; line-height: 1.5; }
+@media(max-width:600px) {
+ .pareto-profile-card { padding: 21px 17px; }
+ .pareto-notifications__panel { right: -88px; }
+}
