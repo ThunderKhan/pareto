@@ -68,8 +68,13 @@ function profileOf(candidate: CandidateWithSkills | null): ReviewedProfile | nul
   };
 }
 export function changedProfileFields(before: ReviewedProfile | null, after: ReviewedProfile | null) {
-  return PROFILE_FIELDS.filter(key =>
-    JSON.stringify(before?.[key] ?? null) !== JSON.stringify(after?.[key] ?? null));
+  const normalized = (field: string, value: unknown) => {
+    if (field === "skills" && Array.isArray(value))
+      return [...new Set(value.map(s => skillKey(String(s))))].sort();
+    return value ?? null;
+  };
+  return PROFILE_FIELDS.filter(key => JSON.stringify(normalized(key,before?.[key]))
+    !== JSON.stringify(normalized(key,after?.[key])));
 }
 const detailSelect = {
   id: true, status: true, reviewState: true, reviewVersion: true,

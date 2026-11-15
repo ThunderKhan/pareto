@@ -206,10 +206,11 @@ export async function finishJob(
     if (owned.length !== 1) throw new LeaseLost();
     const persistenceStartedAt = Date.now();
     if (sideEffects) await sideEffects(tx);
-    await tx.resumeDocument.update({ where: { id: job.documentId },
+    const updatedDocument = await tx.resumeDocument.update({ where: { id: job.documentId },
       data: { status: document.status, errorCode: document.errorCode ?? null,
         reviewReasons: document.reviewReasons ?? [], provider: document.provider ?? null,
         reviewState: outcome === "NEEDS_REVIEW" ? "NEEDS_REVIEW" : "UNREVIEWED",
+        reviewedAt: null, reviewedBy: null,
         ...(document.extractedText !== undefined ? { extractedText: document.extractedText } : {}),
         ...(document.textTruncated !== undefined ? { textTruncated: document.textTruncated } : {}) },
     });
@@ -223,7 +224,7 @@ export async function finishJob(
     if (outcome === "NEEDS_REVIEW" && !sideEffects) {
       await tx.resumeProfileAudit.create({ data: {
         ownerId: job.ownerId, documentId: job.documentId,
-        action: "REVIEW_REQUIRED", reviewVersion: 0,
+        action: "REVIEW_REQUIRED", reviewVersion: updatedDocument.reviewVersion,
         changedFields: [], provider: document.metrics?.provider ?? null,
         extractorVersion: document.metrics?.extractorVersion ?? null,
         jobId: job.id, attempt: job.attempts,

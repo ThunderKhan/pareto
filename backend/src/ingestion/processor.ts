@@ -23,7 +23,7 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
     const document = await database().resumeDocument.findFirst({
       where: { id: job.documentId, ownerId: job.ownerId },
       select: { id: true, fileName: true, mimeType: true, sha256: true,
-        storageKey: true, reviewState: true },
+        storageKey: true, reviewState: true, reviewVersion: true },
     });
     if (!document) throw new BadOriginal("Document was deleted.");
     if (document.reviewState === "HUMAN_VERIFIED")
@@ -85,7 +85,7 @@ export async function processClaim(job: ClaimedJob, deps: ProcessingDependencies
       });
       await tx.resumeProfileAudit.create({ data: {
         ownerId: job.ownerId, documentId: job.documentId,
-        action: "MODEL_EXTRACTED", reviewVersion: 0,
+        action: "MODEL_EXTRACTED", reviewVersion: document.reviewVersion,
         before: prior ? {
           displayName: prior.displayName, roleTitle: prior.roleTitle, city: prior.city,
           experienceMonths: prior.experienceMonths, noticePeriodDays: prior.noticePeriodDays,
