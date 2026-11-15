@@ -444,7 +444,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
       (after ? describe(after) + " (" + after.mode + ")" : "Removed")] : [];
   });
   const draftValid = draft !== undefined && criteriaSchema.safeParse(draft.criteria).success;
-  const similarityOnly = Boolean(results?.referenceId) && results?.criteria.every(rule => rule.mode === "preferred");
+  const similarityOnly = Boolean(results?.referenceId) && Boolean(results?.criteria.every(rule => rule.mode === "preferred"));
   const conversationStarted = Boolean(results || draft || lastRequest || busy || alert || message || initialSession || initialReference);
 
   return <div className={"pareto-chat " + (conversationStarted ? "pareto-chat--active" : "pareto-chat--fresh")} aria-busy={busy}>
