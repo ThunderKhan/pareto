@@ -132,8 +132,13 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
       INSERT INTO "IngestionAttempt" ("id","jobId","attempt","generation","leaseToken","workerId","outcome","startedAt")
       SELECT ${attemptId}, c."id",c."attempts",c."generation",${token},${workerId},'RUNNING',NOW() FROM claimed c
       RETURNING "jobId"
+    ), document_state AS (
+      UPDATE "ResumeDocument" d SET
+        "status"='PROCESSING', "attempts"=c."attempts", "updatedAt"=NOW()
+      FROM claimed c WHERE d."id"=c."documentId" RETURNING d."id"
     )
-    SELECT c.* FROM claimed c JOIN audit a ON a."jobId"=c."id"`;
+    SELECT c.* FROM claimed c JOIN audit a ON a."jobId"=c."id"
+      JOIN document_state d ON d."id"=c."documentId"`;
   return rows[0] ?? null;
 }
 export async function heartbeatJob(job: ClaimedJob) {
@@ -294,8 +299,11 @@ export async function cancelQueuedDocument(ownerId: string, documentId: string) 
     if (["READY","NEEDS_REVIEW","FAILED_PERMANENT","CANCELLED"].includes(job.status))
       throw new JobConflict(409, "JOB_COMPLETE", "This import has already completed.");
     if (job.status === "RUNNING") {
-      await tx.ingestionJob.updateMany({ where: { id: job.id, ownerId, status: "RUNNING" },
-        data: { cancelRequested: true } });
+      const requested = await tx.ingestionJob.updateMany({
+        where: { id: job.id, ownerId, status: "RUNNING", cancelRequested: false },
+        data: { cancelRequested: true },
+      });
+      if (requested.count !== 1) throw new JobConflict(409, "JOB_CHANGED", "Reload job status.");
       return { status: "CANCELLATION_REQUESTED" as const };
     }
     const count = await tx.ingestionJob.updateMany({
