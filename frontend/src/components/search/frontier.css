@@ -1,0 +1,81 @@
+/* Pareto Frontier — the primary decision surface, inside confirmed search results. */
+.frontier-module {
+  width: 100%; min-width: 0; margin: 22px 0 16px; overflow-wrap: anywhere;
+  background: var(--ws-surface, #fff); color: var(--ws-ink, #152239);
+  border: 1px solid var(--ws-edge, #e2e7ee); border-radius: 16px;
+}
+.frontier-intro { padding: clamp(19px, 2.6vw, 28px); display: flex; flex-wrap: wrap;
+  justify-content: space-between; align-items: center; gap: 18px; }
+.frontier-eyebrow { display: inline-block; color: var(--ws-muted, #60718a); letter-spacing: .11em;
+  font-size: 10px; line-height: 1.5; font-weight: 750; }
+.frontier-intro h3 { font: 400 clamp(26px, 3vw, 36px)/1.12 var(--ws-display, Georgia, serif);
+  letter-spacing: -.045em; margin: 7px 0 9px; }
+.frontier-intro p { color: var(--ws-muted, #53647b); font-size: 13px; line-height: 1.65;
+  margin: 0; max-width: 560px; }
+.frontier-cta, .frontier-review { min-height: 42px; border: 1px solid var(--ws-primary, #173764);
+  border-radius: 9px; padding: 10px 16px; font-size: 12px; line-height: 1.4;
+  font-weight: 680; background: var(--ws-primary, #173764); color: var(--ws-on-primary, white);
+  transition: background .15s ease, transform .15s ease; cursor: pointer; }
+.frontier-cta:hover:not(:disabled), .frontier-review:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.frontier-cta:disabled { cursor: progress; opacity: .6; }
+.frontier-body { border-top: 1px solid var(--ws-edge, #e2e7ee);
+  display: grid; gap: 20px; padding: clamp(17px, 2.6vw, 27px); min-width: 0; }
+.frontier-body p { font-size: 12px; line-height: 1.6; }
+.frontier-status { border: 1px solid var(--ws-edge, #dfe7ef);
+  background: var(--ws-panel, #f8fafc); border-radius: 9px; padding: 14px; margin: 0; }
+.frontier-baseline { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 20px; align-items: center; padding: 16px; border-radius: 13px;
+  background: var(--ws-panel, #f7f8fa); border: 1px solid var(--ws-edge, #e3e8ee); }
+.frontier-baseline h4 { font: 400 22px/1.2 var(--ws-display, Georgia, serif);
+  margin: 7px 0 4px; letter-spacing: -.035em; }
+.frontier-baseline p { color: var(--ws-muted, #64758b); margin: 0; }
+.frontier-baseline .insight-counts > div { background: var(--ws-surface, #fff); }
+.frontier-options { min-width: 0; }
+.frontier-options-head { display: flex; align-items: end; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin: 0 0 15px; }
+.frontier-options-head h4 { font: 400 25px/1.2 var(--ws-display, Georgia, serif);
+  letter-spacing: -.035em; margin: 4px 0 0; }
+.frontier-options-head p { color: var(--ws-muted, #64758b); margin: 0; font-size: 11px; }
+.frontier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 285px), 1fr)); gap: 12px; }
+.frontier-card { min-width: 0; border: 1px solid var(--ws-edge, #dfe5eb); border-radius: 13px;
+  background: var(--ws-surface, #fff); padding: 17px; display: flex; flex-direction: column; gap: 12px; }
+.frontier-card:hover { border-color: var(--ws-primary, #466c96); }
+.frontier-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-content: space-between; }
+.frontier-index { color: var(--ws-muted, #708198); font-size: 10px; font-weight: 750; letter-spacing: .11em; }
+.frontier-preview-tag { border: 1px solid var(--ws-edge, #dfe5eb); padding: 4px 6px; border-radius: 6px;
+  color: var(--ws-muted, #65758b); font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+.frontier-card h5 { font: 400 21px/1.25 var(--ws-display, Georgia, serif); letter-spacing: -.03em; margin: 0; }
+.frontier-impact { display: flex; flex-wrap: wrap; gap: 25px; padding: 12px 0;
+  border-top: 1px solid var(--ws-edge, #e5e9ed); border-bottom: 1px solid var(--ws-edge, #e5e9ed); }
+.frontier-impact > div { display: grid; gap: 4px; }
+.frontier-impact small { color: var(--ws-muted, #68788b); font-size: 10px; }
+.frontier-impact strong { color: var(--ws-ink, #17253e); font-size: 23px; font-weight: 620;
+  line-height: 1.2; font-variant-numeric: tabular-nums; }
+.frontier-impact-note { color: var(--ws-muted, #596981); font-size: 11px !important; margin: -3px 0 1px; }
+.frontier-changes { margin: 0; padding: 0; display: grid; gap: 10px; list-style: none; }
+.frontier-changes li { border-left: 2px solid var(--ws-edge, #d6dfe9); padding-left: 10px; }
+.frontier-changes strong { font-size: 11px; font-weight: 640; }
+.frontier-changes p { color: var(--ws-muted, #63738a); margin: 4px 0 0; font-size: 11px; }
+.frontier-warning { border-left: 3px solid #b48e40; padding-left: 9px; margin: 0; color: var(--ws-text, #4b5c75); }
+.frontier-evidence { border-top: 1px solid var(--ws-edge, #e7ebef); margin-top: auto; padding: 10px 0 0; }
+.frontier-evidence summary { color: var(--ws-primary, #2c5c9b); cursor: pointer;
+  font-size: 12px; font-weight: 650; padding: 5px 0; }
+.frontier-evidence ul { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.frontier-evidence li { background: var(--ws-panel, #f7f9fc); border-radius: 8px; padding: 9px; display: grid; gap: 3px; }
+.frontier-evidence li strong { font-size: 12px; }
+.frontier-evidence li span { color: var(--ws-muted, #5c7086); font-size: 11px; }
+.frontier-review { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+.frontier-footnote { border-top: 1px solid var(--ws-edge, #e2e7ed); padding-top: 14px; color: var(--ws-muted, #586b85); }
+.frontier-footnote strong { color: var(--ws-ink, #1f3048); font-size: 12px; }
+.frontier-footnote p { margin: 5px 0; font-size: 11px; }
+.frontier-module :is(button, summary):focus-visible {
+  outline: 3px solid var(--ws-focus, #86a7d8); outline-offset: 3px;
+}
+@media(max-width: 700px) {
+  .frontier-baseline { grid-template-columns: minmax(0,1fr); }
+  .frontier-intro .frontier-cta { width: 100%; }
+  .frontier-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frontier-module * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

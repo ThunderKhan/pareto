@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { database } from "./db";
 import { criteriaSchema } from "./criteria";
 import { interpret, interpretRefinement } from "./interpret";
-import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor, searchDiagnostics, simulateSearch } from "./service";
+import { activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor, searchDiagnostics, simulateSearch, searchFrontier } from "./service";
 
 const integrationUrl = process.env.PARETO_TEST_DATABASE_URL;
 const owner = "11111111-1111-4111-8111-111111111111";
@@ -301,5 +301,66 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     sessions.add(peers.sessionId);
     expect(peers.total).toBe(47);
     expect(peers.results.every(row => row.candidate.id !== referenceId)).toBe(true);
+  });
+
+  it("previews Pareto Frontier from a real owned search without persisting any mutations", async () => {
+    const criteria = criteriaSchema.parse([
+      { field: "role", mode: "required", value: "Senior Java Developer" },
+      { field: "city", mode: "required", value: "Hyderabad" },
+      { field: "experience", mode: "required", minMonths: 72, maxMonths: 120 },
+      { field: "notice", mode: "required", maxDays: 30 },
+    ]);
+    const saved = await confirmSearch(owner, { requestId: randomUUID(), criteria });
+    sessions.add(saved.sessionId);
+    const db = database();
+    const revisions = await db.searchRevision.count({ where: { sessionId: saved.sessionId } });
+    const notifications = await db.recruiterNotification.count({ where: { sessionId: saved.sessionId } });
+    const preview = await searchFrontier(owner, saved.sessionId, 1);
+    expect(preview).toMatchObject({
+      status: "PREVIEW_ONLY", sessionId: saved.sessionId, version: 1,
+      algorithmVersion: "frontier-v1", baseline: { counts: saved.counts },
+      scope: { totalCandidates: 48, exhaustive: false, maxCandidates: 1000 },
+    });
+    expect(preview.strategies.length).toBeGreaterThan(0);
+    expect(preview.strategies.every(strategy => strategy.impact.noLongerEligibleCount === 0)).toBe(true);
+    expect(preview.strategies.some(strategy =>
+      strategy.changes.some(change => change.kind === "extend_notice" &&
+        change.after.field === "notice" && change.after.maxDays > 30))).toBe(true);
+    for (const strategy of preview.strategies) {
+      expect(strategy.counts.ELIGIBLE).toBeGreaterThan(saved.counts.ELIGIBLE);
+      expect(criteriaSchema.parse(strategy.proposedCriteria)).toEqual(strategy.proposedCriteria);
+    }
+    expect(await db.searchRevision.count({ where: { sessionId: saved.sessionId } })).toBe(revisions);
+    expect(await db.recruiterNotification.count({ where: { sessionId: saved.sessionId } })).toBe(notifications);
+    await expect(searchFrontier(stranger, saved.sessionId, 1)).rejects.toMatchObject({ status: 404 });
+    await expect(searchFrontier(owner, saved.sessionId, 2)).rejects.toMatchObject({ status: 409 });
+
+    const strategy = preview.strategies[0];
+    const confirmed = await confirmSearch(owner, {
+      requestId: randomUUID(), sessionId: saved.sessionId,
+      expectedVersion: 1, criteria: strategy.proposedCriteria,
+    });
+    expect(confirmed.version).toBe(2);
+    expect(confirmed.counts).toEqual(strategy.counts);
+    await expect(searchFrontier(owner, saved.sessionId, 1)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("excludes reference candidate from Pareto Frontier counts", async () => {
+    const [reference] = await candidateList(owner, "Asha Nair");
+    const criteria = criteriaSchema.parse([
+      { field: "role", mode: "required", value: "Senior Java Developer" },
+      { field: "notice", mode: "required", maxDays: 30 },
+    ]);
+    const saved = await confirmSearch(owner, {
+      requestId: randomUUID(), criteria, referenceId: reference.id,
+    });
+    sessions.add(saved.sessionId);
+    const preview = await searchFrontier(owner, saved.sessionId, 1);
+    expect(preview.referenceId).toBe(reference.id);
+    expect(preview.scope.totalCandidates).toBe(47);
+    for (const strategy of preview.strategies) {
+      expect(strategy.counts.ELIGIBLE + strategy.counts.NEEDS_REVIEW + strategy.counts.INELIGIBLE).toBe(47);
+      expect(strategy.impact.newlyEligibleExamples.every(person => person.id !== reference.id)).toBe(true);
+    }
   });
 });
