@@ -19,7 +19,7 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   }
 
   await page.goto("/login");
-  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 25000 });
@@ -102,6 +102,7 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   await expect(confirmed).toContainText("5 need review");
   await expect(confirmed.getByRole("heading", { name: "Asha Nair", exact: true })).toHaveCount(0);
 
+  await page.locator(".pareto-account > summary").click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/", { timeout: 15000 });
   expect((await page.context().request.get("/api/v1/search?q=Asha")).status()).toBe(401);
