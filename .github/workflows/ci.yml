@@ -8,9 +8,11 @@ on:
       - main
       - integration/release-20261114
       - feat/private-resume-ingestion
+      - feat/durable-resume-batch-workers
   pull_request:
     branches:
       - main
+      - feat/private-resume-ingestion
   workflow_dispatch:
 
 permissions:
