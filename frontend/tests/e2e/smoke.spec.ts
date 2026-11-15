@@ -60,6 +60,14 @@ test("mobile navigation and reduced-motion layout", async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test("new recruiter workspace routes remain protected without a session", async ({ page }) => {
+  for (const route of ["/dashboard", "/dashboard/profile", "/dashboard/candidates", "/dashboard/search?reference=demo"]) {
+    await page.goto(route);
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  }
+});
+
 test("signed-out visitors cannot search or read candidate data", async ({ page, request }) => {
   await page.goto("/dashboard/search");
   await expect(page).toHaveURL(/\/login/);
