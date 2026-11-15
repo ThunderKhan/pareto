@@ -20,6 +20,10 @@
 
 The code is committed on `main`. GitHub CI checks can validate lint, TypeScript, backend unit/integration tests, build, signed-out Playwright and container smoke. **The protected tests in `recruiter-round-03.spec.ts` skip unless `PARETO_E2E_EMAIL` and `PARETO_E2E_PASSWORD` are provided.** Those skipped tests are not evidence of actual signed-in browser appearance or token refresh.
 
+## Automated CI evidence
+
+The complete code-and-documentation commit `740ffc5` passed [GitHub Actions run 43677888632](https://github.com/ThunderKhan/pareto/actions/runs/43677888632): Prisma migration + seed tests, lint/typecheck/unit/DB tests, production Next.js build, public Playwright, Docker image build, and container smoke. The dedicated `recruiter-live` job **skipped** without configured Supabase test credentials. New credential-dependent tests are present but **have not been executed**.
+
 ## Continuation checklist
 
 - [x] #01 Sidebar transition and collapsed navigation implementation
@@ -27,7 +31,7 @@ The code is committed on `main`. GitHub CI checks can validate lint, TypeScript,
 - [x] #03 Server-side authenticated root routing and proxy session refresh
 - [x] #04 Breadcrumb and divider removal, minimal topbar
 - [x] Add public and authenticated Playwright tests
-- [ ] Record the final HEAD GitHub CI result
+- [x] Record the final code-and-documentation GitHub CI result
 - [ ] Run full signed-in E2E using a dedicated recruiter account
 - [ ] Verify expired/revoked Supabase session redirects to public landing without a loop
 - [ ] Inspect desktop/mobile, light/dark, and reduced-motion appearance with screenshots
