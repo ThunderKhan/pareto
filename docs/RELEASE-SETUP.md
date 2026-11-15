@@ -55,6 +55,25 @@ References: https://ai.google.dev/gemini-api/docs/models and https://console.gro
 6. Assign a Railway public domain, update Supabase's allowed redirects and Google Cloud Authorized Origins accordingly, deploy, then test `/api/health`, signed-out `/dashboard/search` redirect, signed-out `/api/v1/search` 401, and **the whole authenticated workflow with a real provider and DB**. `/api/health` is *liveness*, not evidence that DB/auth/AI work.
 7. Record the actual Railway deployment URL, failure logs, smoke results and rollback reference in `docs/engineering-log.md`. A green Docker build alone does not prove deployment.
 
+### Railway public proxy and browser-origin checks
+
+Railway forwards public HTTPS requests to the Next.js container over an internal
+HTTP address. Do **not** compare the browser Origin header exclusively to
+`new URL(request.url).origin`: internal host/port may differ, causing legitimate
+authenticated POST requests to return 403.
+
+Pareto accepts the exact HTTPS origin from Railway's server-provided
+`RAILWAY_PUBLIC_DOMAIN` (e.g. `https://pareto-production.up.railway.app`).
+This is automatically set by Railway, so no custom variable or permissive CORS
+configuration is needed for the generated Railway domain. For an independently
+configured HTTPS custom domain, add the **server-only**
+`PARETO_PUBLIC_ORIGIN=https://your-owned-domain` environment variable and
+redeploy. Do not add untrusted domains or use a wildcard. Cross-site requests,
+malformed origins and untrusted X-Forwarded-Host remain rejected.
+
+After deployment verify an **authenticated POST**, not just `/api/ready`,
+since readiness does not exercise the origin security guard.
+
 Railway Docker ARG reference: https://docs.railway.com/builds/dockerfiles
 
 ## 4. Credentialed end-to-end run — GitHub Actions, no chat secrets
