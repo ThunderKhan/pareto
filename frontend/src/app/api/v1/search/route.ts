@@ -2,7 +2,7 @@ import { z } from "@pareto/backend/search";
 import { criteriaSchema, promptSchema } from "@pareto/backend/search";
 import { logger } from "@pareto/backend";
 import {
-  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults,
+  SearchError, activeSearch, candidateFor, candidateList, confirmSearch, recentSearches, referenceDraft, searchResults, counterfactualFor, searchDiagnostics, simulateSearch,
 } from "@pareto/backend/search/server";
 import { interpret, interpretRefinement } from "@pareto/backend/search/interpret";
 import { recruiter } from "@/lib/auth";
@@ -13,6 +13,7 @@ const input = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("interpret"), prompt: promptSchema }),
   z.strictObject({ action: z.literal("reference"), candidateId: id }),
   z.strictObject({ action: z.literal("refine"), sessionId: id, expectedVersion: revision, prompt: promptSchema }),
+  z.strictObject({ action: z.literal("simulate"), sessionId: id, expectedVersion: revision, criteria: criteriaSchema }),
   z.strictObject({ action: z.literal("confirm"), criteria: criteriaSchema, requestId: z.uuid(),
     referenceId: id.optional(), sessionId: id.optional(), expectedVersion: revision.optional() }),
 ]);
@@ -40,6 +41,11 @@ async function authorized(operation: (ownerId: string) => Promise<unknown>) {
 export function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   return authorized(ownerId => {
+    if (params.has("diagnostics")) return searchDiagnostics(ownerId, id.parse(params.get("diagnostics")));
+    if (params.has("counterfactual")) return counterfactualFor(ownerId,
+      id.parse(params.get("counterfactual")),
+      z.coerce.number().int().positive().parse(params.get("version")),
+      id.parse(params.get("candidate")));
     if (params.has("history")) return recentSearches(ownerId);
     if (params.has("session")) return searchResults(ownerId, id.parse(params.get("session")),
       z.coerce.number().int().min(0).max(1000).parse(params.get("offset") ?? 0));
@@ -76,6 +82,7 @@ export function POST(request: Request) {
     switch (data.action) {
       case "interpret": return interpret(data.prompt);
       case "reference": return referenceDraft(ownerId, data.candidateId);
+      case "simulate": return simulateSearch(ownerId, data.sessionId, data.expectedVersion, data.criteria);
       case "confirm":
         if (Boolean(data.sessionId) !== Boolean(data.expectedVersion) || (data.sessionId && data.referenceId)) {
           throw new SearchError(422, "Revision confirmation requires a session ID and its expected version.");

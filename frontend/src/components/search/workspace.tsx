@@ -6,7 +6,11 @@ import { criteriaSchema, ruleKey, type Rule } from "@pareto/backend/search";
 import type { candidateList, confirmSearch, referenceDraft } from "@pareto/backend/search/server";
 import CriteriaEditor, { labels } from "./criteria-editor";
 import SearchOrb from "./search-orb";
+import SearchHealthPanel from "./search-health";
+import WhatIfPanel from "./what-if";
+import NearMatchExplanation from "./near-match";
 import "./search.css";
+import "./insights.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -97,7 +101,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   }
 
   function openDraft(criteria: Rule[], warnings: string[] = [], options: Partial<Draft> = {}) {
-    setDraft({ criteria, warnings, requestId: crypto.randomUUID(), ...options });
+    setDraft({ criteria: criteria.map(rule => ({ ...rule })), warnings, requestId: crypto.randomUUID(), ...options });
   }
 
   function fromReference(id: string) {
@@ -220,6 +224,14 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         {results.referenceId && <p>Similarity counts equally weighted preferred profile criteria. Missing evidence earns zero credit.</p>}
         <details><summary>Confirmed criteria</summary><ul>{results.criteria.map(rule =>
           <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul></details>
+        <div className="insight-panels" aria-label="Search analysis tools">
+          <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
+            sessionId={results.sessionId} version={results.version}
+            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+          <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
+            sessionId={results.sessionId} version={results.version} criteria={results.criteria}
+            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+        </div>
         {results.total === 0 && <p>No candidate profiles are available in this workspace.</p>}
         <div className="pareto-chat__candidate-grid">
           {results.results.map(({candidate,details,eligibility,requiredMet,requiredTotal,preferenceMet,preferenceTotal}) =>
@@ -234,6 +246,11 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
                 {preferenceTotal > 0 && " · " + preferenceMet + "/" + preferenceTotal + (results.referenceId ? " similarity" : " preferred") + " criteria matched"}</p>
               <details><summary>Match evidence</summary><ul>{details.map(detail =>
                 <li key={ruleKey(detail.rule)}><strong>{labels[detail.rule.field]} · {detail.outcome}</strong> · {detail.reason}</li>)}</ul></details>
+              {!similarityOnly && (eligibility === "INELIGIBLE" || eligibility === "NEEDS_REVIEW") &&
+                <NearMatchExplanation key={results.sessionId + ":" + results.version + ":" + candidate.id}
+                  sessionId={results.sessionId} version={results.version}
+                  candidateId={candidate.id} candidateName={candidate.displayName}
+                  onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>}
               <details><summary>Candidate details</summary><ProfileFacts profile={candidate}/>
                 <button type="button" disabled={busy} onClick={() => fromReference(candidate.id)}>Find candidates like {candidate.displayName}</button>
               </details>

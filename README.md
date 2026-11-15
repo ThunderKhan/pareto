@@ -12,6 +12,7 @@ The protected recruiter experience now includes:
 - `/dashboard/search`: conversational composer, AI-extracted criteria, mandatory human confirmation, explainable candidate results, and follow-up refinement.
 - `/dashboard/candidates`: search and inspect recruiter-owned candidate records, then start reference-based similarity search.
 - `/dashboard/profile`: edit first and last names via Supabase, view account email, and update password.
+- `/dashboard/search` confirmed results: on-demand Search health, editable What-if simulator, and per-candidate Near-match explanations. All three use deterministic owner-scoped backend analyses and are preview-only: only Confirm Search persists criteria.
 - Recent confirmed search sessions are retrieved from PostgreSQL with owner checks. The orb animation reflects real request activity and never adds artificial thinking delays.
 
 The supplied sidebar and morphing-orb component concepts were adapted to Pareto's existing typography, colors, Phosphor icons, and API flows. Full chat transcripts, PDF ingestion, bulk import, and hosted deployment are **not** implemented by this UI work.
