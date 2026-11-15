@@ -32,7 +32,7 @@ export default async function DashboardPage() {
         <h2 id="overview-recent">Recent searches</h2>
       </div>
       {historyError ? <p className="pareto-overview-history__empty" role="alert">
-        Your recent searches couldn't be loaded. Please try again in a moment.
+        Your recent searches couldn&rsquo;t be loaded. Please try again in a moment.
       </p> : recent.length ? <ul className="pareto-overview-history__list">
         {recent.map(session => <li key={session.id}>
           <Link href={"/dashboard/search?session=" + encodeURIComponent(session.id)}
