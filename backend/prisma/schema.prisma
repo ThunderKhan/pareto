@@ -164,6 +164,11 @@ model ResumeDocument {
   candidate       Candidate?
   evidence        ResumeEvidence[]
   ingestionJob    IngestionJob?
+  reviewState     ResumeReviewState @default(UNREVIEWED)
+  reviewVersion   Int               @default(0)
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  audit           ResumeProfileAudit[]
 
   @@unique([ownerId, sha256])
   @@index([ownerId, createdAt])
@@ -267,7 +272,56 @@ model IngestionAttempt {
   errorCode     String?
   startedAt     DateTime                @default(now())
   finishedAt    DateTime?
+  durationMs    Int?
+  parseMs       Int?
+  modelMs       Int?
+  persistMs     Int?
+  sourceChars   Int?
+  evidenceCount Int?
+  verifiedFields Int?
+  provider      String?
+  extractorVersion String?
 
   @@unique([jobId, generation, attempt])
   @@index([jobId, startedAt])
+  @@index([jobId, finishedAt])
+}
+
+enum ResumeReviewState {
+  UNREVIEWED
+  NEEDS_REVIEW
+  HUMAN_VERIFIED
+}
+
+enum ResumeAuditAction {
+  MODEL_EXTRACTED
+  REVIEW_REQUIRED
+  HUMAN_CORRECTED
+  HUMAN_APPROVED
+  HUMAN_REJECTED
+}
+
+/// Immutable, private field-level extraction / human-correction audit.
+/// JSON may contain candidate PII; these records are never publicly exposed.
+/// Application services must owner-filter every query and never log snapshots.
+model ResumeProfileAudit {
+  id             String            @id @default(uuid())
+  documentId     String
+  document       ResumeDocument    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  ownerId        String
+  actorId        String?
+  action         ResumeAuditAction
+  reviewVersion  Int
+  changedFields  String[]          @default([])
+  before         Json?
+  after          Json?
+  reason         String?
+  provider       String?
+  extractorVersion String?
+  jobId          String?
+  attempt        Int?
+  createdAt      DateTime          @default(now())
+
+  @@index([ownerId, createdAt])
+  @@index([documentId, createdAt])
 }

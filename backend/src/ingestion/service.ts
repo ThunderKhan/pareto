@@ -16,6 +16,7 @@ const documentSelect = {
   sha256: true, status: true, attempts: true, provider: true, errorCode: true,
   textTruncated: true, reviewReasons: true, createdAt: true, updatedAt: true,
   candidate: { select: { id: true, displayName: true, roleTitle: true, city: true } },
+  reviewState: true, reviewVersion: true, reviewedAt: true,
   ingestionJob: { select: { id: true, status: true, stage: true, attempts: true,
     maxAttempts: true, manualRetries: true, runAfter: true, batchId: true,
     lastErrorCode: true, cancelRequested: true, startedAt: true, finishedAt: true } },

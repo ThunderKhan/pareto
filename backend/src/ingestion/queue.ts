@@ -51,7 +51,10 @@ export async function jobForDocument(ownerId: string, documentId: string) {
 export async function jobHistory(ownerId: string, documentId: string) {
   const job = await database().ingestionJob.findFirst({ where: { ownerId, documentId },
     select: { ...publicJob, history: { select: { attempt: true, outcome: true,
-      errorCode: true, startedAt: true, finishedAt: true },
+      errorCode: true, startedAt: true, finishedAt: true,
+      durationMs: true, parseMs: true, modelMs: true, persistMs: true,
+      sourceChars: true, evidenceCount: true, verifiedFields: true,
+      provider: true, extractorVersion: true },
       orderBy: { attempt: "asc" as const } } } });
   if (!job) throw new JobConflict(404, "NOT_FOUND", "Import job not found.");
   return job;
@@ -159,6 +162,26 @@ export async function changeStage(job: ClaimedJob, stage: "PARSING"|"EXTRACTING"
   if (count !== 1) throw new LeaseLost();
 }
 export type JobTx = Prisma.TransactionClient;
+export type AttemptMetrics = {
+  durationMs?: number; parseMs?: number; modelMs?: number; sourceChars?: number;
+  evidenceCount?: number; verifiedFields?: number; provider?: string | null;
+  extractorVersion?: string;
+};
+function measured(metrics?: AttemptMetrics) {
+  if (!metrics) return {};
+  const count = (value: number | undefined) => value === undefined ? undefined
+    : Math.min(86_400_000, Math.max(0, Math.round(value)));
+  return {
+    durationMs: count(metrics.durationMs),
+    parseMs: count(metrics.parseMs),
+    modelMs: count(metrics.modelMs),
+    sourceChars: count(metrics.sourceChars),
+    evidenceCount: count(metrics.evidenceCount),
+    verifiedFields: count(metrics.verifiedFields),
+    provider: metrics.provider ?? null,
+    extractorVersion: metrics.extractorVersion ?? null,
+  };
+}
 /** Fenced transaction: any extracted candidate write occurs AFTER the lease
  * gate update, in the SAME transaction, protecting against stale workers.
  */
@@ -167,7 +190,7 @@ export async function finishJob(
   outcome: "READY"|"NEEDS_REVIEW"|"FAILED_PERMANENT"|"CANCELLED",
   document: { status: "READY"|"NEEDS_REVIEW"|"FAILED"; errorCode?: string|null;
     reviewReasons?: string[]; provider?: string|null; extractedText?: string;
-    textTruncated?: boolean },
+    textTruncated?: boolean; metrics?: AttemptMetrics },
   sideEffects?: (tx: JobTx) => Promise<void>,
 ) {
   return database().$transaction(async tx => {
@@ -181,25 +204,42 @@ export async function finishJob(
         AND ("cancelRequested"=false OR ${outcome}='CANCELLED')
       RETURNING "id"`;
     if (owned.length !== 1) throw new LeaseLost();
+    const persistenceStartedAt = Date.now();
     if (sideEffects) await sideEffects(tx);
-    await tx.resumeDocument.update({ where: { id: job.documentId },
+    const updatedDocument = await tx.resumeDocument.update({ where: { id: job.documentId },
       data: { status: document.status, errorCode: document.errorCode ?? null,
         reviewReasons: document.reviewReasons ?? [], provider: document.provider ?? null,
+        reviewState: outcome === "NEEDS_REVIEW" ? "NEEDS_REVIEW" : "UNREVIEWED",
+        reviewedAt: null, reviewedBy: null,
         ...(document.extractedText !== undefined ? { extractedText: document.extractedText } : {}),
         ...(document.textTruncated !== undefined ? { textTruncated: document.textTruncated } : {}) },
     });
     await tx.ingestionAttempt.updateMany({ where: { jobId: job.id,
       leaseToken: job.leaseToken, outcome: "RUNNING" },
       data: { outcome: outcome === "FAILED_PERMANENT" ? "FAILED" : outcome,
-        errorCode: document.errorCode ?? null, finishedAt: new Date() } });
+        errorCode: document.errorCode ?? null, finishedAt: new Date(),
+        ...measured(document.metrics),
+        persistMs: Date.now() - persistenceStartedAt,
+      } });
+    if (outcome === "NEEDS_REVIEW" && !sideEffects) {
+      await tx.resumeProfileAudit.create({ data: {
+        ownerId: job.ownerId, documentId: job.documentId,
+        action: "REVIEW_REQUIRED", reviewVersion: updatedDocument.reviewVersion,
+        changedFields: [], provider: document.metrics?.provider ?? null,
+        extractorVersion: document.metrics?.extractorVersion ?? null,
+        jobId: job.id, attempt: job.attempts,
+        reason: "Automated extraction did not yield a verified candidate.",
+      } });
+    }
   }, { maxWait: 10000, timeout: 30000 });
 }
 export async function failJob(job: ClaimedJob, code: string, retryable: boolean,
-  finalReview = false, jitter = Math.random()) {
+  finalReview = false, jitter = Math.random(), metrics?: AttemptMetrics) {
   const terminal = !retryable || job.attempts >= job.maxAttempts;
   if (terminal) return finishJob(job, finalReview ? "NEEDS_REVIEW" : "FAILED_PERMANENT",
     { status: finalReview ? "NEEDS_REVIEW" : "FAILED", errorCode: code,
-      reviewReasons: [finalReview ? "Extraction needs verification." : "Processing could not complete."] });
+      reviewReasons: [finalReview ? "Extraction needs verification." : "Processing could not complete."],
+      metrics });
   const delay = retryDelaySeconds(job.attempts, jitter);
   return database().$transaction(async tx => {
     const owned = await tx.$queryRaw<{id:string}[]>`
@@ -216,7 +256,8 @@ export async function failJob(job: ClaimedJob, code: string, retryable: boolean,
         reviewReasons: ["Temporary processing problem; retry is scheduled."] } });
     await tx.ingestionAttempt.updateMany({ where: { jobId: job.id,
       leaseToken: job.leaseToken, outcome: "RUNNING" },
-      data: { outcome: "RETRY", errorCode: code, finishedAt: new Date() } });
+      data: { outcome: "RETRY", errorCode: code, finishedAt: new Date(),
+        ...measured(metrics) } });
   });
 }
 /** Recover interrupted attempts, respecting the attempt budget and fencing. */
