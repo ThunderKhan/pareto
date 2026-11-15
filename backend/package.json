@@ -29,7 +29,9 @@
     "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts",
     "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts",
     "ingest:evaluate": "node --import=tsx scripts/evaluate-ingestion.ts",
-    "ingest:evaluate:live": "node --import=tsx scripts/evaluate-ingestion-live.ts"
+    "ingest:evaluate:live": "node --import=tsx scripts/evaluate-ingestion-live.ts",
+    "semantic:index": "node --import=tsx scripts/index-candidates.ts",
+    "semantic:evaluate": "node --import=tsx scripts/evaluate-retrieval.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",

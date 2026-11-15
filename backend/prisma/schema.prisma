@@ -23,6 +23,7 @@ model Candidate {
   certifications   String[]         @default([])
   skillsKnown      Boolean          @default(false)
   skills           CandidateSkill[]
+  embedding        CandidateEmbedding?
   createdAt        DateTime         @default(now())
   sourceDocumentId String?          @unique
   sourceDocument   ResumeDocument?  @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
@@ -324,4 +325,19 @@ model ResumeProfileAudit {
 
   @@index([ownerId, createdAt])
   @@index([documentId, createdAt])
+}
+
+ 
+/// Private recruiter-scoped pgvector cache, never authoritative for eligibility.
+model CandidateEmbedding {
+  candidateId    String @id
+  ownerId        String
+  model          String
+  contentHash    String
+  contentVersion Int @default(1)
+  embedding      Unsupported("vector(768)")
+  updatedAt      DateTime @default(now()) @updatedAt
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, model])
 }

@@ -15,6 +15,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODEL: ${GROQ_MODEL:-}
+      PARETO_SEMANTIC_SEARCH: ${PARETO_SEMANTIC_SEARCH:-1}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -32,7 +33,7 @@ services:
       db:
         condition: service_healthy
   db:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:0.8.7-pg17
     environment:
       POSTGRES_DB: pareto
       POSTGRES_USER: pareto

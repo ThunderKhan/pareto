@@ -1,11 +1,12 @@
 import { isDeepStrictEqual } from "node:util";
 import { database } from "./db";
 import { criteriaSchema, type Rule } from "./criteria";
-import { evaluatorVersion, rank, referenceCriteria } from "./evaluate";
+import { evaluatorVersion, referenceCriteria } from "./evaluate";
 import type { Prisma } from "../generated/prisma/client";
 import { explainNearMatch } from "./counterfactual";
 import { diagnoseSearch } from "./diagnostics";
 import { compareSearches } from "./simulator";
+import { rankWithSemantic } from "./semantic";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
 type Candidate = Prisma.CandidateGetPayload<{ include: { skills: typeof skills } }>;
@@ -75,7 +76,7 @@ export async function activeSearch(ownerId: string, id: string) {
 async function compute(ownerId: string, criteria: Rule[], referenceId: string | null, offset = 0) {
   const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
   if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
-  const results = rank(rows.map(profile), criteria, referenceId);
+  const results = await rankWithSemantic(ownerId, rows.map(profile), criteria, referenceId);
   const counts = { ELIGIBLE: 0, NEEDS_REVIEW: 0, INELIGIBLE: 0 };
   for (const result of results) counts[result.eligibility]++;
   return { counts, results: results.slice(offset, offset + 20), total: results.length, evaluatorVersion };
