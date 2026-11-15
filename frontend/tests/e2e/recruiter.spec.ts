@@ -57,6 +57,10 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   const confirmed = page.getByRole("region", { name: "Confirmed results" });
   await expect(confirmed.getByRole("heading", { name: "Search results · revision 1" })).toBeVisible();
   await expect(confirmed).toContainText("4 eligible");
+  await expect(confirmed.getByTestId("search-confirmed")).toContainText("Your shortlist is ready to review.");
+  await confirmed.getByRole("button", { name: "Refine search" }).click();
+  await expect(page.getByLabel("Refine this search")).toBeFocused();
+  await expect(confirmed.getByRole("button", { name: "Review shortlist" })).toBeVisible();
   const asha = confirmed.getByRole("article").filter({
     has: page.getByRole("heading", { name: "Asha Nair", exact: true }),
   });
@@ -88,6 +92,8 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
 
   await page.reload();
   await expect(confirmed.getByRole("heading", { name: "Search results · revision 3" })).toBeVisible();
+  await expect(confirmed.getByTestId("search-confirmed")).toHaveCount(0);
+  // Persisted owner-scoped search is still available after reload without client storage.
   const reference = confirmed.getByRole("article").filter({
     has: page.getByRole("heading", { name: "Asha Nair", exact: true }),
   });
