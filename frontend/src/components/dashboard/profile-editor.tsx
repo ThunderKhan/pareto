@@ -5,6 +5,8 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { Check, LockKey, UserCircle } from "@phosphor-icons/react";
 import ThemePicker from "./theme-picker";
+import WorkspaceSettings from "./workspace-settings";
+import AccountSecurity from "./account-security";
 
 function useAuthClient() {
   return useMemo(() => {
@@ -75,7 +77,6 @@ export default function ProfileEditor({ email, firstName, lastName, themePrefere
   return <div className="pareto-profile-card">
     <section aria-labelledby="profile-personal-heading">
       <h2 id="profile-personal-heading"><UserCircle size={21} weight="duotone" aria-hidden="true"/> Personal details</h2>
-      <p>Your name appears in your private Pareto workspace.</p>
       <form className="pareto-profile-form" onSubmit={saveProfile} aria-busy={busy}>
         <div className="pareto-profile-two">
           <label>First name
@@ -94,6 +95,7 @@ export default function ProfileEditor({ email, firstName, lastName, themePrefere
         <button type="submit" disabled={!client || busy}><Check size={17}/>{busy ? "Saving…" : "Save changes"}</button>
       </form>
     </section>
+    <WorkspaceSettings section="professional"/>
     <section className="pareto-profile-security" aria-labelledby="profile-security-heading">
       <h2 id="profile-security-heading"><LockKey size={20} weight="duotone" aria-hidden="true"/> Password & security</h2>
       <p>Choose a new password for your email/password sign-in. Depending on your account&rsquo;s security settings, you may be asked to reauthenticate.</p>
@@ -110,7 +112,9 @@ export default function ProfileEditor({ email, firstName, lastName, themePrefere
           role={securityMessage.error ? "alert" : "status"}>{securityMessage.text}</p>}
         <button type="submit" disabled={!client || busy}><LockKey size={17}/>{busy ? "Updating…" : "Change password"}</button>
       </form>
+      <AccountSecurity />
     </section>
     <ThemePicker initialValue={themePreference} />
+    <WorkspaceSettings section="notifications"/>
   </div>;
 }
