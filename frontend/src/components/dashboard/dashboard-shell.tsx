@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  ArrowRight, CaretDown, House, MagnifyingGlass, SidebarSimple,
+  CaretDown, House, MagnifyingGlass, SidebarSimple,
   UserCircle, UsersThree, X,
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
@@ -139,9 +139,8 @@ export default function DashboardShell({ children, user }: {
           <strong>{current.label}</strong>
         </div>
         <div className="pareto-topbar__right">
-          <span className="pareto-topbar__private">Recruiter workspace</span>
           <Link href="/dashboard/search" className="pareto-topbar__action">
-            New search <ArrowRight size={15} aria-hidden="true" />
+            New search
           </Link>
         </div>
       </header>

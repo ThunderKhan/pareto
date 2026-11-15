@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, MagnifyingGlass, UserCircle } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlass, UserCircle } from "@phosphor-icons/react/dist/ssr";
 
 export default function DashboardPage() {
   return <main className="pareto-main">
@@ -11,7 +11,7 @@ export default function DashboardPage() {
         <h2 id="pareto-overview-start">A clearer way to search.</h2>
         <p>Describe a role in your own words, inspect the proposed requirements, then decide when to run the search.</p>
       </div>
-      <Link href="/dashboard/search">Start candidate search <ArrowRight size={17} aria-hidden="true"/></Link>
+      <Link href="/dashboard/search">Start candidate search</Link>
     </section>
     <div className="pareto-overview-grid">
       <Link href="/dashboard/candidates" className="pareto-overview-link">
