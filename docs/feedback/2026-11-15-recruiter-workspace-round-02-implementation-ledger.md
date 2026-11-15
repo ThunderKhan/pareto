@@ -6,7 +6,7 @@
 >
 > **Historic, separate round:** [Round 01 feedback](./2026-11-15-recruiter-workspace-ui-feedback-round-01-10.md) and [Round 01 implementation ledger](./2026-11-15-recruiter-workspace-implementation-01-09.md)
 >
-> **Target repository/branch after authorization:** \`ThunderKhan/pareto\` / \`main\`.
+> **Target repository/branch after authorization:** `ThunderKhan/pareto` / `main`.
 
 This file records the next worker's progress without confusing written specifications with delivered behavior. It deliberately mirrors the old implementation ledger but starts with **every Round 02 item pending**. Nothing written here implies the user approved an implementation or that an audit has already run.
 
@@ -27,20 +27,20 @@ This file records the next worker's progress without confusing written specifica
 
 ## Hand-off: current confirmed facts and prior decisions
 
-- The new feedback was supplied in sequence with screenshots, not as part of Round 01. The older two \`docs/feedback/\` Markdown files were already **nonempty** and should be preserved rather than overwritten.
+- The new feedback was supplied in sequence with screenshots, not as part of Round 01. The older two `docs/feedback/` Markdown files were already **nonempty** and should be preserved rather than overwritten.
 - The previous user explicitly requested **“note it down first” / “no implementation”** for the ongoing sequence, culminating in **“write the docs first. Do not implement yet.”** That instruction controls this phase.
 - Already working baseline (from the previous round): dashboard shell/overview, account settings, actual in-app notifications, Light/Dark/System preference, Parito avatar in sidebar/profile, search composer, reference workflow, criteria confirmation, candidate result evidence.
 - Subsequent completed application work includes confirmed-search Search Health, What-if and Near-match modules. This feedback round must not break their preview-only behavior or the explicit search revision confirmation boundary.
-- Source design references: approved public Pareto landing page, \`docs/AUTH-IMPECCABLE-UNSLOP-REVIEW.md\`, and \`docs/HOMEPAGE-IMPECCABLE-UNSLOP-REVIEW.md\`. These record **earlier** audits/refinement passes, **not** completion of Round 02 item #10.
+- Source design references: approved public Pareto landing page, `docs/AUTH-IMPECCABLE-UNSLOP-REVIEW.md`, and `docs/HOMEPAGE-IMPECCABLE-UNSLOP-REVIEW.md`. These record **earlier** audits/refinement passes, **not** completion of Round 02 item #10.
 - The user expects a full application audit of Dashboard, Profile, AI candidate search, Candidates, notification and account menus and the login UI, using Impeccable and anti-UI-slop/Unslop principles. Confirm availability/load the actual skills when work is authorized.
 - Previous proposed designs for #07/#08: a **floating Reference candidate picker** (mobile bottom sheet) and **one criteria review drawer** (mobile full-screen sheet), mutually exclusive and responsive. The user explicitly requested meaningful planning and visual quality for both; do not treat cosmetic CSS tweaks alone as sufficient.
-- Dark-mode exploratory palette from the conversation: \`#0B0C0F\` canvas, \`#17191E\` surface, \`#292D35\` border, \`#92B4FF\` restrained blue accent. These are **proposals, not finalized brand tokens**.
+- Dark-mode exploratory palette from the conversation: `#0B0C0F` canvas, `#17191E` surface, `#292D35` border, `#92B4FF` restrained blue accent. These are **proposals, not finalized brand tokens**.
 - #09's blue email background is **likely** browser autofill; verify cause before changing CSS. Do not break credential autofill.
 - The screenshots in the Frontend 03 conversation are visual evidence. They have **not** been copied to the GitHub repository and must not be represented as committed design assets.
 
 ## Work protocol after the next explicit approval
 
-1. Pull current \`main\`, inspect current app/design tokens and note any commits added since this ledger. Do not assume the code is frozen.
+1. Pull current `main`, inspect current app/design tokens and note any commits added since this ledger. Do not assume the code is frozen.
 2. Load or verify Impeccable and Unslop/anti-UI-slop skill references. Complete the requested bounded cross-route audit and record actionable, prioritized findings.
 3. Confirm which findings are already addressed by intervening commits. Keep a live table of pending vs implemented, including relevant commit SHAs.
 4. Implement the authorized Round 02 items with minimal, coherent component changes; use the existing shared mascot, search APIs and confirmation system, avoiding unnecessary backend changes.
@@ -50,7 +50,7 @@ This file records the next worker's progress without confusing written specifica
 
 ## Session continuation cues
 
-- **Current task is complete when:** Both new Round 02 Markdown documents exist on \`main\`, while no application code or previously completed feedback files are modified.
+- **Current task is complete when:** Both new Round 02 Markdown documents exist on `main`, while no application code or previously completed feedback files are modified.
 - **Next task (not started):** Wait for the user's explicit “implement” / “start” instruction. Then run the audit, design/refinement and implementation workflow.
 - **Do not claim:** that the audit ran, the new avatar or theme were visually tested, or the new feedback was implemented during this documentation-only phase.
 - **Don't confuse the identical numbers:** e.g. Round 01 #03 was composer positioning, while Round 02 #03 is notification checkbox alignment.

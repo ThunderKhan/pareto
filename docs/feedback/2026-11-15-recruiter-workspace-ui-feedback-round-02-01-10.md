@@ -2,9 +2,9 @@
 
 > **Captured:** 15 November 2026
 >
-> **Product:** Pareto — Recruitment Intelligence Platform, Trustume AI Hackathon 2026, team \`std::zero\`
+> **Product:** Pareto — Recruitment Intelligence Platform, Trustume AI Hackathon 2026, team `std::zero`
 >
-> **Repository / target branch:** [ThunderKhan/pareto](https://github.com/ThunderKhan/pareto) / \`main\`
+> **Repository / target branch:** [ThunderKhan/pareto](https://github.com/ThunderKhan/pareto) / `main`
 >
 > **Source:** User's ten numbered feedback messages and accompanying screenshots in the Frontend 03 conversation on 15 November 2026.
 >
@@ -52,7 +52,7 @@
 **Request / design intent:**
 - Add a restrained Parito avatar **to the left of assistant/system turns** in active search conversations (e.g., interpretation responses, review guidance, search updates/results as appropriate).
 - Distinguish recruiter messages (e.g., right-aligned hiring brief) from Pareto responses; do not mechanically place the mascot on every candidate result card or use it as an individual candidate's avatar.
-- Prefer the existing \`/mascot/pareto-mascot.svg\` and one reusable, accessible avatar component.
+- Prefer the existing `/mascot/pareto-mascot.svg` and one reusable, accessible avatar component.
 - Maintain vertical alignment, sensible gutters and stable layout while content expands/scrolls. Keep the chat composer persistent and don't insert duplicate mascot markers into every nested panel.
 - Decorative mascot images must not produce redundant screen-reader announcements when the assistant message is already identified in text.
 
@@ -62,10 +62,10 @@
 
 ## #03 — Fix misaligned notification checkboxes
 
-**Observed:** In \`/dashboard/profile\` → **Notifications**, checkbox squares sit lower than their corresponding label text. This appears in the provided dark-mode screenshot, especially for “Notify when a new candidate search is confirmed” and “Notify when a confirmed search is refined”.
+**Observed:** In `/dashboard/profile` → **Notifications**, checkbox squares sit lower than their corresponding label text. This appears in the provided dark-mode screenshot, especially for “Notify when a new candidate search is confirmed” and “Notify when a confirmed search is refined”.
 
 **Required changes:**
-- Make each checkbox and its label one well-aligned row; use flex/grid \`align-items: center\` or appropriate input/label alignment instead of relying on inherited line height/baseline.
+- Make each checkbox and its label one well-aligned row; use flex/grid `align-items: center` or appropriate input/label alignment instead of relying on inherited line height/baseline.
 - Keep comfortable spacing between rows and the Save notification preferences button.
 - Preserve large enough click/touch targets, semantics (clicking label toggles checkbox), keyboard focus rings, disabled/saving state, and legible contrast in both themes.
 - **Do not change** actual notification preference names or persistence behavior.
@@ -82,10 +82,10 @@
 
 | Role | Direction | Exploratory hex |
 | --- | --- | --- |
-| Main canvas | Near-black, neutral | \`#0B0C0F\` |
-| Panels / menus | Charcoal | \`#17191E\` |
-| Borders / separators | Graphite | \`#292D35\` |
-| Active accent | Controlled cool blue | \`#92B4FF\` |
+| Main canvas | Near-black, neutral | `#0B0C0F` |
+| Panels / menus | Charcoal | `#17191E` |
+| Borders / separators | Graphite | `#292D35` |
+| Active accent | Controlled cool blue | `#92B4FF` |
 
 **Requirements:**
 - Audit and retune the **full authenticated workspace**, not only the profile page: Overview, AI candidate search and composer, candidate library/details, profile/security/notifications, nav/sidebar/topbar, dropdowns, search-analysis panels, empty/error/loading states and focus/hover/disabled states.
@@ -132,7 +132,7 @@
 **Approved planning direction, still subject to implementation QA:**
 1. Click **Reference** in the composer → open a floating **candidate picker/popover** anchored above the composer.
 2. The picker contains one clearly labeled candidate-name search input (no repetitive heading + duplicate label), a brief loading/empty/error presentation, and results from the real owner-scoped candidate lookup.
-3. Display candidate **name, role and city** in compact scan-friendly rows. Selecting a result closes the picker and runs the established \`referenceDraft\` pathway into human review.
+3. Display candidate **name, role and city** in compact scan-friendly rows. Selecting a result closes the picker and runs the established `referenceDraft` pathway into human review.
 4. Desktop: popover/floating surface with a bounded list; mobile: compact bottom sheet or viewport-constrained equivalent, without obscured controls.
 5. Dismiss with Escape, outside click, a visible Close control; return focus to the triggering action. Maintain keyboard navigation and accessible status/labels.
 6. Keep only **one** active overlay (reference picker OR criteria editor). Preserve candidate self-exclusion and ownership checks.
@@ -154,7 +154,7 @@
 - Keep **Add criterion**, **Confirm Search**, **Discard draft**, warnings, actual diffs and reference-context information available; make destructive actions distinct and clear.
 - Only **Confirm Search** persists a new search revision. Closing the drawer/discarding must preserve the current confirmed results and not silently save.
 - Opening this editor closes the Reference picker; reopening the picker must not leave a hidden draft/form trapping focus. Keyboard Escape, focus trap/restore, screen-reader headings and small-screen scroll must be designed intentionally.
-- Preserve the original \`CriteriaEditor\`, \`openDraft\`, \`confirmSearch\`, \`sessionId\`, \`expectedVersion\` and fresh request-ID protections rather than creating a parallel save path.
+- Preserve the original `CriteriaEditor`, `openDraft`, `confirmSearch`, `sessionId`, `expectedVersion` and fresh request-ID protections rather than creating a parallel save path.
 
 **Visual requirement:** Apply the approved landing-page type hierarchy, functional Inter text, consistent spacing/padding, sensible input sizes, compact professional cards/rows, light and revised dark palettes, proper breakpoints and accessible focus/disabled/error states.
 
@@ -177,7 +177,7 @@
 
 ## #10 — Full Impeccable + anti-UI-slop (Unslop) audit and follow-through
 
-**User request:** Carry out a full audit of the **Overview/dashboard**, **recruiter profile/account settings**, **AI candidate search**, **candidate library**, and the **login / account menu / notification dropdown** surfaces using the same design skill approaches used previously. The user wants **the resulting justified fixes implemented on \`main\`**, but specifically instructed that **first we only record this feedback; do not execute the audit or implement fixes yet**.
+**User request:** Carry out a full audit of the **Overview/dashboard**, **recruiter profile/account settings**, **AI candidate search**, **candidate library**, and the **login / account menu / notification dropdown** surfaces using the same design skill approaches used previously. The user wants **the resulting justified fixes implemented on `main`**, but specifically instructed that **first we only record this feedback; do not execute the audit or implement fixes yet**.
 
 **Skill references / precedence:**
 - **Impeccable** by Paul Bakaus: https://github.com/pbakaus/impeccable — existing project use documented in [AUTH-IMPECCABLE-UNSLOP-REVIEW.md](../AUTH-IMPECCABLE-UNSLOP-REVIEW.md) and [HOMEPAGE-IMPECCABLE-UNSLOP-REVIEW.md](../HOMEPAGE-IMPECCABLE-UNSLOP-REVIEW.md).
@@ -198,7 +198,7 @@
 - Explicitly distinguish **verified problems**, **inferences to test** (e.g. autofill paint), and **subjective visual choices**.
 - Run bounded Impeccable audit/craft/accessibility and Unslop spacing/color/type/copy/icons/layout/details/visuals/motion checks; preserve purposeful brand exceptions.
 - Consolidate shared design tokens/components instead of accumulating CSS override debt. Remove filler, duplicate elements, gratuitous chips/cards/icons, thin low-contrast text and ungrounded copy; improve focus and component alignment.
-- Then implement prioritized, scoped fixes directly on **\`main\` only after the user's explicit go-ahead**, with tracked commits and honest test results. Don't silently redesign functional workflows or introduce unrelated backend features.
+- Then implement prioritized, scoped fixes directly on **`main` only after the user's explicit go-ahead**, with tracked commits and honest test results. Don't silently redesign functional workflows or introduce unrelated backend features.
 - Produce/update an audit result document with what was audited, changes made, what was deliberately left unchanged and what remains externally unverified.
 
 **Acceptance:** A reviewable, evidence-based cross-route audit and matching, implemented refinements—not a vague “looks better” claim. No inventing that live authenticated flows were tested if CI skipped them.
