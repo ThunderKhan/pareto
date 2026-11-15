@@ -439,8 +439,8 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
         <header className="pareto-draft-header">
           <div><p className="pareto-chat__caption">RECRUITER REVIEW REQUIRED</p>
             <h2 id="pareto-draft-title">Review draft criteria</h2></div>
-          <button type="button" className="pareto-draft-close" onClick={() => setDraft(undefined)}
-            aria-label="Close criteria review" onClick={discardDraft}><X size={20} aria-hidden="true"/></button>
+          <button type="button" className="pareto-draft-close" onClick={discardDraft}
+            aria-label="Close criteria review"><X size={20} aria-hidden="true"/></button>
         </header>
         <form className="pareto-draft-form" onSubmit={confirm}>
           <div className="pareto-draft-scroll">
@@ -462,7 +462,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             <p>Changes are saved only when you confirm.</p>
             <div className="pareto-draft-actions">
               <button type="button" disabled={busy} className="pareto-draft-discard"
-                onClick={() => setDraft(undefined)}>Discard draft</button>
+                onClick={discardDraft}>Discard draft</button>
               <button type="submit" disabled={busy || !draft.criteria.length} className="pareto-draft-confirm">
                 Confirm Search
               </button>
