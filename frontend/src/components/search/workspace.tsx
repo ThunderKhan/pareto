@@ -382,7 +382,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
           {alert === "Cross-origin requests are not allowed." &&
             <p className="pareto-chat__error-help">The server rejected this request's origin. Check that the app and its proxy use the same public hostname, then retry.</p>}
         </div>
-      </div>
+      </div>}
       {results && <section className="search-panel pareto-chat__results" aria-label="Confirmed results">
         <div className="pareto-chat__results-head">
           <div>
