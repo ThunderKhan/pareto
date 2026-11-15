@@ -68,6 +68,32 @@ test("new recruiter workspace routes remain protected without a session", async 
   }
 });
 
+test("signed-out requests cannot access account, workspace, or notifications", async ({ request }) => {
+  for (const url of ["/api/v1/account", "/api/v1/notifications"]) {
+    expect((await request.get(url)).status()).toBe(401);
+  }
+  expect((await request.patch("/api/v1/account", { data: { jobTitle: "Admin" } })).status()).toBe(401);
+  expect((await request.post("/api/v1/account/workspace", { data: { name: "Fake" } })).status()).toBe(401);
+  expect((await request.patch("/api/v1/notifications", { data: { ids: ["x"] } })).status()).toBe(401);
+});
+
+test("all public pages use the concise Pareto title", async ({ page }) => {
+  for (const route of ["/", "/login", "/signup"]) {
+    await page.goto(route);
+    await expect(page).toHaveTitle("Pareto");
+  }
+});
+
+test("theme preference initializes from saved choice without changing public page styling", async ({ page }) => {
+  await page.goto("/login");
+  await page.evaluate(() => window.localStorage.setItem("pareto-theme", "dark"));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-pareto-effective-theme", "dark");
+  await page.evaluate(() => window.localStorage.setItem("pareto-theme", "light"));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-pareto-effective-theme", "light");
+});
+
 test("signed-out visitors cannot search or read candidate data", async ({ page, request }) => {
   await page.goto("/dashboard/search");
   await expect(page).toHaveURL(/\/login/);
