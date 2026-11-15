@@ -1,0 +1,180 @@
+[
+  {
+    "id": "role-evidence",
+    "category": "supported",
+    "expected": {
+      "roleTitle": "Senior Java Developer"
+    },
+    "observed": {
+      "roleTitle": "Senior Java Developer"
+    }
+  },
+  {
+    "id": "distinct-java-js",
+    "category": "skill-context",
+    "expected": {
+      "skills": [
+        "Java"
+      ]
+    },
+    "observed": {
+      "skills": [
+        "JavaScript"
+      ]
+    }
+  },
+  {
+    "id": "notice-unknown",
+    "category": "unknown",
+    "expected": {
+      "noticePeriodDays": null
+    },
+    "observed": {
+      "noticePeriodDays": 30
+    }
+  },
+  {
+    "id": "experience-supported",
+    "category": "supported",
+    "expected": {
+      "experienceMonths": 72
+    },
+    "observed": {
+      "experienceMonths": 72
+    }
+  },
+  {
+    "id": "overlapping-dates",
+    "category": "dates",
+    "expected": {
+      "experienceMonths": 60
+    },
+    "observed": {
+      "experienceMonths": 72
+    }
+  },
+  {
+    "id": "skills-unverified",
+    "category": "unknown",
+    "expected": {
+      "skills": null
+    },
+    "observed": {
+      "skills": []
+    }
+  },
+  {
+    "id": "skill-evidence",
+    "category": "supported",
+    "expected": {
+      "skills": [
+        "Java",
+        "AWS"
+      ]
+    },
+    "observed": {
+      "skills": [
+        "aws",
+        "java"
+      ]
+    }
+  },
+  {
+    "id": "location-evidence",
+    "category": "supported",
+    "expected": {
+      "city": "Hyderabad"
+    },
+    "observed": {
+      "city": "hyderabad"
+    }
+  },
+  {
+    "id": "negated-skill",
+    "category": "negation",
+    "expected": {
+      "skills": null
+    },
+    "observed": {
+      "skills": [
+        "Java"
+      ]
+    }
+  },
+  {
+    "id": "notice-abstained",
+    "category": "unknown",
+    "expected": {
+      "noticePeriodDays": null
+    },
+    "observed": {
+      "noticePeriodDays": null
+    }
+  },
+  {
+    "id": "role-mentioned-not-employed",
+    "category": "context",
+    "expected": {
+      "roleTitle": null
+    },
+    "observed": {
+      "roleTitle": "Senior Engineer"
+    }
+  },
+  {
+    "id": "role-mismatch",
+    "category": "context",
+    "expected": {
+      "roleTitle": "Data Analyst"
+    },
+    "observed": {
+      "roleTitle": "Data Scientist"
+    }
+  },
+  {
+    "id": "known-empty-skills",
+    "category": "supported",
+    "expected": {
+      "skills": []
+    },
+    "observed": {
+      "skills": []
+    }
+  },
+  {
+    "id": "prior-role",
+    "category": "supported",
+    "expected": {
+      "pastRoles": [
+        "Backend Developer"
+      ]
+    },
+    "observed": {
+      "pastRoles": [
+        "backend developer"
+      ]
+    }
+  },
+  {
+    "id": "certification-planned",
+    "category": "context",
+    "expected": {
+      "certifications": []
+    },
+    "observed": {
+      "certifications": [
+        "AWS Certified"
+      ]
+    }
+  },
+  {
+    "id": "name-supported",
+    "category": "supported",
+    "expected": {
+      "displayName": "Asha Nair"
+    },
+    "observed": {
+      "displayName": "asha nair"
+    }
+  }
+]
