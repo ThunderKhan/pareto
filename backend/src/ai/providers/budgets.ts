@@ -13,14 +13,14 @@ function limit(name: string, fallback: number, maximum: number) {
  */
 export class AiProcessLimiter {
   private inflight = 0;
-  private globalWindow = { startedAt: Date.now(), calls: 0 };
+  private globalWindow: { startedAt: number; calls: number };
   private owners = new Map<string, { startedAt: number; calls: number }>();
   constructor(
     readonly concurrency: number,
     readonly maxPerOwnerHour: number,
     readonly maxGlobalHour: number,
     readonly now: () => number = Date.now,
-  ) {}
+  ) { this.globalWindow = { startedAt: now(), calls: 0 }; }
   acquire(ownerId: string): () => void {
     const now = this.now(), hour = 60 * 60 * 1000;
     if (this.globalWindow.startedAt + hour <= now) this.globalWindow = { startedAt: now, calls: 0 };
