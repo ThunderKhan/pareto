@@ -4,7 +4,7 @@
 **Owner:** std::zero / Pareto engineering · **Created:** 2026-11-15  
 **Audience:** Next backend/AI implementation worker, reviewer, frontend integrator, and demo operator  
 **Scope:** Production-oriented safeguards for Gemini/Groq-backed search interpretation, conversational refinement, and resume-to-profile extraction; safe integration with deterministic recruiter search.  
-**Authoritative related specifications:** [PRD](PRD.md) (AI-FR-01/02, MATCH-FR-01/02, DATA-FR-01/02, ORG-FR-01–06), [ARCHITECTURE](ARCHITECTURE.md) (§12–20), [IMPLEMENTATION](IMPLEMENTATION.md), [MVP](MVP.md), and [resume-ingestion contract](RESUME-INGESTION.md) **on PR #13 until merged**.
+**Authoritative related specifications:** [PRD](PRD.md) (AI-FR-01/02, MATCH-FR-01/02, DATA-FR-01/02, ORG-FR-01–06), [ARCHITECTURE](ARCHITECTURE.md) (§12–20), [IMPLEMENTATION](IMPLEMENTATION.md), [MVP](MVP.md), and [resume-ingestion contract](https://github.com/ThunderKhan/pareto/blob/feat/private-resume-ingestion/docs/RESUME-INGESTION.md) **on PR #13 until merged**.
 
 > **Planning document, not a completion certificate.** The implementation worker must inspect the current repository and PRs before editing. A successful unit/CI build does not prove live Gemini/Groq, live Supabase Storage, real-user authorization, privacy compliance, or deployment readiness. No architecture can guarantee that a live demonstration never fails: this design minimizes foreseeable failures and provides honest recovery paths.
 
