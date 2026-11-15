@@ -18,6 +18,7 @@ import "./round-02.css";
 import "./round-03-motion.css";
 import "./conversation-layout.css";
 import "./review-phase1.css";
+import "./result-phase2.css";
 
 type Results = Awaited<ReturnType<typeof confirmSearch>>;
 type Lookup = Awaited<ReturnType<typeof candidateList>>;
@@ -62,6 +63,93 @@ function ProfileFacts({ profile }: { profile: Profile }) {
       Certifications: profile.certifications.join(", "),
     }).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || "Not documented"}</dd></div>)}
   </dl>;
+}
+
+
+type CandidateRow = Results["results"][number];
+
+/** Every headline and detail here comes from the confirmed evaluator response. */
+function CandidateResult({ row, index, similarityOnly, sessionId, version, busy, onReference, onReview }: {
+  row: CandidateRow; index: number; similarityOnly: boolean;
+  sessionId: string; version: number; busy: boolean;
+  onReference: (id: string) => void;
+  onReview: (criteria: Rule[], warnings: string[]) => void;
+}) {
+  const { candidate, details, eligibility, requiredMet, requiredTotal, preferenceMet, preferenceTotal } = row;
+  const required = details.filter(detail => detail.rule.mode === "required");
+  const preferred = details.filter(detail => detail.rule.mode === "preferred");
+  const requiredFailures = required.filter(detail => detail.outcome === "FAIL").length;
+  const requiredUnknown = required.filter(detail => detail.outcome === "UNKNOWN").length;
+  // Surface the evidence that actually controls eligibility, not a fabricated similarity percentage.
+  const decisive = similarityOnly
+    ? preferred.filter(detail => detail.outcome === "MATCH")
+    : eligibility === "INELIGIBLE"
+      ? required.filter(detail => detail.outcome === "FAIL")
+      : eligibility === "NEEDS_REVIEW"
+        ? required.filter(detail => detail.outcome === "UNKNOWN")
+        : required.filter(detail => detail.outcome === "MATCH");
+  const preview = (decisive.length ? decisive :
+    preferred.filter(detail => detail.outcome === "MATCH")).slice(0, 2);
+  const rationale = similarityOnly ? "Ranked using documented reference preferences."
+    : eligibility === "ELIGIBLE" ? requiredTotal
+      ? "All required criteria are documented as matching."
+      : "No required conditions were applied."
+    : eligibility === "NEEDS_REVIEW" ? "Mandatory evidence is missing; verification is needed."
+    : "At least one documented mandatory condition does not match.";
+  return <article className="search-result pareto-result" data-eligibility={eligibility}>
+    <div className="pareto-result__head">
+      <span className="pareto-result__index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+      <div className="pareto-result__identity">
+        <h4>{candidate.displayName}</h4>
+        <p>{candidate.roleTitle ?? "Role not documented"} <span aria-hidden="true">·</span> {candidate.city ?? "City not documented"}</p>
+      </div>
+      <span className={"pareto-result__status pareto-result__status--" + eligibility.toLowerCase()}>
+        {similarityOnly ? "Similarity-ranked" : statuses[eligibility]}
+      </span>
+    </div>
+    <div className="pareto-result__evaluation">
+      <p className="pareto-result__rationale">{rationale}</p>
+      <div className="pareto-result__metrics" aria-label={"Matching criteria for " + candidate.displayName}>
+        {requiredTotal > 0 && <span><strong>{requiredMet}/{requiredTotal}</strong> required met</span>}
+        {preferenceTotal > 0 && <span><strong>{preferenceMet}/{preferenceTotal}</strong> preferred met</span>}
+        {requiredFailures > 0 && <span><strong>{requiredFailures}</strong> documented mismatch{requiredFailures === 1 ? "" : "es"}</span>}
+        {requiredUnknown > 0 && <span><strong>{requiredUnknown}</strong> unverified required</span>}
+      </div>
+    </div>
+    {preview.length > 0 && <div className="pareto-result__evidence-preview" aria-label={"Decision evidence for " + candidate.displayName}>
+      <p className="pareto-result__overline">DECISION EVIDENCE · STORED RECORD</p>
+      <ul>{preview.map(detail => <li key={ruleKey(detail.rule)}>
+        <strong>{labels[detail.rule.field]} · {detail.outcome === "UNKNOWN" ? "Not documented" : detail.outcome}</strong>
+        <span>{detail.reason}</span>
+      </li>)}</ul>
+    </div>}
+    <div className="pareto-result__actions">
+      <details className="pareto-result__disclosure" aria-label={"Match evidence for " + candidate.displayName}>
+        <summary>Match evidence <span>{details.length} evaluated condition{details.length === 1 ? "" : "s"}</span></summary>
+        <div className="pareto-result__evidence">
+          {([["Required evidence", required], ["Preferred evidence", preferred]] as const).map(([heading, items]) =>
+            items.length > 0 && <section key={heading}>
+              <h5>{heading}</h5>
+              <ul>{items.map(detail => <li key={ruleKey(detail.rule)}>
+                <strong>{labels[detail.rule.field]} · {detail.outcome}</strong>
+                <p>{detail.reason}</p>
+                {detail.outcome === "UNKNOWN" && <small>Unknown is not a documented failure or match.</small>}
+              </li>)}</ul>
+            </section>)}
+        </div>
+      </details>
+      <details className="pareto-result__disclosure">
+        <summary>Candidate details</summary>
+        <ProfileFacts profile={candidate}/>
+      </details>
+      <button type="button" className="pareto-result__reference" disabled={busy}
+        onClick={() => onReference(candidate.id)}>Find candidates like {candidate.displayName}</button>
+    </div>
+    {!similarityOnly && (eligibility === "INELIGIBLE" || eligibility === "NEEDS_REVIEW") &&
+      <NearMatchExplanation key={sessionId + ":" + version + ":" + candidate.id}
+        sessionId={sessionId} version={version} candidateId={candidate.id}
+        candidateName={candidate.displayName} onReview={onReview}/>}
+  </article>;
 }
 
 export default function SearchWorkspace({ initialSession, initialReference }: {
@@ -398,47 +486,35 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             <PencilSimple size={16}/> Edit confirmed criteria
           </button>
         </div>
-        {similarityOnly
-          ? <p>{results.total} candidates ranked by similarity · no required filters yet</p>
-          : <p>{results.counts.ELIGIBLE} eligible · {results.counts.NEEDS_REVIEW} need review · {results.counts.INELIGIBLE} ineligible</p>}
+        <div className="pareto-results__counts" role="group" aria-label="Confirmed search outcome counts">
+          {similarityOnly
+            ? <p className="pareto-results__similarity">{results.total} candidates ranked by similarity <span>· no required filters yet</span></p>
+            : <>
+              <p><strong>{results.counts.ELIGIBLE}</strong> eligible</p>
+              <p><strong>{results.counts.NEEDS_REVIEW}</strong> need review</p>
+              <p><strong>{results.counts.INELIGIBLE}</strong> ineligible</p>
+            </>}
+        </div>
         {results.referenceId && <p>Similarity counts equally weighted preferred profile criteria. Missing evidence earns zero credit.</p>}
-        <details><summary>Confirmed criteria</summary><ul>{results.criteria.map(rule =>
-          <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul></details>
-        <ParetoFrontier key={"frontier:" + results.sessionId + ":" + results.version}
-          sessionId={results.sessionId} version={results.version}
-          onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
-        <div className="insight-panels" aria-label="Search analysis tools">
-          <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
-            sessionId={results.sessionId} version={results.version}
-            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
-          <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
-            sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
-            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
-        </div>
-        {results.total === 0 && <p>No candidate profiles are available in this workspace.</p>}
-        <div className="pareto-chat__candidate-grid">
-          {results.results.map(({candidate,details,eligibility,requiredMet,requiredTotal,preferenceMet,preferenceTotal}) =>
-            <article key={candidate.id} className="search-result">
-              <div className="pareto-chat__candidate-head">
-                <span className="pareto-chat__candidate-avatar" aria-hidden="true">{candidate.displayName.charAt(0).toUpperCase()}</span>
-                <div><h3>{candidate.displayName}</h3><p>{candidate.roleTitle ?? "Role not documented"} · {candidate.city ?? "City not documented"}</p></div>
-              </div>
-              <p><strong className={"pareto-chat__eligibility pareto-chat__eligibility--" + eligibility.toLowerCase()}>
-                {similarityOnly ? "Similarity-ranked" : statuses[eligibility]}</strong>
-                {requiredTotal > 0 && " · " + requiredMet + "/" + requiredTotal + " requirements met"}
-                {preferenceTotal > 0 && " · " + preferenceMet + "/" + preferenceTotal + (results.referenceId ? " similarity" : " preferred") + " criteria matched"}</p>
-              <details><summary>Match evidence</summary><ul>{details.map(detail =>
-                <li key={ruleKey(detail.rule)}><strong>{labels[detail.rule.field]} · {detail.outcome}</strong> · {detail.reason}</li>)}</ul></details>
-              {!similarityOnly && (eligibility === "INELIGIBLE" || eligibility === "NEEDS_REVIEW") &&
-                <NearMatchExplanation key={results.sessionId + ":" + results.version + ":" + candidate.id}
-                  sessionId={results.sessionId} version={results.version}
-                  candidateId={candidate.id} candidateName={candidate.displayName}
-                  onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>}
-              <details><summary>Candidate details</summary><ProfileFacts profile={candidate}/>
-                <button type="button" disabled={busy} onClick={() => fromReference(candidate.id)}>Find candidates like {candidate.displayName}</button>
-              </details>
-            </article>)}
-        </div>
+        <details className="pareto-results__criteria"><summary>Confirmed criteria · {results.criteria.length} rules</summary>
+          <ul>{results.criteria.map(rule =>
+            <li key={ruleKey(rule)}>{labels[rule.field]} · {describe(rule)} ({rule.mode})</li>)}</ul>
+        </details>
+        <section className="pareto-results__shortlist" aria-label="Ranked candidate list">
+          <div className="pareto-results__section-title">
+            <div><p className="pareto-chat__caption">DOCUMENTED MATCHES</p><h3>Candidate shortlist</h3></div>
+            <span>{results.total === 0 ? "No candidates" :
+              "Showing " + (offset + 1) + "–" + (offset + results.results.length) + " of " + results.total}</span>
+          </div>
+          {results.total === 0 && <p className="pareto-results__empty">No candidate profiles are available in this workspace.</p>}
+          <div className="pareto-chat__candidate-grid">
+            {results.results.map((row, index) => <CandidateResult
+              key={row.candidate.id} row={row} index={offset + index}
+              sessionId={results.sessionId} version={results.version} similarityOnly={similarityOnly}
+              busy={busy} onReference={fromReference}
+              onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>)}
+          </div>
+        </section>
         {results.total > 20 && <div className="search-actions">
           {[-20,20].map(step => <button key={step} type="button" disabled={busy || offset + step < 0 || offset + step >= results.total}
             onClick={() => void run("Loading candidate results…",async () => {
@@ -448,6 +524,23 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
             })}>{step < 0 ? "Previous page" : "Next page"}</button>)}
           <span>{offset + 1}–{offset + results.results.length} of {results.total}</span>
         </div>}
+        <section className="pareto-results__analysis" aria-label="Advanced search analysis">
+          <div className="pareto-results__section-title">
+            <div><p className="pareto-chat__caption">OPTIONAL ANALYSIS</p><h3>Explore deeper</h3></div>
+          </div>
+          <p>Evaluate search trade-offs and proposed criteria changes. Previews never modify a confirmed search.</p>
+          <ParetoFrontier key={"frontier:" + results.sessionId + ":" + results.version}
+            sessionId={results.sessionId} version={results.version}
+            onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+          <div className="insight-panels" aria-label="Search analysis tools">
+            <SearchHealthPanel key={"health:" + results.sessionId + ":" + results.version}
+              sessionId={results.sessionId} version={results.version}
+              onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+            <WhatIfPanel key={"scenario:" + results.sessionId + ":" + results.version}
+              sessionId={results.sessionId} version={results.version} criteria={results.criteria} currentCounts={results.counts}
+              onReview={(criteria, warnings) => openDraft(criteria, warnings, { active: results })}/>
+          </div>
+        </section>
       </section>}
         </div>
       </div>}

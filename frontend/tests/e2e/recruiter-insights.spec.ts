@@ -72,6 +72,8 @@ test("confirmed search previews are measured, review-only and discardable", asyn
     has: page.getByRole("heading", { name: "Dev Shah", exact: true }),
   });
   await expect(dev).toBeVisible();
+  await expect(dev.locator(".pareto-result__evidence-preview")).toContainText("Notice period");
+  await expect(dev.locator(".pareto-result__status")).toContainText(/Ineligible|Needs review/);
   const near = dev.getByTestId("near-match");
   await near.getByRole("button", { name: /Why a near match/ }).click();
   await expect(near.getByText(/60 days/).first()).toBeVisible();

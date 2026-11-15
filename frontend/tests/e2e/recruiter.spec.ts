@@ -50,6 +50,7 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   expect(initial.map(rule => rule.field).sort()).toEqual(["city", "experience", "notice", "role", "skill"]);
   expect(initial.every(rule => rule.mode === "required")).toBe(true);
 
+  await page.getByRole("button", { name: "Edit criterion 4: Notice period" }).click();
   await page.getByLabel("Maximum (days)").fill("45");
   await page.getByRole("button", { name: "Confirm Search" }).click();
   const confirmed = page.getByRole("region", { name: "Confirmed results" });
@@ -59,7 +60,9 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
     has: page.getByRole("heading", { name: "Asha Nair", exact: true }),
   });
   await expect(asha).toBeVisible();
-  await asha.getByText("Match evidence", { exact: true }).click();
+  await expect(confirmed.getByRole("region", { name: "Ranked candidate list" })).toBeVisible();
+  await expect(asha).toContainText("All required criteria are documented as matching.");
+  await asha.getByText("Match evidence", { exact: false }).click();
   await expect(asha.getByText(/Notice period · MATCH/)).toBeVisible();
   await expect(asha).toContainText("Stored: 15");
 
@@ -87,7 +90,6 @@ test("real recruiter: edit, confirm, inspect evidence, refine twice, and find si
   const reference = confirmed.getByRole("article").filter({
     has: page.getByRole("heading", { name: "Asha Nair", exact: true }),
   });
-  await reference.getByText("Candidate details", { exact: true }).click();
   await reference.getByRole("button", { name: "Find candidates like Asha Nair" }).click();
   await expect(page.getByText("Reference profile · Asha Nair")).toBeVisible();
   await page.getByRole("button", { name: "Confirm Search" }).click();
