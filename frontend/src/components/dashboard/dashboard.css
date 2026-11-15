@@ -62,9 +62,9 @@
   background: #edf3ff; border: 1px solid #c1d3ef; }
 .pareto-avatar img { display: block; width: 100%; height: 100%; max-width: 100%; object-fit: contain; }
 .pareto-avatar--large { width: 78px; height: 78px; padding: 5px; border-radius: 23px; }
-.pareto-avatar--chat { width: 39px; height: 39px; padding: 2px; border-radius: 50%; }
-.pareto-avatar--hero { width: 88px; height: 88px; padding: 7px; border-radius: 50%;
-  background: #f0f5ff; border-color: #d0ddf6; box-shadow: 0 12px 28px #163e8019; }
+.pareto-avatar--chat { width: 39px; height: 39px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.pareto-avatar--hero { width: clamp(114px, 11vw, 148px); height: auto; aspect-ratio: 240 / 225;
+  padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .pareto-account__identity { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .pareto-account__identity strong { font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pareto-account__identity small { font-size: 11px; color: #778491; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

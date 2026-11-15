@@ -132,11 +132,12 @@ test("signed-out visitors cannot search or read candidate data", async ({ page, 
   expect((await request.post("/api/v1/search", { data: { action: "interpret", prompt: "Find Java developers" } })).status()).toBe(401);
 });
 
-test("Parito avatar uses the existing branded mascot asset", async ({ request }) => {
+test("Parito avatar uses the standalone branded mascot asset", async ({ request }) => {
   const response = await request.get("/mascot/pareto-mascot.svg");
   expect(response.ok()).toBe(true);
   expect(response.headers()["content-type"]).toContain("image/svg+xml");
   const svg = await response.text();
-  expect(svg).toContain("Pareto mascot holding a candidate profile");
+  expect(svg).toContain("Pareto mascot — a friendly blue document character");
+  expect(svg).not.toContain("holding a candidate profile");
   expect(svg).toContain('viewBox="0 0 240 225"');
 });

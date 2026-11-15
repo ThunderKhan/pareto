@@ -66,6 +66,9 @@ test("Parito composition, aligned notifications, graphite theme and chat avatar"
   await page.goto("/dashboard/search");
   const hero = page.locator(".pareto-chat--fresh .pareto-search-orb .pareto-avatar--hero");
   await expect(hero.locator("img")).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
+  await expect(hero).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(hero).toHaveCSS("border-top-width", "0px");
+  expect((await hero.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(114);
 
   await page.getByRole("button", { name: "Enter criteria manually" }).click();
   const review = page.getByRole("dialog", { name: "Review draft criteria" });

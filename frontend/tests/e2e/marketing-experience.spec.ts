@@ -409,13 +409,13 @@ test("reference cards and FAQ explain matching with fictional profiles", async (
   await page.locator("#get-started").screenshot({ path: testInfo.outputPath("final-cta.png") });
 });
 
-test("final CTA shows the original Pareto mascot and two working destinations", async ({ page }) => {
+test("final CTA shows standalone Parito and two working destinations", async ({ page }) => {
   await page.goto("/#get-started");
   const section = page.locator("#get-started");
   await expect(section).toHaveCSS("border-top-width", "0px");
   await expect(section.getByRole("heading", { name: "Turn hiring briefs into matches" })).toBeVisible();
   await expect(section.locator(".v2-close-art, .v2-eyebrow")).toHaveCount(0);
-  const mascot = section.getByRole("img", { name: "Pareto mascot waving and holding a candidate profile" });
+  const mascot = section.getByRole("img", { name: /friendly blue document mascot/i });
   await expect(mascot).toHaveAttribute("src", "/mascot/pareto-mascot.svg");
   await expect(mascot).toBeVisible();
   await expect.poll(() => mascot.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);

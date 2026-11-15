@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Original Pareto character: the existing profile-card mascot redrawn as inline SVG
+ * Standalone Pareto character: the shared no-resume mascot redrawn as inline SVG
  * so its pupils can follow a pointer without rerendering the whole homepage.
  * Motion is deliberately limited to fine pointers and honors reduced motion.
  */
@@ -61,44 +61,47 @@ export function HeroMascot() {
   return (
     <span className="v2-hero-mascot" ref={rootRef} aria-hidden="true">
       <svg viewBox="0 0 240 225" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-        <ellipse className="v2-hero-mascot__shadow" cx="121" cy="211" rx="59" ry="8" fill="#D6E3F5" opacity=".85" />
+        <defs>
+          <linearGradient id="parito-hero-blue" x1="58" y1="39" x2="185" y2="184" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#387CF6"/>
+            <stop offset=".53" stopColor="#467BEB"/>
+            <stop offset="1" stopColor="#2C67D6"/>
+          </linearGradient>
+          <linearGradient id="parito-hero-fold" x1="145" y1="42" x2="182" y2="83" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#EAF2FF"/>
+            <stop offset="1" stopColor="#AFCBFF"/>
+          </linearGradient>
+        </defs>
+        <ellipse className="v2-hero-mascot__shadow" cx="124" cy="212" rx="59" ry="7" fill="#152B56" opacity=".10"/>
         <g className="v2-hero-mascot__leg v2-hero-mascot__leg--left">
-          <path d="M102 163L93 191" stroke="#020E24" strokeWidth="12" strokeLinecap="round"/>
-          <path d="M82 195H97" stroke="#020E24" strokeWidth="12" strokeLinecap="round"/>
+          <path d="M97 165L93 191" stroke="#071632" strokeWidth="12" strokeLinecap="round"/>
+          <path d="M82 195Q91 192 102 197" stroke="#071632" strokeWidth="13" strokeLinecap="round"/>
         </g>
         <g className="v2-hero-mascot__leg v2-hero-mascot__leg--right">
-          <path d="M144 164L160 189" stroke="#020E24" strokeWidth="12" strokeLinecap="round"/>
-          <path d="M156 194L172 186" stroke="#020E24" strokeWidth="12" strokeLinecap="round"/>
+          <path d="M144 165L154 191" stroke="#071632" strokeWidth="12" strokeLinecap="round"/>
+          <path d="M148 196Q160 192 170 196" stroke="#071632" strokeWidth="13" strokeLinecap="round"/>
         </g>
         <g className="v2-hero-mascot__figure">
-          <path d="M160 94C176 92 185 83 189 69" stroke="#2A5DC2" strokeWidth="12" strokeLinecap="round"/>
-          <path d="M188 69C180 62 180 52 184 49C189 45 192 55 194 59C194 49 198 43 203 45C208 47 204 58 204 61C209 53 215 52 218 56C221 60 214 68 210 73C209 81 202 86 191 85Z" fill="#467BEB" stroke="#2A5DC2" strokeWidth="2" strokeLinejoin="round"/>
-          <path d="M76 121C61 120 52 130 46 141" stroke="#2A5DC2" strokeWidth="12" strokeLinecap="round"/>
-          <path d="M88 44H144C150 44 154 47 158 51L179 73C183 77 185 82 185 89V148C185 165 174 176 157 176H88C71 176 60 165 60 148V72C60 55 71 44 88 44Z" fill="#467BEB" stroke="#2655AF" strokeWidth="3"/>
-          <path d="M147 45V66C147 76 152 81 162 81H184" fill="#91B4FF" stroke="#2655AF" strokeWidth="3" strokeLinejoin="round"/>
-          <path d="M82 67C89 60 100 59 110 60" stroke="#9DBBFF" strokeWidth="5" strokeLinecap="round" opacity=".7"/>
-          <ellipse cx="104" cy="107" rx="13" ry="15" fill="#FFFDF9"/>
-          <ellipse cx="145" cy="107" rx="13" ry="15" fill="#FFFDF9"/>
+          <path d="M70 117Q52 123 52 141" stroke="#071632" strokeWidth="12" strokeLinecap="round"/>
+          <circle cx="52" cy="145" r="8" fill="#3978E8"/>
+          <path d="M174 111Q190 101 196 77" stroke="#071632" strokeWidth="12" strokeLinecap="round"/>
+          <circle cx="197" cy="74" r="9" fill="#3978E8"/>
+          <path d="M85 39H143Q149 39 153 44L179 71Q184 76 184 86V147Q184 177 155 177H86Q58 177 58 148V69Q58 39 85 39Z" fill="url(#parito-hero-blue)" stroke="#2B63CC" strokeWidth="2"/>
+          <path d="M145 40V63Q145 81 164 81H182L145 40Z" fill="url(#parito-hero-fold)" stroke="#2E68D4" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M78 64Q82 56 94 55" stroke="#A7C9FF" strokeWidth="5" strokeLinecap="round" opacity=".8"/>
+          <path d="M95 94Q100 88 107 94M137 94Q143 88 150 94" stroke="#153B7B" strokeWidth="2.5" strokeLinecap="round"/>
+          <ellipse cx="102" cy="116" rx="13.5" ry="15.5" fill="white"/>
+          <ellipse cx="147" cy="116" rx="13.5" ry="15.5" fill="white"/>
           <g ref={pupilsRef} className="v2-hero-mascot__pupils" transform="translate(0 0)">
-            <circle cx="107" cy="109" r="7.5" fill="#020E24"/>
-            <circle cx="148" cy="109" r="7.5" fill="#020E24"/>
-            <circle cx="110" cy="105" r="2.3" fill="#FFFDF9"/>
-            <circle cx="151" cy="105" r="2.3" fill="#FFFDF9"/>
+            <circle cx="105" cy="118" r="8" fill="#071632"/>
+            <circle cx="150" cy="118" r="8" fill="#071632"/>
+            <circle cx="108" cy="114" r="3" fill="white"/>
+            <circle cx="153" cy="114" r="3" fill="white"/>
           </g>
-          <path d="M116 135C121 144 135 145 140 135" stroke="#020E24" strokeWidth="4" strokeLinecap="round"/>
-          <ellipse cx="90" cy="133" rx="6" ry="3" fill="#A7C1FF" opacity=".85"/>
-          <ellipse cx="161" cy="132" rx="6" ry="3" fill="#A7C1FF" opacity=".85"/>
-          <g transform="rotate(-11 57 150)">
-            <rect x="25" y="125" width="67" height="57" rx="9" fill="#FFFDF9" stroke="#B9C9E2" strokeWidth="2.5"/>
-            <circle cx="43" cy="145" r="9" fill="#DDE8FD"/>
-            <circle cx="43" cy="142" r="3.6" fill="#6C87AE"/>
-            <path d="M37 152C39 147 47 147 49 152" stroke="#6C87AE" strokeWidth="2.5" strokeLinecap="round"/>
-            <path d="M57 139H80M57 148H75M36 164H67" stroke="#93A8C4" strokeWidth="3" strokeLinecap="round"/>
-            <circle cx="77" cy="165" r="8" fill="#E5EEFF"/>
-            <path d="M73 165L76 168L81 162" stroke="#2A5DC2" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </g>
-          <path d="M41 151C39 155 39 160 44 162" stroke="#2A5DC2" strokeWidth="9" strokeLinecap="round"/>
-          <path d="M41 63L42 54M36 59H47" stroke="#86A7E8" strokeWidth="2.6" strokeLinecap="round"/>
+          <path d="M110 139Q125 155 141 139Q138 156 126 157Q115 156 110 139Z" fill="#061633"/>
+          <path d="M120 153Q126 148 133 153Q128 160 122 156Z" fill="#F47C9A"/>
+          <path d="M35 62L38 52L41 62L51 65L41 68L38 78L35 68L25 65Z" fill="#467BEB"/>
+          <path d="M202 131L204 123L206 131L214 133L206 135L204 143L202 135L194 133Z" fill="#82A9FF"/>
         </g>
       </svg>
     </span>

@@ -205,9 +205,9 @@ html[data-pareto-effective-theme="dark"] .pareto-app :is(
   .search-panel select:focus-visible, .pareto-theme-option:focus-visible
 ) { outline-color: var(--ws-focus); }
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar { background: #292d37; border-color: #4d5667; }
-html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar--hero {
-  background: #272d38; border-color: #465268;
-  box-shadow: 0 14px 36px #00000055;
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar--hero,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar--chat {
+  background: transparent; border: 0; box-shadow: none;
 }
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer { box-shadow: 0 16px 36px #0000003d; }
 html[data-pareto-effective-theme="dark"] .pareto-app { scrollbar-color: #535965 transparent; }
