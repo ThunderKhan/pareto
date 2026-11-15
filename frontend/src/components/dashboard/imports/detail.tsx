@@ -67,6 +67,7 @@ export default function ResumeImportDetail({ id, onChanged, onClose }: {
       if (!(cause instanceof Error && cause.name === "AbortError") && !signal?.aborted) {
         if (cause instanceof ImportAPIError && cause.status === 401) {
           setDetail(null); setJob(null); setReview(null); setAudit([]);
+          setDraft({ ...blank }); setSkillsInput(""); setRolesInput(""); setCertInput(""); setAttested(false);
         }
         setError(errorText(cause));
       }

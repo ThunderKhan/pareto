@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { errorText, metricText, requestJSON, type ImportMetrics } from "./api";
+import { errorText, metricText, requestJSON, ImportAPIError, type ImportMetrics } from "./api";
 
 export default function ImportMetricsPanel() {
   const [days, setDays] = useState<1|7|30|90>(30);
@@ -11,7 +11,10 @@ export default function ImportMetricsPanel() {
   const load = useCallback(async (signal?: AbortSignal) => {
     try { const value = await requestJSON<ImportMetrics>("/metrics?days=" + days, undefined, signal);
       if (signal?.aborted) return; setData(value); setError(""); }
-    catch (cause) { if (!(cause instanceof Error && cause.name === "AbortError")) setError(errorText(cause)); }
+    catch (cause) { if (!(cause instanceof Error && cause.name === "AbortError")) {
+      if (cause instanceof ImportAPIError && cause.status === 401) setData(null);
+      setError(errorText(cause));
+    } }
     finally { if (!signal?.aborted) setBusy(false); }
   }, [days]);
   useEffect(() => {
