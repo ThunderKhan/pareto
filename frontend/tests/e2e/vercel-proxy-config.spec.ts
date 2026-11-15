@@ -1,8 +1,8 @@
-import { afterEach, expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import nextConfig from "../../next.config";
 
 const original = process.env.PARETO_API_ORIGIN;
-afterEach(() => {
+test.afterEach(() => {
   if (original === undefined) delete process.env.PARETO_API_ORIGIN;
   else process.env.PARETO_API_ORIGIN = original;
 });
