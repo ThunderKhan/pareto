@@ -53,7 +53,7 @@
 .pareto-recent__item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pareto-recent__item small { color: #8796a6; flex: none; font-size: 10px; }
 .pareto-app--collapsed .pareto-recent { display: none; }
-.pareto-nav__note { margin-top: auto; display: flex; gap: 8px; padding: 22px 12px 2px; font-size: 12px; line-height: 1.55; color: #8390a0; }
+.pareto-nav__note { margin-top: auto; display: flex; gap: 8px; padding: 22px 12px 2px; font-size: 12px; line-height: 1.55; color: #617185; }
 .pareto-nav__note-dot { width: 8px; height: 8px; background: #467beb; border-radius: 50%; margin-top: 5px; flex: none; }
 .pareto-nav__note p { margin: 0; }
 .pareto-account { position: relative; border-top: 1px solid var(--ws-edge); padding-top: 12px; }
@@ -143,9 +143,9 @@
 }
 @media (max-width: 880px) {
  .pareto-app, .pareto-app--collapsed { display: block; }
- .pareto-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: min(290px,88vw);
+ .pareto-sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: min(290px,88vw); visibility: hidden;
    height: 100dvh; transform: translateX(-103%); box-shadow: 0 10px 40px #07152926; transition: transform .22s ease; }
- .pareto-sidebar--open { transform: translateX(0); }
+ .pareto-sidebar--open { transform: translateX(0); visibility: visible; }
  .pareto-sidebar-backdrop { display: block; position: fixed; z-index: 29; inset: 0; border: 0; background: #020e2466; }
  .pareto-sidebar__toggle--mobile, .pareto-topbar__menu { display: inline-flex; }
  .pareto-sidebar__toggle--desktop { display: none; }
@@ -178,7 +178,7 @@
 .pareto-candidates__search svg { color: #6d7f94; flex: none; }
 .pareto-candidates__search input { min-width: 0; flex: 1; border: 0; outline: 0; padding: 7px 0; font-size: 14px; }
 .pareto-candidates__search button { padding: 9px 13px; color: #fff; background: #020e24; border: 0; border-radius: 7px; font-size: 12px; }
-.pareto-candidates__count { font-size: 11px; color: #8894a1; margin: 20px 0 9px; }
+.pareto-candidates__count { font-size: 11px; color: #64748a; margin: 20px 0 9px; }
 .pareto-candidates__rows { display: grid; gap: 5px; }
 .pareto-candidates__row { display: flex; align-items: center; gap: 12px; width: 100%; border: 1px solid transparent; border-radius: 11px; padding: 11px; background: #fff; text-align: left; }
 .pareto-candidates__row:hover, .pareto-candidates__row--selected { border-color: #d4e0f0; background: #f4f8ff; }
