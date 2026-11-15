@@ -4,6 +4,18 @@
 
 > The protected workspace supports confirmed PostgreSQL search, match evidence, conversational refinement, and reference-based search. Live AI and sign-in require configured provider accounts.
 
+## Recruiter workspace on `main`
+
+The protected recruiter experience now includes:
+
+- `/dashboard`: Pareto-branded workspace overview and collapsible/mobile sidebar.
+- `/dashboard/search`: conversational composer, AI-extracted criteria, mandatory human confirmation, explainable candidate results, and follow-up refinement.
+- `/dashboard/candidates`: search and inspect recruiter-owned candidate records, then start reference-based similarity search.
+- `/dashboard/profile`: edit first and last names via Supabase, view account email, and update password.
+- Recent confirmed search sessions are retrieved from PostgreSQL with owner checks. The orb animation reflects real request activity and never adds artificial thinking delays.
+
+The supplied sidebar and morphing-orb component concepts were adapted to Pareto's existing typography, colors, Phosphor icons, and API flows. Full chat transcripts, PDF ingestion, bulk import, and hosted deployment are **not** implemented by this UI work.
+
 ## Workspace
 
 - `frontend/`: Next.js App Router, TypeScript, Tailwind CSS, API route handlers and UI.
