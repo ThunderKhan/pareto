@@ -4,6 +4,8 @@ import { criteriaSchema, type Rule } from "./criteria";
 import { evaluatorVersion, rank, referenceCriteria } from "./evaluate";
 import type { Prisma } from "../generated/prisma/client";
 import { explainNearMatch } from "./counterfactual";
+import { diagnoseSearch } from "./diagnostics";
+import { compareSearches } from "./simulator";
 
 const skills = { include: { skill: true }, orderBy: { skillId: "asc" } } as const;
 type Candidate = Prisma.CandidateGetPayload<{ include: { skills: typeof skills } }>;
@@ -170,4 +172,34 @@ export async function counterfactualFor(
     throw new SearchError(409, "This search changed during analysis. Reload the latest revision.");
   }
   return { sessionId: state.sessionId, version: state.version, referenceId: state.referenceId, ...report };
+}
+
+/** Analyze current confirmed owner-scoped criteria without modifying the search. */
+export async function searchDiagnostics(ownerId: string, sessionId: string) {
+  const state = await activeSearch(ownerId, sessionId);
+  const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
+  if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
+  const diagnostic = diagnoseSearch(rows.map(profile), state.criteria, state.referenceId);
+  const latest = await activeSearch(ownerId, sessionId);
+  if (latest.version !== state.version) {
+    throw new SearchError(409, "This search changed during analysis. Reload the latest revision.");
+  }
+  return { sessionId: state.sessionId, version: state.version, ...diagnostic };
+}
+
+/** Compare confirmed rules to hypothetical criteria using one owner-scoped candidate read. */
+export async function simulateSearch(
+  ownerId: string, sessionId: string, expectedVersion: number, proposedCriteria: Rule[],
+) {
+  const state = await activeSearch(ownerId, sessionId);
+  if (state.version !== expectedVersion) throw new SearchError(409, "This search changed. Reload the latest revision.");
+  const criteria = criteriaSchema.parse(proposedCriteria);
+  const rows = await database().candidate.findMany({ where: { ownerId }, include: { skills }, take: 1001 });
+  if (rows.length > 1000) throw new SearchError(422, "This workspace exceeds the 1,000-profile search limit.");
+  const comparison = compareSearches(rows.map(profile), state.criteria, criteria, state.referenceId);
+  const latest = await activeSearch(ownerId, sessionId);
+  if (latest.version !== expectedVersion) {
+    throw new SearchError(409, "This search changed during simulation. Reload the latest revision.");
+  }
+  return { sessionId, version: state.version, ...comparison };
 }
