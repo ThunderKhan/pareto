@@ -163,6 +163,7 @@ model ResumeDocument {
   updatedAt       DateTime              @updatedAt
   candidate       Candidate?
   evidence        ResumeEvidence[]
+  ingestionJob    IngestionJob?
 
   @@unique([ownerId, sha256])
   @@index([ownerId, createdAt])
@@ -179,4 +180,92 @@ model ResumeEvidence {
   sourceEnd    Int?
   document     ResumeDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
   @@unique([documentId, fieldKey])
+}
+
+enum IngestionJobStatus {
+  QUEUED
+  RUNNING
+  RETRY_SCHEDULED
+  READY
+  NEEDS_REVIEW
+  FAILED_PERMANENT
+  CANCELLED
+}
+
+enum IngestionJobStage {
+  QUEUED
+  PARSING
+  EXTRACTING
+  PERSISTING
+  COMPLETE
+}
+
+/// Durable, owner-bound, at-least-once work. No model writes without a valid
+/// lease/fencing token. Exactly one logical job for each source document.
+model IngestionJob {
+  id               String             @id @default(uuid())
+  ownerId          String
+  documentId       String             @unique
+  document         ResumeDocument     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  batchId          String?
+  batch            IngestionBatch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  status           IngestionJobStatus @default(QUEUED)
+  stage            IngestionJobStage  @default(QUEUED)
+  priority         Int                @default(0)
+  attempts         Int                @default(0)
+  maxAttempts      Int                @default(3)
+  manualRetries    Int                @default(0)
+  runAfter         DateTime           @default(now())
+  workerId         String?
+  leaseToken       String?            @unique
+  leaseExpiresAt   DateTime?
+  heartbeatAt      DateTime?
+  cancelRequested  Boolean            @default(false)
+  lastErrorCode    String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  history          IngestionAttempt[]
+
+  @@index([ownerId, createdAt])
+  @@index([batchId, createdAt])
+  @@index([status, runAfter, priority])
+  @@index([status, leaseExpiresAt])
+}
+
+model IngestionBatch {
+  id          String         @id @default(uuid())
+  ownerId     String
+  label       String?
+  createdAt   DateTime       @default(now())
+  jobs        IngestionJob[]
+
+  @@index([ownerId, createdAt])
+}
+
+enum IngestionAttemptOutcome {
+  RUNNING
+  RETRY
+  READY
+  NEEDS_REVIEW
+  FAILED
+  CANCELLED
+  RECOVERED
+}
+
+model IngestionAttempt {
+  id            String                  @id @default(uuid())
+  jobId         String
+  job           IngestionJob            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  attempt       Int
+  leaseToken    String
+  workerId      String
+  outcome       IngestionAttemptOutcome @default(RUNNING)
+  errorCode     String?
+  startedAt     DateTime                @default(now())
+  finishedAt    DateTime?
+
+  @@unique([jobId, attempt])
+  @@index([jobId, startedAt])
 }
