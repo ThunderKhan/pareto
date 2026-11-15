@@ -1,27 +1,27 @@
-/* Purpose-built low-glare palette with three distinct surface levels.
-   Only affects authenticated Pareto pages. Marketing/auth remain unchanged. */
+/* Round 02 #04: neutral graphite, not navy-tinted darkness.
+   Three distinct surface levels. Scope: authenticated workspace only. */
 html[data-pareto-effective-theme="dark"] .pareto-app {
-  --ws-ink: #edf4ff;
-  --ws-text: #dbe7f6;
-  --ws-muted: #b8c8db;
-  --ws-subtle: #a7b9cf;
-  --ws-paper: #0d1626;
-  --ws-surface: #152238;
-  --ws-bar: #101c2deF;
-  --ws-panel: #1c2c44;
-  --ws-edge: #35465f;
-  --ws-control: #4a5f7e;
-  --ws-blue: #90b4ff;
-  --ws-active: #263f66;
-  --ws-hover: #24364f;
-  --ws-primary: #9bbcff;
-  --ws-primary-hover: #b7ceff;
-  --ws-on-primary: #091a2d;
-  --ws-focus: #abc9ff;
-  --ws-success: #73e2ad;
+  --ws-ink: #f1f1ef;
+  --ws-text: #dadce2;
+  --ws-muted: #b7bdc7;
+  --ws-subtle: #a2aab6;
+  --ws-paper: #0b0c0f;
+  --ws-surface: #17191e;
+  --ws-bar: #111317f2;
+  --ws-panel: #21242a;
+  --ws-edge: #30343c;
+  --ws-control: #505660;
+  --ws-blue: #a8c0ff;
+  --ws-active: #262c37;
+  --ws-hover: #24272e;
+  --ws-primary: #b2c7ff;
+  --ws-primary-hover: #ccdaff;
+  --ws-on-primary: #101217;
+  --ws-focus: #c5d4ff;
+  --ws-success: #82daad;
   --ws-danger: #ffadb0;
-  --ws-warning: #f3c87e;
-  --ws-shadow: 0 12px 44px #00000033;
+  --ws-warning: #efc681;
+  --ws-shadow: 0 14px 42px #00000055;
   color-scheme: dark;
   background: var(--ws-paper);
   color: var(--ws-ink);
@@ -84,10 +84,10 @@ html[data-pareto-effective-theme="dark"] .pareto-app :is(
 ) { background: var(--ws-panel); border-color: var(--ws-control); color: var(--ws-ink); }
 html[data-pareto-effective-theme="dark"] .pareto-app :is(
   .pareto-profile-form input:disabled, .pareto-profile-form input[readonly]
-) { background: #253147; color: var(--ws-subtle); }
+) { background: #282b32; color: var(--ws-subtle); }
 html[data-pareto-effective-theme="dark"] .pareto-app input::placeholder,
 html[data-pareto-effective-theme="dark"] .pareto-app textarea::placeholder {
-  color: #abc0d9; opacity: 1;
+  color: #b7bdc7; opacity: 1;
 }
 html[data-pareto-effective-theme="dark"] .pareto-app :is(
   .pareto-profile-form label, .pareto-candidates__search label,
@@ -112,13 +112,13 @@ html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__eligibility {
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__eligibility--ineligible { color: var(--ws-danger); }
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__eligibility--needs_review { color: var(--ws-warning); }
 html[data-pareto-effective-theme="dark"] .pareto-app :is(.search-error, .pareto-profile-message--error) {
-  background: #392531; color: #ffc5c9;
+  background: #38272a; color: #ffc5c9;
 }
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__warnings {
-  background: #3d3022; color: #f2d5a5;
+  background: #382f24; color: #f2d5a5;
 }
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer:focus-within {
-  border-color: var(--ws-blue); box-shadow: 0 0 0 3px #90b4ff33;
+  border-color: var(--ws-blue); box-shadow: 0 0 0 3px #a8c0ff36;
 }
 html[data-pareto-effective-theme="dark"] .pareto-app :is(
   .pareto-profile-form input:focus, .search-panel input:focus, .search-panel textarea:focus
@@ -127,7 +127,7 @@ html[data-pareto-effective-theme="dark"] .pareto-app :is(
   .pareto-account__actions, .pareto-chat__composer, .pareto-overview-history__item
 ) { box-shadow: var(--ws-shadow); }
 html[data-pareto-effective-theme="dark"] .pareto-app ::selection {
-  color: #0d1626; background: #b5ccff;
+  color: #0b0c0f; background: #b5ccff;
 }
 /* Appearance preferences use native buttons; selection is visible in both themes. */
 .pareto-profile-section { margin-top: 28px; padding-top: 27px; border-top: 1px solid var(--ws-edge); }
@@ -150,6 +150,64 @@ html[data-pareto-effective-theme="dark"] .pareto-app ::selection {
 
 /* Keep Parito legible against the intentional dark workspace surfaces. */
 html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar {
-  background: #29466e;
-  border-color: #6484b7;
+  background: #292d37;
+  border-color: #4d5667;
 }
+
+
+/* Graphite hierarchy across navigation, popovers, statistics and candidate evidence.
+   Original Parito artwork remains cobalt; only surrounding product chrome changes. */
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-sidebar { background: #14161b; }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-sidebar__header { background: transparent; }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-nav__link--active {
+  background: #292e38;
+  color: #c0d0ff;
+}
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-sidebar__brand, .pareto-account__identity strong,
+  .pareto-overview-history__item strong, .pareto-notifications__panel h2,
+  .pareto-profile-section h2, .pareto-workspace-memberships h3
+) { color: var(--ws-ink); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-overview-hero, .pareto-workspace-memberships dl > div,
+  .insight-counts > div, .insight-bottlenecks article, .insight-suggestion,
+  .insight-pane, .insight-delta, .insight-impact-group > ul > li,
+  .search-rule, .pareto-profile-message
+) { background: var(--ws-panel); color: var(--ws-text); border-color: var(--ws-edge); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .insight-module, .pareto-notifications__panel, .pareto-account__actions
+) { background: var(--ws-surface); color: var(--ws-ink); border-color: var(--ws-edge); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-profile-form input, .pareto-profile-form select,
+  .pareto-candidates__search > div, .search-panel input:not([type=checkbox]),
+  .search-panel select, .search-panel textarea, .search-rule input, .search-rule select
+) { border-color: var(--ws-control); color: var(--ws-ink); }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-profile-form input[type=checkbox] {
+  accent-color: var(--ws-blue);
+}
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-chat__request p, .pareto-overview-hero p
+) { color: var(--ws-text); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-profile-card p, .pareto-profile-form label,
+  .pareto-profile-section > p, .pareto-workspace-memberships dd
+) { color: var(--ws-muted); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-chat__candidate-grid details button,
+  .pareto-chat__edit, .pareto-chat__reference ul button,
+  .insight-inline-trigger, .pareto-notifications__panel button,
+  .pareto-notifications__panel li a:hover,
+  .insight-error a, .insight-error button
+) { color: var(--ws-blue); }
+html[data-pareto-effective-theme="dark"] .pareto-app :is(
+  .pareto-profile-form input:focus-visible,
+  .pareto-chat__composer:focus-within, .search-panel input:focus-visible,
+  .search-panel select:focus-visible, .pareto-theme-option:focus-visible
+) { outline-color: var(--ws-focus); }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar { background: #292d37; border-color: #4d5667; }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-avatar--hero {
+  background: #272d38; border-color: #465268;
+  box-shadow: 0 14px 36px #00000055;
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer { box-shadow: 0 16px 36px #0000003d; }
+html[data-pareto-effective-theme="dark"] .pareto-app { scrollbar-color: #535965 transparent; }
