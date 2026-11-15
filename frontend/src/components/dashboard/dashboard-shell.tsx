@@ -9,6 +9,7 @@ import {
   UserCircle, UsersThree, X,
 } from "@phosphor-icons/react";
 import SignOutButton from "@/components/auth/sign-out";
+import NotificationsMenu from "./notifications-menu";
 import "./workspace-tokens.css";
 import "./workspace-dark.css";
 import "./dashboard.css";
@@ -136,6 +137,7 @@ export default function DashboardShell({ children, user }: {
           <strong>{path === "/dashboard/profile" ? "Account settings" : current.label}</strong>
         </div>
         <div className="pareto-topbar__right">
+          <NotificationsMenu />
           <Link href="/dashboard/search" className="pareto-topbar__action">
             New search
           </Link>
