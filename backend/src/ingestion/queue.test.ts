@@ -282,4 +282,24 @@ describe.skipIf(!url)("PostgreSQL durable ingestion queue", () => {
     });
   });
 
+  it("acknowledges running cancellation and forbids a cancelled worker from publishing results", async () => {
+    const { storage } = vault();
+    const created = await queue("n", owner, storage);
+    const active = await claimJob("cancel-running", { global: 1, perOwner: 1 });
+    expect(active?.documentId).toBe(created.document.id);
+    expect(await cancelQueuedDocument(owner, created.document.id))
+      .toEqual({ status: "CANCELLATION_REQUESTED" });
+    expect(await heartbeatJob(active!)).toBe(false);
+    await expect(finishJob(active!, "READY", { status: "READY" }))
+      .rejects.toBeInstanceOf(LeaseLost);
+    await finishJob(active!, "CANCELLED", {
+      status: "FAILED", errorCode: "CANCELLED",
+      reviewReasons: ["Import cancelled by recruiter."],
+    });
+    expect((await resumeImport(owner, created.document.id))).toMatchObject({
+      status: "FAILED", ingestionJob: { status: "CANCELLED" },
+    });
+    expect(await db.candidate.count({ where: { sourceDocumentId: created.document.id } })).toBe(0);
+  });
+
 });
