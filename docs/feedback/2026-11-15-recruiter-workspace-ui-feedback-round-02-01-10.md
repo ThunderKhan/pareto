@@ -8,21 +8,21 @@
 >
 > **Source:** User's ten numbered feedback messages and accompanying screenshots in the Frontend 03 conversation on 15 November 2026.
 >
-> **Status:** **DOCUMENTATION ONLY — implementation and audit not yet authorized.**
+> **Status:** **Round 02 #01–#05 implemented in code on `main` after explicit approval. #06–#10 remain pending. Live signed-in visual QA is still required; #10's full audit has not started.**
 >
 > **Implementation tracking:** [Round 02 implementation ledger](./2026-11-15-recruiter-workspace-round-02-implementation-ledger.md).
 
-**This is a NEW round, distinct from** [Round 01 feedback](./2026-11-15-recruiter-workspace-ui-feedback-round-01-10.md) **and** [its implementation history](./2026-11-15-recruiter-workspace-implementation-01-09.md). The previous round's ten numbers must not be confused with this round's ten numbers. The user requested that all new feedback be recorded before implementation. **Do not change React, CSS, APIs, migrations, authentication, or other application code until the user explicitly authorizes implementation.** In particular, feedback #10 asks for a future audit *and* execution of its findings, but neither has started as part of this documentation task.
+**This is a NEW round, distinct from** [Round 01 feedback](./2026-11-15-recruiter-workspace-ui-feedback-round-01-10.md) **and** [its implementation history](./2026-11-15-recruiter-workspace-implementation-01-09.md). The previous round's ten numbers must not be confused with this round's ten numbers. The initial capture preceded implementation, as requested. The user subsequently **authorized only #01–#05**, which are now implemented on `main`. **Do not start #06–#10 without a separate instruction.** Feedback #10's comprehensive audit remains unstarted.
 
 ## Feedback index
 
 | Round 02 # | Surface | User request | Status |
 | --- | --- | --- | --- |
-| 01 | Account settings header | Fix awkward/cropped Parito profile avatar beside “Your profile.” | Recorded |
-| 02 | AI candidate search/chat | Show Parito on the left in the conversational/chat experience | Recorded |
-| 03 | Account settings > Notifications | Vertically align each checkbox with its label | Recorded |
-| 04 | Authenticated app theme | Replace pervasive bluish dark surfaces with an intentionally designed premium near-black scheme | Recorded |
-| 05 | Empty AI candidate search | Replace generic blue orb with original Parito mascot, preferably in a circle | Recorded |
+| 01 | Account settings header | Fix awkward/cropped Parito profile avatar beside “Your profile.” | Implemented in code; signed-in visual QA pending |
+| 02 | AI candidate search/chat | Show Parito on the left in the conversational/chat experience | Implemented in code; signed-in visual QA pending |
+| 03 | Account settings > Notifications | Vertically align each checkbox with its label | Implemented in code; signed-in visual QA pending |
+| 04 | Authenticated app theme | Replace pervasive bluish dark surfaces with an intentionally designed premium near-black scheme | Implemented in code; signed-in visual QA pending |
+| 05 | Empty AI candidate search | Replace generic blue orb with original Parito mascot, preferably in a circle | Implemented in code; signed-in visual QA pending |
 | 06 | Hiring-brief composer | Replace tall form-like input with compact ChatGPT-style expanding chat composer | Recorded |
 | 07 | Reference candidate selection | Redesign the oversized in-timeline Reference form and avoid awkward nested scrollbars | Planned, unimplemented |
 | 08 | Manual criteria / draft review | Redesign oversized spreadsheet-like criteria editor, preferably a drawer/sheet | Planned, unimplemented |
@@ -220,15 +220,26 @@
 
 ## Checklists — all pending
 
-- [ ] #01 Profile-header Parito avatar refined
-- [ ] #02 Chat-mode left-side Parito/avatar layout delivered
-- [ ] #03 Notification checkbox rows vertically aligned
-- [ ] #04 Near-black dark system implemented and checked end-to-end
-- [ ] #05 Generic search orb replaced with recognizable Parito
+- [x] #01 Profile-header Parito avatar composition fixed
+- [x] #02 Left-side Parito added beside grouped assistant responses
+- [x] #03 Notification checkbox rows vertically aligned
+- [x] #04 Near-black graphite dark system implemented (live visual QA still pending)
+- [x] #05 Generic search orb replaced with recognizable Parito
 - [ ] #06 Compact auto-growing chat composer shipped
 - [ ] #07 Reference picker redesigned, keyboard/mobile tested
 - [ ] #08 One clean manual/AI criteria editor drawer/sheet shipped
 - [ ] #09 Login autofill background corrected and verified
 - [ ] #10 Full Impeccable/Unslop audit performed, findings documented, authorized fixes implemented
 
-**Round 02 capture status:** **10/10 recorded; 0/10 implemented under this round; audit not started.** Previous Round 01 implementation is unaffected.
+**Round 02 status after implementation authorization:** **10/10 recorded; #01–#05 implemented in code, #06–#10 pending. Live signed-in visual QA remains. Full audit #10 not started.** Previous Round 01 implementation is unaffected.
+
+## Implementation update — authorized feedback #01–#05
+
+On 15 November 2026 the user explicitly authorized implementation of **only** items #01–#05. The application changed as follows:
+
+- [`c4975c1`](https://github.com/ThunderKhan/pareto/commit/c4975c1cbd21becab553f0c24a12872d698e989e): Parito uses full-frame `object-fit: contain` rather than the oversized cropped image in profile/sidebar; normalized 19px checkbox sizing and centered row alignment; replaced the generic orb with a circular Parito badge and purposeful request-only progress indicator.
+- [`9abb43d`](https://github.com/ThunderKhan/pareto/commit/9abb43d0d154b585b7c606a9b4c5b5bbc598f278): one left-aligned Parito marker for assistant output in the active search timeline, without pretending candidate portraits are product avatars.
+- [`08d4866`](https://github.com/ThunderKhan/pareto/commit/08d4866a554f7282ce0a055c3f2e9728df777440): graphite near-black dark theme for existing authenticated routes and menus, preserving existing Light/Dark/System preference logic.
+- [`858e795`](https://github.com/ThunderKhan/pareto/commit/858e795cdf83e8b69ce4486032b26708e39e41b3): added authenticated Playwright assertions for mascot framing, notification row geometry, dark theme and chat placement; these tests need dedicated recruiter credentials to execute.
+
+Standard CI for the UI implementation passed. The **authenticated browser suite is configured to skip without dedicated Supabase credentials**, so implementation should not be described as fully screenshot-verified yet. No work on #06–#10 is authorized by this update.

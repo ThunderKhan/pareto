@@ -1,6 +1,6 @@
 # Pareto recruiter workspace — Round 02 implementation ledger (#01–#10)
 
-> **Status as of 15 November 2026:** **DOCUMENTATION ONLY. No audit or code changes authorized yet.**
+> **Status as of 15 November 2026:** **Round 02 #01–#05 implemented in code on `main` with standard CI passed; signed-in visual verification remains. #06–#10 not authorized and pending. #10 audit not started.**
 >
 > **Feedback specification:** [Round 02 UX feedback, items 01–10](./2026-11-15-recruiter-workspace-ui-feedback-round-02-01-10.md)
 >
@@ -8,17 +8,17 @@
 >
 > **Target repository/branch after authorization:** `ThunderKhan/pareto` / `main`.
 
-This file records the next worker's progress without confusing written specifications with delivered behavior. It deliberately mirrors the old implementation ledger but starts with **every Round 02 item pending**. Nothing written here implies the user approved an implementation or that an audit has already run.
+This ledger started as a documentation-only handoff. The user subsequently expressly approved **only #01–#05**. Those items are now implemented in code on `main`; the other five items and the whole-app audit remain out of scope until separately authorized.
 
 ## Sequential implementation tracker
 
 | Round 02 feedback | Implementation state | Expected proof / completion condition |
 | --- | --- | --- |
-| #01 — Profile header avatar | **Pending** | Original Parito visibly uncropped and aligned with account-settings heading; light/dark/mobile checks |
-| #02 — Chat avatar | **Pending** | Left-side Parito on genuine assistant turns, appropriate spacing, not mislabeled candidate avatars |
-| #03 — Notification checkboxes | **Pending** | Labels and boxes vertically centered; click/keyboard/persistence preserved |
-| #04 — Dark theme | **Pending** | Intentional near-black theme with complete cross-route and dropdown coverage, system preference and contrast |
-| #05 — Empty-state mascot | **Pending** | Original Parito replaces generic blue orb; circular badge preferred; reduced-motion/working states verified |
+| #01 — Profile header avatar | **Implemented in code; signed-in visual QA pending** | Original Parito visibly uncropped and aligned with account-settings heading; light/dark/mobile checks |
+| #02 — Chat avatar | **Implemented in code; signed-in visual QA pending** | Left-side Parito on genuine assistant turns, appropriate spacing, not mislabeled candidate avatars |
+| #03 — Notification checkboxes | **Implemented in code; signed-in visual QA pending** | Labels and boxes vertically centered; click/keyboard/persistence preserved |
+| #04 — Dark theme | **Implemented in code; signed-in visual QA pending** | Intentional near-black theme with complete cross-route and dropdown coverage, system preference and contrast |
+| #05 — Empty-state mascot | **Implemented in code; signed-in visual QA pending** | Original Parito replaces generic blue orb; circular badge preferred; reduced-motion/working states verified |
 | #06 — Composer | **Pending** | Compact auto-grow chat input; actions and Enter/Shift+Enter remain functional; no clipping |
 | #07 — Reference picker | **Pending** | Floating candidate lookup/sheet; owner-scoped results; keyboard/mobile; no competing forms or awkward scroll |
 | #08 — Criteria editor | **Pending** | Unified drawer/sheet for manual, AI and suggestion reviews; explicit confirm/discard boundary |
@@ -28,17 +28,17 @@ This file records the next worker's progress without confusing written specifica
 ## Hand-off: current confirmed facts and prior decisions
 
 - The new feedback was supplied in sequence with screenshots, not as part of Round 01. The older two `docs/feedback/` Markdown files were already **nonempty** and should be preserved rather than overwritten.
-- The previous user explicitly requested **“note it down first” / “no implementation”** for the ongoing sequence, culminating in **“write the docs first. Do not implement yet.”** That instruction controls this phase.
+- The original request was documentation-only. A later explicit user instruction authorized implementing Round 02 **feedback #01–#05 only**; #06–#10 remain pending.
 - Already working baseline (from the previous round): dashboard shell/overview, account settings, actual in-app notifications, Light/Dark/System preference, Parito avatar in sidebar/profile, search composer, reference workflow, criteria confirmation, candidate result evidence.
 - Subsequent completed application work includes confirmed-search Search Health, What-if and Near-match modules. This feedback round must not break their preview-only behavior or the explicit search revision confirmation boundary.
 - Source design references: approved public Pareto landing page, `docs/AUTH-IMPECCABLE-UNSLOP-REVIEW.md`, and `docs/HOMEPAGE-IMPECCABLE-UNSLOP-REVIEW.md`. These record **earlier** audits/refinement passes, **not** completion of Round 02 item #10.
 - The user expects a full application audit of Dashboard, Profile, AI candidate search, Candidates, notification and account menus and the login UI, using Impeccable and anti-UI-slop/Unslop principles. Confirm availability/load the actual skills when work is authorized.
 - Previous proposed designs for #07/#08: a **floating Reference candidate picker** (mobile bottom sheet) and **one criteria review drawer** (mobile full-screen sheet), mutually exclusive and responsive. The user explicitly requested meaningful planning and visual quality for both; do not treat cosmetic CSS tweaks alone as sufficient.
-- Dark-mode exploratory palette from the conversation: `#0B0C0F` canvas, `#17191E` surface, `#292D35` border, `#92B4FF` restrained blue accent. These are **proposals, not finalized brand tokens**.
+- The implemented graphite theme uses `#0B0C0F` canvas, `#17191E` surface, `#21242A` nested panels, `#30343C` borders and restrained blue `#A8C0FF` accents. Exact colors may be refined if authenticated screenshot QA finds issues.
 - #09's blue email background is **likely** browser autofill; verify cause before changing CSS. Do not break credential autofill.
 - The screenshots in the Frontend 03 conversation are visual evidence. They have **not** been copied to the GitHub repository and must not be represented as committed design assets.
 
-## Work protocol after the next explicit approval
+## Work protocol for later feedback #06–#10 (not yet authorized)
 
 1. Pull current `main`, inspect current app/design tokens and note any commits added since this ledger. Do not assume the code is frozen.
 2. Load or verify Impeccable and Unslop/anti-UI-slop skill references. Complete the requested bounded cross-route audit and record actionable, prioritized findings.
@@ -50,16 +50,20 @@ This file records the next worker's progress without confusing written specifica
 
 ## Session continuation cues
 
-- **Current task is complete when:** Both new Round 02 Markdown documents exist on `main`, while no application code or previously completed feedback files are modified.
-- **Next task (not started):** Wait for the user's explicit “implement” / “start” instruction. Then run the audit, design/refinement and implementation workflow.
-- **Do not claim:** that the audit ran, the new avatar or theme were visually tested, or the new feedback was implemented during this documentation-only phase.
+- **Current task is complete when:** #01–#05 are implemented in source, validated in standard CI, and their limitations recorded. The remaining items are still unmodified.
+- **Next task (not started):** Wait for a separate instruction to implement #06–#10, including the Impeccable/Unslop audit (#10).
+- **Do not claim:** that the full audit ran or that the new dark palette and avatars were visually verified in a signed-in browser without running the credential-dependent test.
 - **Don't confuse the identical numbers:** e.g. Round 01 #03 was composer positioning, while Round 02 #03 is notification checkbox alignment.
 
 ## Verification placeholders (fill only after implementation)
 
 | Item | Commit SHA | Tests / screenshots | Status |
 | --- | --- | --- | --- |
-| #01–#09 | — | — | Not started |
-| #10 audit/fixes | — | — | Not started |
+| #01, #03, #05 | `c4975c1` | Mascot framing/checkbox CSS, search orb replacement; CI passed | Implemented in code; live visual QA pending |
+| #02 | `9abb43d` | Left-side Parito grouped assistant turn; CI passed | Implemented in code; live visual QA pending |
+| #04 | `08d4866` | Graphite theme tokens/surfaces; CI passed | Implemented in code; live visual QA pending |
+| #01–#05 optional E2E | `858e795` | New recruiter-specific Playwright suite; skipped without dedicated credentials | Awaiting live test |
+| #06–#09 | — | — | Not authorized; not started |
+| #10 audit/fixes | — | — | Not authorized; not started |
 
-**Overall status:** **10/10 Round 02 items recorded; 0/10 Round 02 items implemented; audit pending user authorization.**
+**Overall status:** **10/10 Round 02 items recorded; 5/10 implemented in code on `main`; 5/10 pending authorization. Full audit not started.**
