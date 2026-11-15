@@ -13,7 +13,7 @@ describe.skipIf(process.env.PARETO_VERIFY_LIVE_MODELS !== "1" || process.env.PAR
       { prompt: "Find PostgreSQL database administrators in Delhi", skills: ["postgresql"], city: "delhi" },
     ];
     for (const [i, probe] of probes.entries()) {
-      it(`probe \${i+1} extracts target fields without mixing Java and JavaScript`, async () => {
+      it(`probe ${i+1} extracts target fields without mixing Java and JavaScript`, async () => {
         const draft = await interpret(probe.prompt);
         expect(draft.criteria.some(rule => rule.field === "city" && rule.value.toLowerCase() === probe.city)).toBe(true);
         const skills = draft.criteria.filter(rule => rule.field === "skill").map(rule => skillKey(rule.value));
