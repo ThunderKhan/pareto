@@ -2,6 +2,7 @@ import { z } from "zod";
 import { AiFailure } from "../contracts/errors";
 import type { JsonProvider } from "../providers/http";
 import { proposeStructured } from "../providers/gateway";
+import { resolveAiProviders } from "../providers/byok";
 import { evidenceReviewPromptV1 } from "../prompts/evidence-review.v1";
 import { verifyResumeClaim } from "../quality/resume-evidence";
 
@@ -62,5 +63,5 @@ export async function proposeEvidenceReview(
         reasonCode: verdict === "unknown" ? "INSUFFICIENT" as const : proposal.reasonCode,
         requiresHumanReview: true as const,
       };
-    }, providers, { taskId: "resume.evidence-review.v1", ownerId });
+    }, await resolveAiProviders(ownerId, providers), { taskId: "resume.evidence-review.v1", ownerId });
 }
