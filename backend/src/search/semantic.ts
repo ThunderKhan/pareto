@@ -1,4 +1,8 @@
 import { database } from "./db";
+import { aiProcessLimiter } from "../ai/providers/budgets";
+import { durableQuotaEnabled, reserveDurableAiAttempt } from "../ai/providers/durable-quota";
+import { BoundedAsyncCache, privateCacheKey } from "./bounded-cache";
+import { recordSearchTiming } from "./performance";
 import { candidateDocument, documentHash, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, hybridRank, queryDocument } from "./retrieval";
 import type { CandidateProfile } from "./evaluate";
 import type { Rule } from "./criteria";
@@ -6,6 +10,7 @@ import type { Rule } from "./criteria";
 type EmbeddingTask = "RETRIEVAL_QUERY" | "RETRIEVAL_DOCUMENT";
 export type Embedder = (text: string, task: EmbeddingTask) => Promise<number[]>;
 const MODEL_KEY = EMBEDDING_MODEL + ":" + EMBEDDING_DIMENSIONS;
+const queryEmbeddings = new BoundedAsyncCache<number[]>(128, 5 * 60_000);
 
 /** Direct Gemini REST adapter, no extra SDK or third-party vector service.
  * The configured Gemini key is used only server-side. */
@@ -41,6 +46,33 @@ export const geminiEmbed: Embedder = async (text, task) => {
   return floats.map(value => value / norm);
 };
 
+/**
+ * Model query vectors are reused only for an identical tenant + model + query.
+ * No resume text, query text or owner identifier is stored in the cache key.
+ * Only successful, bounded responses are cached; concurrent misses coalesce.
+ */
+async function embeddingForOwner(
+  ownerId: string, text: string, task: EmbeddingTask, embed: Embedder,
+): Promise<number[]> {
+  const call = async () => {
+    if (embed !== geminiEmbed) return embed(text, task);
+    const release = aiProcessLimiter.acquire(ownerId);
+    const started = Date.now();
+    try {
+      if (durableQuotaEnabled()) await reserveDurableAiAttempt(ownerId);
+      return await embed(text, task);
+    } finally {
+      recordSearchTiming("embedding.provider", Date.now() - started);
+      release();
+    }
+  };
+  if (task === "RETRIEVAL_QUERY" && embed === geminiEmbed) {
+    const key = privateCacheKey([ownerId, MODEL_KEY, task, text]);
+    return queryEmbeddings.getOrLoad(key, call);
+  }
+  return call();
+}
+
 function vectorLiteral(vector: number[]) {
   if (vector.length !== EMBEDDING_DIMENSIONS ||
     !vector.every(value => Number.isFinite(value))) throw new Error("Invalid embedding dimensions.");
@@ -74,7 +106,7 @@ export async function indexCandidate(ownerId: string, candidateId: string, embed
     SELECT "contentHash", "model" FROM "CandidateEmbedding"
     WHERE "ownerId" = ${ownerId} AND "candidateId" = ${candidateId}`;
   if (existing[0]?.contentHash === hash && existing[0].model === MODEL_KEY) return "unchanged" as const;
-  const vector = vectorLiteral(await embed(document, "RETRIEVAL_DOCUMENT"));
+  const vector = vectorLiteral(await embeddingForOwner(ownerId, document, "RETRIEVAL_DOCUMENT", embed));
   // Protect against concurrent candidate edits while the network request was running.
   const latest = await db.candidate.findFirst({
     where: { id: candidateId, ownerId }, include: { skills },
@@ -120,7 +152,9 @@ export async function rankWithSemantic(
   ownerId: string, candidates: CandidateProfile[], rules: Rule[], referenceId?: string | null,
   embed: Embedder = geminiEmbed,
 ) {
-  if (process.env.AI_ENABLED === "false" || process.env.PARETO_SEMANTIC_SEARCH === "0") return hybridRank(candidates, rules, new Map(), referenceId);
+  // Opt-in: never block the interactive results path on a network embedding by default.
+  // Semantics remain a secondary tie-breaker, never evidence of eligibility.
+  if (process.env.AI_ENABLED === "false" || process.env.PARETO_SEMANTIC_SEARCH !== "1") return hybridRank(candidates, rules, new Map(), referenceId);
   if (embed === geminiEmbed && !process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     return hybridRank(candidates, rules, new Map(), referenceId);
   }
@@ -136,7 +170,7 @@ export async function rankWithSemantic(
     const reference = candidates.find(c => c.id === referenceId);
     const query = queryDocument(rules, reference);
     if (!query) return hybridRank(candidates, rules, new Map(), referenceId);
-    const vector = vectorLiteral(await embed(query, "RETRIEVAL_QUERY"));
+    const vector = vectorLiteral(await embeddingForOwner(ownerId, query, "RETRIEVAL_QUERY", embed));
     // SET LOCAL makes pgvector work whether Supabase installed it in public or extensions.
     const nearest = await db.$transaction(async tx => {
       await tx.$executeRawUnsafe("SET LOCAL search_path TO public, extensions");

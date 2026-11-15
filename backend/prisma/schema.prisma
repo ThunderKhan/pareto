@@ -8,6 +8,13 @@ datasource db {
   provider = "postgresql"
 }
 
+// Server-only invalidation epoch for optional confirmed-search result snapshots.
+// PostgreSQL triggers increment this on all candidate/evidence changes.
+model CandidateSearchEpoch {
+  ownerId String @id
+  version BigInt @default(0)
+}
+
 model Candidate {
   id               String           @id @default(cuid())
   ownerId          String

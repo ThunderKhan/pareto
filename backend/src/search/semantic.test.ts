@@ -35,10 +35,17 @@ describe.skipIf(!integrationUrl)("pgvector owner-scoped retrieval integration", 
       return vector(1);
     };
     const rules = [{ field: "industry", value: "Fintech", mode: "preferred" }] as const;
-    const found = await rankWithSemantic(owner, [a, b], [...rules], null, queryEmbed);
-    expect(found.map(item => item.candidate.id)).toEqual([candidateB, candidateA]);
-    expect(found.every(item => "retrieval" in item)).toBe(true);
-    const isolated = await rankWithSemantic(stranger, [a, b], [...rules], null, queryEmbed);
-    expect(isolated.every(item => !("retrieval" in item))).toBe(true);
+    const originalMode = process.env.PARETO_SEMANTIC_SEARCH;
+    process.env.PARETO_SEMANTIC_SEARCH = "1";
+    try {
+      const found = await rankWithSemantic(owner, [a, b], [...rules], null, queryEmbed);
+      expect(found.map(item => item.candidate.id)).toEqual([candidateB, candidateA]);
+      expect(found.every(item => "retrieval" in item)).toBe(true);
+      const isolated = await rankWithSemantic(stranger, [a, b], [...rules], null, queryEmbed);
+      expect(isolated.every(item => !("retrieval" in item))).toBe(true);
+    } finally {
+      if (originalMode === undefined) delete process.env.PARETO_SEMANTIC_SEARCH;
+      else process.env.PARETO_SEMANTIC_SEARCH = originalMode;
+    }
   });
 });
