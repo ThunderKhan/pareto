@@ -1,4 +1,7 @@
-import "dotenv/config";
+// Local development may use backend/.env. Production worker runtimes supply
+// secrets through the process supervisor and must work with --prod installs,
+// where the optional dotenv developer dependency is absent.
+await import("dotenv/config").catch(() => undefined);
 import { database } from "../search/db";
 import { workerOptions, runWorker, workOnce } from "./runner";
 
