@@ -22,6 +22,7 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     const criteria = criteriaSchema.parse([
       { field: "role", value: "Senior Java Developer", mode: "required" },
       { field: "city", value: "Hyderabad", mode: "required" },
+      { field: "experience", minMonths: 72, maxMonths: 120, mode: "required" },
       { field: "notice", maxDays: 30, mode: "required" },
     ]);
     const saved = await confirmSearch(owner, { requestId: randomUUID(), criteria });
