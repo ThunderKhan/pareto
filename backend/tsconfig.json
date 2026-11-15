@@ -18,7 +18,9 @@
   },
   "include": [
     "src/**/*.ts",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    "scripts/index-candidates.ts",
+    "scripts/evaluate-retrieval.ts"
   ],
   "exclude": [
     "src/generated"

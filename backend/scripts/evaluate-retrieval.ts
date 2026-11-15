@@ -4,7 +4,7 @@ import { database } from "../src/search/db";
 import { criteriaSchema } from "../src/search/criteria";
 import { rank } from "../src/search/evaluate";
 import { rankWithSemantic } from "../src/search/semantic";
-import { retrievalMetrics } from "../src/search/retrieval";
+import { retrievalMetrics, type RetrievalJudgment } from "../src/search/retrieval";
 import type { CandidateProfile } from "../src/search/evaluate";
 
 config({ path: "../.env", quiet: true });
@@ -37,14 +37,18 @@ async function main() {
     pastRoles: row.pastRoles, certifications: row.certifications,
     skills: row.skillsKnown ? row.skills.map(link => link.skill.displayName) : null,
   }));
-  const lexical = []; const hybrid = []; let covered = 0;
+  const lexical: RetrievalJudgment[] = [];
+  const hybrid: RetrievalJudgment[] = [];
+  let covered = 0;
   for (const item of gold) {
     const rules = criteriaSchema.parse(item.criteria);
     const referenceId = item.referenceKey === undefined ? null : fixtureId(item.referenceKey);
     const before = rank(candidates, rules, referenceId);
     const after = await rankWithSemantic(ownerId, candidates, rules, referenceId);
-    if (after.some(result => "retrieval" in result && result.retrieval.semanticSimilarity !== null))
-      covered++;
+    if (after.some(result => {
+      const detail = (result as unknown as { retrieval?: { semanticSimilarity: number | null } }).retrieval;
+      return detail?.semanticSimilarity !== undefined && detail?.semanticSimilarity !== null;
+    })) covered++;
     const relevantIds = item.relevantKeys.map(fixtureId);
     lexical.push({ relevantIds, rankedIds: before.map(row => row.candidate.id) });
     hybrid.push({ relevantIds, rankedIds: after.map(row => row.candidate.id) });
