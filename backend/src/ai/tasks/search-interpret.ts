@@ -3,7 +3,7 @@ import { criteriaSchema, type Rule } from "../../search/criteria";
 import { proposeStructured } from "../providers/gateway";
 import type { JsonProvider } from "../providers/http";
 import { searchInterpretPromptV1 } from "../prompts/search-interpret.v1";
-import { isolatedUserData, validateSearchRequest } from "../safety/policy";
+import { isolatedUserData, validateSearchRequest, rejectProtectedRuleValues } from "../safety/policy";
 import { AiFailure } from "../contracts/errors";
 
 const responseSchema = z.strictObject({
@@ -19,10 +19,7 @@ export async function proposeSearchDraft(prompt: string, providers?: JsonProvide
     let criteria: Rule[];
     try {
       criteria = candidate.criteria.length ? criteriaSchema.parse(candidate.criteria) : [];
-      for (const rule of criteria) {
-        if ("value" in rule && /\b(?:male only|female only|men only|women only|caste|race|religion|pregnan(?:t|cy))\b/i.test(rule.value))
-          throw new AiFailure("SEMANTIC_UNVERIFIED", false);
-      }
+      rejectProtectedRuleValues(criteria);
     } catch { throw new AiFailure("SEMANTIC_UNVERIFIED", false); }
     return { criteria, warnings: candidate.warnings };
   }, providers, { taskId: "search.interpret.v1", ownerId });
