@@ -37,8 +37,8 @@ const provider: JsonProvider = async () => ({ provider: "Gemini", raw: {
 
 describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
   const created: string[] = [];
-  const db = database();
   afterAll(async () => {
+    const db = database();
     if (created.length) {
       await db.candidate.deleteMany({ where: { sourceDocumentId: { in: created } } });
       await db.resumeDocument.deleteMany({ where: { id: { in: created } } });
@@ -48,6 +48,7 @@ describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
 
   it("stores a private TXT, verified candidate, normalized skills and original evidence", async () => {
     const vault = storage();
+    const db = database();
     const result = await uploadResume(owner, "candidate.txt", "text/plain",
       Buffer.from(resumeText + "A1"), vault, [provider]);
     created.push(result.document.id);
@@ -79,6 +80,7 @@ describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
 
   it("preserves needs-review document and can retry without another upload or duplicate candidate", async () => {
     const vault = storage();
+    const db = database();
     const initial = await uploadResume(owner, "review.txt", "text/plain",
       Buffer.from(resumeText + "A2"), vault, []);
     created.push(initial.document.id);
@@ -93,6 +95,7 @@ describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
   });
 
   it("isolates identical resume hashes between different recruiters", async () => {
+    const db = database();
     const a = storage(), b = storage();
     const bytes = Buffer.from(resumeText + "A3");
     const first = await uploadResume(owner, "first.txt", "text/plain", bytes, a, [provider]);
@@ -106,6 +109,7 @@ describe.skipIf(!url)("private resume ingestion in PostgreSQL", () => {
   });
 
   it("does not create a searchable candidate from unverified AI output", async () => {
+    const db = database();
     const vault = storage();
     const invalid: JsonProvider = async () => ({ provider: "Groq", raw: {
       ...((await provider("", "")).raw as Record<string, unknown>),
