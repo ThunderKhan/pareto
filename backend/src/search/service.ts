@@ -116,9 +116,6 @@ async function computeSnapshot(ownerId: string, criteria: Rule[], referenceId: s
   recordSearchTiming("search.total", Date.now() - started);
   return { counts, results, total: results.length, evaluatorVersion };
 }
-async function compute(ownerId: string, criteria: Rule[], referenceId: string | null, offset = 0) {
-  return page(await computeSnapshot(ownerId, criteria, referenceId), offset);
-}
 async function cachedSearchResults(ownerId: string, sessionId: string, version: number,
   criteria: Rule[], referenceId: string | null, offset = 0) {
   const started = Date.now();

@@ -16,17 +16,17 @@ BEGIN
 END $roles$;
 
 CREATE FUNCTION pareto_search_epoch_bump(p_owner TEXT) RETURNS VOID
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $fn$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public, pg_temp AS $fn$
 BEGIN
   IF p_owner IS NOT NULL THEN
-    INSERT INTO "CandidateSearchEpoch" ("ownerId","version") VALUES (p_owner, 1)
+    INSERT INTO public."CandidateSearchEpoch" ("ownerId","version") VALUES (p_owner, 1)
     ON CONFLICT ("ownerId") DO UPDATE
       SET "version" = "CandidateSearchEpoch"."version" + 1;
   END IF;
 END $fn$;
 
 CREATE FUNCTION pareto_search_epoch_candidate() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $fn$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public, pg_temp AS $fn$
 BEGIN
   IF TG_OP <> 'INSERT' THEN PERFORM pareto_search_epoch_bump(OLD."ownerId"); END IF;
   IF TG_OP <> 'DELETE' THEN
@@ -43,7 +43,7 @@ CREATE TRIGGER pareto_search_epoch_candidate AFTER INSERT OR UPDATE OR DELETE ON
 FOR EACH ROW EXECUTE FUNCTION pareto_search_epoch_candidate();
 
 CREATE FUNCTION pareto_search_epoch_skill_link() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $fn$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public, pg_temp AS $fn$
 DECLARE old_owner TEXT; new_owner TEXT;
 BEGIN
   IF TG_OP <> 'INSERT' THEN
@@ -65,7 +65,7 @@ CREATE TRIGGER pareto_search_epoch_embedding AFTER INSERT OR UPDATE OR DELETE ON
 FOR EACH ROW EXECUTE FUNCTION pareto_search_epoch_candidate();
 
 CREATE FUNCTION pareto_search_epoch_skill_label() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $fn$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public, pg_temp AS $fn$
 DECLARE target_owner TEXT;
 BEGIN
   IF NEW."displayName" IS DISTINCT FROM OLD."displayName" THEN
