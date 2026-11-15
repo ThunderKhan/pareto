@@ -1,0 +1,56 @@
+/* Private import page · typed queues, honest evidence, landing-aligned controls.
+ * No synthetic percentages or replacement of the server job state machine. */
+.pareto-app .import-workspace { gap: 24px; }
+.pareto-app .import-section, .pareto-app .import-detail {
+  border-color: var(--ws-edge); background: var(--ws-surface);
+  border-radius: 16px; box-shadow: none;
+}
+.pareto-app .import-upload { background: var(--ws-paper); }
+.pareto-app .import-kicker { color: var(--ws-muted); font-size: 12px; letter-spacing: .035em; text-transform: none; font-weight: 600; }
+.pareto-app .import-upload__head h2 { color: var(--ws-ink); font-family: var(--ws-display); letter-spacing: -.04em; }
+.pareto-app .import-file-control { border-color: var(--ws-control); background: var(--ws-surface); min-height: 76px; }
+.pareto-app .import-file-control:hover { border-color: var(--ws-focus); background: var(--ws-panel); }
+.pareto-app .import-button { min-height: 44px; border-radius: 12px; font-weight: 650; }
+.pareto-app .import-button--quiet { color: var(--ws-ink); background: transparent; border-color: var(--ws-control); }
+.pareto-app .import-button--quiet:hover:not(:disabled) { background: var(--ws-panel); color: var(--ws-ink); }
+.pareto-app .import-link { color: var(--ws-ink); text-underline-offset: 3px; }
+.pareto-app .import-link--button { min-height: 40px; padding: 8px 1px; }
+.pareto-app .import-alert, .pareto-app .import-success, .pareto-app .import-caution {
+  border: 1px solid var(--ws-edge); border-radius: 10px;
+  background: var(--ws-panel); color: var(--ws-text);
+}
+.pareto-app .import-alert { color: var(--ws-danger); }
+.pareto-app .import-caution { color: var(--ws-warning); }
+.pareto-app .import-success { color: var(--ws-success); }
+.pareto-app .import-review-complete { border-radius: 0; background: transparent; border-width: 1px 0; padding-inline: 0; }
+.pareto-app .import-kpis {
+  grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0;
+  border-block: 1px solid var(--ws-edge); margin-bottom: 15px;
+}
+.pareto-app .import-kpis > div {
+  background: transparent; border: 0; border-right: 1px solid var(--ws-edge);
+  border-radius: 0; padding: 14px 18px;
+}
+.pareto-app .import-kpis > div:last-child { border-right: 0; }
+.pareto-app .import-kpis strong { font: 400 28px/1.1 var(--ws-display); color: var(--ws-ink); }
+.pareto-app .import-kpis span { font-size: 12px; color: var(--ws-muted); }
+.pareto-app .import-continuity { background: var(--ws-paper); }
+.pareto-app .import-continuity__counts strong { color: var(--ws-ink); }
+.pareto-app .import-table-wrap { border-color: var(--ws-edge); border-radius: 10px; }
+.pareto-app .import-table th { background: var(--ws-panel); color: var(--ws-muted); font-size: 12px; }
+.pareto-app .import-table th, .pareto-app .import-table td { border-color: var(--ws-edge); }
+.pareto-app .import-table tbody tr:hover { background: var(--ws-panel); }
+.pareto-app .import-chip { background: var(--ws-panel); border-radius: 8px; color: var(--ws-text); }
+.pareto-app .import-section--flat { border-width: 1px 0 0; border-radius: 0; background: transparent; padding: 20px 0; }
+.pareto-app .import-review-form :is(input, select, textarea) { background: var(--ws-surface); border-color: var(--ws-control); min-height: 44px; }
+.pareto-app .import-workspace :is(button, input, select, textarea, summary, a, [tabindex]):focus-visible { outline: 3px solid var(--ws-focus); outline-offset: 3px; }
+@media(max-width:850px) {
+  .pareto-app .import-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .pareto-app .import-kpis > div:nth-child(2) { border-right: 0; }
+  .pareto-app .import-kpis > div:nth-child(n+3) { border-top: 1px solid var(--ws-edge); }
+}
+@media(max-width:600px) {
+  .pareto-app .import-section, .pareto-app .import-detail { padding: 18px 15px; }
+  .pareto-app .import-kpis > div { padding: 13px 12px; }
+  .pareto-app .import-table-wrap { scroll-behavior: auto; }
+}

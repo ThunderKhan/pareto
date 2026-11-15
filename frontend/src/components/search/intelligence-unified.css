@@ -1,0 +1,81 @@
+/* Pareto Frontier · consolidated intelligence, not three dashboard cards.
+ * The confirmed shortlist stays first (Phase 2); bounded preview analysis
+ * follows as one primary evidence comparison with secondary disclosures. */
+.pareto-app .pareto-results__analysis .pareto-chat__caption { color: var(--ws-muted); letter-spacing: .035em; font-size: 12px; }
+.pareto-app .pareto-results__analysis > p { max-width: 74ch; }
+.pareto-app .pareto-intelligence__primary { margin-top: 18px; }
+.pareto-app .frontier-module,
+html[data-pareto-effective-theme="dark"] .pareto-app .frontier-module {
+  border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  color: var(--ws-ink);
+}
+.pareto-app .frontier-intro { padding: 16px 0 23px; gap: 16px 28px; border-bottom: 1px solid var(--ws-edge); align-items: flex-end; }
+.pareto-app .frontier-intro h3 { font: 400 clamp(28px,2.9vw,38px)/1.13 var(--ws-display); letter-spacing: -.045em; }
+.pareto-app .frontier-intro p { max-width: 68ch; color: var(--ws-muted); }
+.pareto-app .frontier-eyebrow { color: var(--ws-muted); font-size: 12px; letter-spacing: .035em; text-transform: none; font-weight: 600; }
+.pareto-app .frontier-cta, .pareto-app .frontier-review {
+  background: var(--ws-primary); border-color: var(--ws-primary);
+  color: var(--ws-on-primary); border-radius: 12px; min-height: 44px;
+  font-size: 12px; box-shadow: none;
+}
+.pareto-app .frontier-cta:hover:not(:disabled), .pareto-app .frontier-review:hover { background: var(--ws-primary-hover); transform: none; filter: none; }
+.pareto-app .frontier-body { padding: 22px 0 4px; border: 0; gap: 24px; }
+.pareto-app .frontier-baseline { padding: 18px 20px; background: var(--ws-panel); border: 1px solid var(--ws-edge); border-radius: 12px; }
+.pareto-app .frontier-baseline h4, .pareto-app .frontier-options-head h4 {
+  font-family: var(--ws-display); font-weight: 400; color: var(--ws-ink);
+}
+.pareto-app .frontier-baseline .insight-counts > div { background: transparent; border-color: var(--ws-edge); }
+.pareto-app .frontier-options-head { padding: 4px 0 15px; border-bottom: 1px solid var(--ws-edge); }
+.pareto-app .frontier-options-head p { color: var(--ws-muted); line-height: 1.6; }
+.pareto-app .frontier-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.pareto-app .frontier-card {
+  display: grid; grid-template-columns: minmax(0,1fr); align-content: start;
+  gap: 14px; padding: 23px 0; border: 0; border-bottom: 1px solid var(--ws-edge);
+  border-radius: 0; background: transparent; box-shadow: none;
+}
+.pareto-app .frontier-card:hover { border-color: var(--ws-edge); }
+.pareto-app .frontier-index { font-size: 12px; color: var(--ws-muted); letter-spacing: 0; font-weight: 600; }
+.pareto-app .frontier-preview-tag { font-size: 11px; font-weight: 600; letter-spacing: 0; border-color: var(--ws-edge); color: var(--ws-muted); }
+.pareto-app .frontier-card h5 { font: 400 26px/1.2 var(--ws-display); color: var(--ws-ink); margin: 0; }
+.pareto-app .frontier-impact { gap: 12px 28px; border-color: var(--ws-edge); padding: 16px 0; }
+.pareto-app .frontier-impact > div { gap: 6px; min-width: 0; }
+.pareto-app .frontier-impact small { font-size: 12px; color: var(--ws-muted); }
+.pareto-app .frontier-impact strong { color: var(--ws-ink); font: 400 29px/1.1 var(--ws-display); font-variant-numeric: tabular-nums; }
+.pareto-app .frontier-impact-note { color: var(--ws-muted); font-size: 12px !important; line-height: 1.7; margin: 0; }
+.pareto-app .frontier-changes { gap: 0; }
+.pareto-app .frontier-changes li {
+  border-left: 0; border-top: 1px solid var(--ws-edge); padding: 12px 0 11px;
+}
+.pareto-app .frontier-changes li strong { color: var(--ws-ink); font-size: 12px; font-weight: 600; }
+.pareto-app .frontier-changes li p { color: var(--ws-muted); font-size: 12px; line-height: 1.6; }
+.pareto-app .frontier-warning { border: 1px solid var(--ws-edge); border-radius: 8px; background: var(--ws-panel); color: var(--ws-text); padding: 12px; }
+.pareto-app .frontier-evidence { margin-top: 0; border-color: var(--ws-edge); }
+.pareto-app .frontier-evidence summary { color: var(--ws-ink); min-height: 40px; display: flex; align-items: center; }
+.pareto-app .frontier-evidence li { background: var(--ws-panel); color: var(--ws-text); }
+.pareto-app .frontier-review { width: fit-content; gap: 18px; padding-inline: 16px; }
+.pareto-app .frontier-footnote { color: var(--ws-muted); border-color: var(--ws-edge); }
+.pareto-app .frontier-footnote strong { color: var(--ws-ink); }
+.pareto-app .pareto-intelligence__secondary { border-block: 1px solid var(--ws-edge); padding: 0; margin-top: 28px; }
+.pareto-app .pareto-intelligence__secondary > summary {
+  display: grid; grid-template-columns: minmax(0,1fr) auto;
+  align-items: center; gap: 4px 24px; padding: 16px 1px; min-height: 54px;
+  cursor: pointer; list-style: none; color: var(--ws-ink);
+}
+.pareto-app .pareto-intelligence__secondary > summary::-webkit-details-marker { display: none; }
+.pareto-app .pareto-intelligence__secondary > summary::after { content: "+"; grid-column: 2; grid-row: 1 / span 2; font-size: 22px; font-weight: 400; color: var(--ws-muted); }
+.pareto-app .pareto-intelligence__secondary[open] > summary::after { content: "−"; }
+.pareto-app .pareto-intelligence__secondary > summary span { font-weight: 650; font-size: 13px; }
+.pareto-app .pareto-intelligence__secondary > summary small { grid-column: 1; grid-row: 2; color: var(--ws-muted); font-size: 12px; line-height: 1.5; }
+.pareto-app .pareto-intelligence__secondary .insight-panels { margin: 0; padding: 0 0 24px; gap: 12px; }
+.pareto-app .pareto-intelligence__secondary .insight-module { box-shadow: none; }
+.pareto-app .pareto-intelligence__secondary .insight-trigger { min-height: 44px; }
+@media(max-width:600px) {
+  .pareto-app .frontier-intro { align-items: stretch; }
+  .pareto-app .frontier-cta { width: 100%; }
+  .pareto-app .frontier-impact { gap: 12px 20px; }
+  .pareto-app .frontier-impact strong { font-size: 26px; }
+  .pareto-app .frontier-review { width: 100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .pareto-app .frontier-card, .pareto-app .frontier-cta, .pareto-app .frontier-review { transition: none; }
+}
