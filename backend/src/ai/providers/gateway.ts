@@ -40,6 +40,11 @@ export async function proposeStructured<T extends object>(
       if (durableQuotaEnabled())
         await reserveDurableAiAttempt(context.ownerId ?? "operator-probe");
       const response = await provider(system, input, Math.min(9000, remaining), config.maxOutputTokens);
+      // Task-specific decoded output cap is stricter for short review tasks.
+      let decodedBytes: number;
+      try { decodedBytes = Buffer.byteLength(JSON.stringify(response.raw), "utf8"); }
+      catch { throw new AiFailure("OUTPUT_INVALID", false); }
+      if (decodedBytes > config.maxOutputBytes) throw new AiFailure("OUTPUT_INVALID", false);
       let proposal: T;
       try { proposal = validate(response.raw); }
       catch (error) {

@@ -53,4 +53,14 @@ describe("bounded provider gateway", () => {
     expect(provider.mock.calls[1][3]).toBe(4096);
   });
 
+  it("enforces task-specific decoded response byte caps, not just the transport cap", async () => {
+    const model = vi.fn().mockResolvedValue({
+      provider: "Gemini", raw: { valid: true, extra: "x".repeat(20000) },
+    });
+    await expect(proposeStructured("instructions", "input", accept, [model], {
+      taskId: "resume.evidence-review.v1",
+    })).rejects.toMatchObject({ code: "OUTPUT_INVALID" });
+    expect(model).toHaveBeenCalledOnce();
+  });
+
 });
