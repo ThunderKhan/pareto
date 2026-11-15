@@ -1,7 +1,7 @@
 # What-If Hiring Simulator — Frontend Implementation Needed
 
 **Product:** Pareto · **Feature:** What-If Hiring Simulator (PRD DIF-FR-02, MVP §6.7, implementation slice P-302)  
-**Status:** Backend implemented in the separate `feat/what-if-hiring-simulator` branch; **frontend not implemented**.  
+**Status:** Frontend implemented on `main`, using the integrated backend simulator contract.  
 **Screen:** Existing recruiter `/dashboard/search` → a **confirmed** search and its candidate results.  
 **Developer brief:** Build the UI against the real backend; do not redesign matching, invent metrics or bypass human confirmation.
 
@@ -222,3 +222,7 @@ This **document is the frontend to-do specification**, not a claim that the UI e
 **Not part of the simulator UI task:** PDF ingestion, new LLM providers, embeddings, arbitrary automatic constraint relaxation, job acceptance/rejection, new Prisma migrations, unauthenticated demo bypass, or Railway deployment.
 
 **Definition of done:** a recruiter can create a hypothetical change, compare verified before/after counts and evidence, discard it, or explicitly review and confirm it as a normal search revision—**without the simulation itself changing any stored state**.
+
+## Delivered UI
+
+Implemented in `frontend/src/components/search/what-if.tsx`. A separate editable criteria copy drives read-only simulation; the side-by-side comparison renders measured counts, changes, warnings and candidate-level evidence. Editing invalidates its preview. Apply for review only opens the existing confirmation editor; Discard never writes a revision. The original acceptance checklist above is retained as the feature specification.

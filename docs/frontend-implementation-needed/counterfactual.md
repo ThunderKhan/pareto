@@ -1,7 +1,7 @@
 # Counterfactual Near-Match Explanations — Frontend Implementation Needed
 
 **Product:** Pareto · **PRD:** DIF-FR-03 · **MVP:** §6.8 · **Work package:** P-303  
-**Current state:** Backend implementation on `feat/counterfactual-near-match`, frontend UI **not yet implemented**.  
+**Current state:** Backend and frontend implemented on `main`; backend merged from PR #12.  
 **Target location:** Existing confirmed result cards in `/dashboard/search`, next to candidate evidence.  
 **Scope:** UI integration and tests only. No new database tables, resume parsing, scoring model, or direct hiring recommendation.
 
@@ -213,3 +213,7 @@ Reuse the existing `frontend/src/components/search/workspace.tsx` and `CriteriaE
 - Related UI handoffs: `docs/frontend-implementation-needed/health.md` (PR #10) and `simulator.md` (PR #11), currently on separate branches
 
 **Definition of done:** an authenticated recruiter can inspect exactly which known requirements prevent a specific candidate from qualifying, distinguish missing evidence, preview the minimum field-local changes, discard them or review them in the existing criteria editor **without a database mutation until Confirm Search**.
+
+## Delivered UI
+
+Implemented in `frontend/src/components/search/near-match.tsx` and embedded in confirmed non-eligible candidate cards. On-demand owner-scoped analysis displays exact known failures and recorded values, unverified requirements separately, preview outcomes and trade-offs. Review only opens the original criteria draft; nothing is confirmed automatically. Authenticated browser verification still requires live demo credentials.

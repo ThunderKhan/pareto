@@ -1,7 +1,7 @@
 # Search Health Diagnostics — Frontend Implementation Needed
 
 **Product:** Pareto · **Feature:** Search Health Diagnostics (PRD DIF-FR-01)  
-**Status:** Frontend not implemented. Backend implemented and CI-verified on [PR #10](https://github.com/ThunderKhan/pareto/pull/10).  
+**Status:** Frontend implemented on `main`; backend contract integrated from [PR #10](https://github.com/ThunderKhan/pareto/pull/10).  
 **Where:** Existing confirmed search results in `/dashboard/search`.  
 **Owner:** Frontend worker. This is a UI handoff, not a request to redesign the backend.
 
@@ -171,3 +171,7 @@ type SearchHealth = {
 - [ ] Existing search, explainability, refinement and reference-search tests remain green.
 
 **Technical source of truth:** [Backend Search Health contract](../SEARCH-HEALTH-DIAGNOSTICS.md). This document defines the **frontend UX to be implemented later**, not completed UI work.
+
+## Delivered UI
+
+Implemented in `frontend/src/components/search/search-health.tsx`, with shared typed API/error utilities and styles. It lazy-loads real diagnostics, separates missing evidence from known failures, renders bounded suggestions and trade-offs, and opens the original `CriteriaEditor` without auto-confirmation. The historical acceptance checklist above records the original handoff; browser verification of authenticated scenarios requires live demo credentials.
