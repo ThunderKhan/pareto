@@ -94,7 +94,7 @@ export default function ProfileEditor({ email, firstName, lastName }: {
     </section>
     <section className="pareto-profile-security" aria-labelledby="profile-security-heading">
       <h2 id="profile-security-heading"><LockKey size={20} weight="duotone" aria-hidden="true"/> Password & security</h2>
-      <p>Choose a new password for your email/password sign-in. Depending on your account's security settings, you may be asked to reauthenticate.</p>
+      <p>Choose a new password for your email/password sign-in. Depending on your account&rsquo;s security settings, you may be asked to reauthenticate.</p>
       <form className="pareto-profile-form" onSubmit={changePassword} aria-busy={busy}>
         <label>New password
           <input type="password" autoComplete="new-password" minLength={8} required value={password}
