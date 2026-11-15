@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { isResumeIngestionEnabled } from "./policy";
 import { database } from "../search/db";
 import { durableQuotaEnabled } from "../ai/providers/durable-quota";
-import type { Prisma } from "../generated/prisma/client";
+import { Prisma } from "../generated/prisma/client";
 
 export class JobConflict extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -122,6 +122,15 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
   const quotaEnabled = durableQuotaEnabled();
   const ownerCap = quotaEnabled ? configLimit("AI_MAX_CALLS_PER_RECRUITER_HOUR", 40, 1, 10000) : 40;
   const globalCap = quotaEnabled ? configLimit("AI_MAX_GLOBAL_CALLS_PER_HOUR", 2000, 1, 500000) : 2000;
+  // A disabled optional quota must not require its migration to exist.
+  const quotaFilter = quotaEnabled ? Prisma.sql`
+    AND COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
+      WHERE q."scope"='global' AND q."subject"='__global__'
+        AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${globalCap}
+    AND COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
+      WHERE q."scope"='owner' AND q."subject"=j."ownerId"
+        AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${ownerCap}
+  ` : Prisma.empty;
   const rows = await database().$queryRaw<ClaimedJob[]>`
     WITH gate AS MATERIALIZED (SELECT pg_try_advisory_xact_lock(61423, 2026) AS ok),
     next_job AS MATERIALIZED (
@@ -133,14 +142,7 @@ export async function claimJob(workerId: string, limits: { global: number; perOw
         -- than claiming hundreds of jobs just to discover the hourly limit.
         -- The gateway still reserves the actual call atomically: this read is
         -- only a cheap admission hint and is never treated as a reservation.
-        AND (NOT ${quotaEnabled}::boolean OR (
-          COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
-            WHERE q."scope"='global' AND q."subject"='__global__'
-              AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${globalCap}
-          AND COALESCE((SELECT q."attempts" FROM "AiRequestQuota" q
-            WHERE q."scope"='owner' AND q."subject"=j."ownerId"
-              AND q."windowStart"=date_trunc('hour',CURRENT_TIMESTAMP)::timestamp(3)), 0) < ${ownerCap}
-        ))
+        ${quotaFilter}
         AND (SELECT COUNT(*) FROM "IngestionJob" r
            WHERE r."status"='RUNNING' AND r."leaseExpiresAt">NOW()) < ${limits.global}
         AND (SELECT COUNT(*) FROM "IngestionJob" o
