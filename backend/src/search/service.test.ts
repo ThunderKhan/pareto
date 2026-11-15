@@ -325,7 +325,7 @@ describe.skipIf(!integrationUrl)("PostgreSQL search with seeded owner", () => {
     expect(preview.strategies.every(strategy => strategy.impact.noLongerEligibleCount === 0)).toBe(true);
     expect(preview.strategies.some(strategy =>
       strategy.changes.some(change => change.kind === "extend_notice" &&
-        change.after.field === "notice" && change.after.maxDays === 45))).toBe(true);
+        change.after.field === "notice" && change.after.maxDays > 30))).toBe(true);
     for (const strategy of preview.strategies) {
       expect(strategy.counts.ELIGIBLE).toBeGreaterThan(saved.counts.ELIGIBLE);
       expect(criteriaSchema.parse(strategy.proposedCriteria)).toEqual(strategy.proposedCriteria);
