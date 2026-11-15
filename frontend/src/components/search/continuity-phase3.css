@@ -1,0 +1,37 @@
+/* Phase 3: measured system feedback and durable continuation, following the landing-page design tokens. */
+.pareto-app .pareto-progress { flex-direction: column; align-items: flex-start; gap: 6px; }
+.pareto-app .pareto-progress__title { color: var(--ws-text); font-weight: 600; }
+.pareto-app .pareto-progress small { color: var(--ws-muted); font-size: 12px; line-height: 1.6; max-width: 510px; }
+.pareto-app .pareto-chat--fresh .pareto-continuity {
+  margin-top: 11px; padding: 16px 20px 0; border-top: 1px solid var(--ws-edge);
+  display: grid; justify-items: center; text-align: center; gap: 5px; max-width: min(455px, 100%);
+}
+.pareto-app .pareto-continuity__eyebrow { color: var(--ws-muted); font-size: 10px; font-weight: 700; letter-spacing: .12em; margin: 0; }
+.pareto-app .pareto-continuity a { color: var(--ws-ink); font-size: 13px; font-weight: 650; text-decoration: none; }
+.pareto-app .pareto-continuity a:hover { text-decoration: underline; }
+.pareto-app .pareto-continuity small { color: var(--ws-muted); font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.pareto-app .pareto-completion {
+  border-block: 1px solid var(--ws-edge); padding: 18px 0; margin: 12px 0 8px;
+  display: grid; gap: 13px; min-width: 0;
+}
+.pareto-app .pareto-completion > div:first-child { display: flex; gap: 14px; align-items: flex-start; }
+.pareto-app .pareto-completion__mark {
+  flex: none; display: grid; place-items: center; width: 32px; height: 32px;
+  background: var(--ws-panel); border: 1px solid var(--ws-edge); border-radius: 50%;
+  color: var(--ws-success); font-size: 15px; font-weight: 750;
+}
+.pareto-app .pareto-completion h3 {
+  font: 400 clamp(21px,2.4vw,27px)/1.15 var(--ws-display); letter-spacing: -.035em;
+  margin: 6px 0; color: var(--ws-ink);
+}
+.pareto-app .pareto-completion p:not(.pareto-continuity__eyebrow) { color: var(--ws-text); font-size: 12px; line-height: 1.65; margin: 0; }
+.pareto-app .pareto-completion__actions { display: flex; flex-wrap: wrap; gap: 7px 13px; padding-left: 46px; }
+.pareto-app .pareto-completion__actions button {
+  min-height: 42px; padding: 9px 14px; background: transparent; color: var(--ws-ink);
+  border: 1px solid var(--ws-edge); border-radius: 10px; font-size: 12px; font-weight: 650;
+}
+.pareto-app .pareto-completion__actions button:first-child { background: var(--ws-primary); border-color: var(--ws-primary); color: var(--ws-on-primary); }
+.pareto-app .pareto-completion__actions button:hover { background: var(--ws-hover); color: var(--ws-ink); }
+.pareto-app .pareto-completion__actions button:first-child:hover { background: var(--ws-primary-hover); color: var(--ws-on-primary); }
+@media(max-width:560px) { .pareto-app .pareto-completion__actions { padding-left: 0; } }
+@media(prefers-reduced-motion:reduce) { .pareto-app .pareto-completion * { transition: none !important; } }
