@@ -1,0 +1,96 @@
+[
+  {
+    "id": "infrastructure-sre",
+    "description": "SRE and infrastructure background; role wording differs from canonical title",
+    "criteria": [
+      {
+        "field": "role",
+        "mode": "preferred",
+        "value": "Infrastructure Reliability Engineer"
+      }
+    ],
+    "relevantKeys": [
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ]
+  },
+  {
+    "id": "java-cloud",
+    "description": "Java and cloud expertise in Hyderabad versus JavaScript",
+    "criteria": [
+      {
+        "field": "role",
+        "mode": "preferred",
+        "value": "Enterprise Java Cloud Engineer"
+      },
+      {
+        "field": "city",
+        "mode": "preferred",
+        "value": "Hyderabad"
+      }
+    ],
+    "relevantKeys": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  {
+    "id": "python-healthcare",
+    "description": "Healthcare backend APIs and Python",
+    "criteria": [
+      {
+        "field": "role",
+        "mode": "preferred",
+        "value": "Python API Engineer"
+      },
+      {
+        "field": "industry",
+        "mode": "preferred",
+        "value": "Healthcare"
+      }
+    ],
+    "relevantKeys": [
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ]
+  },
+  {
+    "id": "reference-platform",
+    "description": "Reference search for a known infrastructure professional",
+    "criteria": [
+      {
+        "field": "industry",
+        "mode": "preferred",
+        "value": "Cloud Infrastructure"
+      }
+    ],
+    "referenceKey": 40,
+    "relevantKeys": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47
+    ]
+  }
+]
