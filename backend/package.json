@@ -16,7 +16,8 @@
     "./ingestion/queue": "./src/ingestion/queue.ts",
     "./ingestion/runner": "./src/ingestion/runner.ts",
     "./ingestion/review": "./src/ingestion/review.ts",
-    "./ingestion/metrics": "./src/ingestion/metrics.ts"
+    "./ingestion/metrics": "./src/ingestion/metrics.ts",
+    "./ingestion/quality-eval": "./src/ingestion/quality-eval.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -26,7 +27,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "storage:setup": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/setup-resume-storage.ts",
-    "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts"
+    "ingest:worker": "node --import=tsx src/ingestion/worker-runner.ts",
+    "ingest:evaluate": "node --import=tsx scripts/evaluate-ingestion.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.0.0",
