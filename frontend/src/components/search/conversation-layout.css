@@ -1,0 +1,106 @@
+/* A ChatGPT-like transcript structure using Pareto's own tokens.
+   Notes and errors are assistant prose; candidate evidence retains functional disclosure UI. */
+.pareto-app .pareto-chat--active { max-width: 1050px; }
+.pareto-app .pareto-chat--active .pareto-chat__timeline {
+  gap: clamp(22px, 3.2vh, 33px);
+  padding: clamp(20px, 3.5vh, 40px) clamp(16px, 7vw, 110px) 36px;
+}
+.pareto-chat--active .pareto-chat__composer-dock { align-self: center; width: min(100%, 855px); }
+.pareto-app .pareto-chat__request { align-self: flex-end; width: max-content; max-width: min(78%, 620px); min-width: 0; }
+.pareto-app .pareto-chat__request p {
+  margin: 0; padding: 11px 17px; background: var(--ws-panel); border: 0; border-radius: 20px;
+  color: var(--ws-ink); font-size: 14px; font-weight: 450; line-height: 1.6;
+  letter-spacing: -.005em; box-shadow: none; overflow-wrap: anywhere; white-space: pre-wrap;
+}
+.pareto-app .pareto-chat__assistant-turn {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 14px;
+  align-items: start; width: 100%; min-width: 0;
+}
+.pareto-app .pareto-chat__assistant-icon { padding-top: 1px; }
+.pareto-app .pareto-chat__assistant-icon .pareto-avatar--chat { width: 32px; height: 32px; padding: 0; }
+.pareto-app .pareto-chat__assistant-content { gap: 17px; color: var(--ws-text); line-height: 1.65; min-width: 0; }
+.pareto-app .pareto-chat__assistant-content > .pareto-chat__processing {
+  min-height: 32px; display: flex; align-items: center; gap: 10px;
+  padding: 3px 0; font-size: 13px; color: var(--ws-muted);
+}
+.pareto-app .pareto-chat__processing::before {
+  content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ws-blue); animation: pareto-conversation-pulse 1.5s ease-in-out infinite;
+}
+@keyframes pareto-conversation-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+.pareto-app .pareto-chat__notice,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  margin: 0; padding: 2px 0; color: var(--ws-text); font-size: 13px; line-height: 1.6;
+}
+.pareto-app .pareto-chat__notice svg { flex: none; margin-top: 2px; color: var(--ws-muted); }
+.pareto-app .pareto-chat__error {
+  display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 2px 0;
+  background: transparent; border: 0; box-shadow: none;
+  color: var(--ws-danger); font-size: 14px; line-height: 1.6;
+}
+.pareto-app .pareto-chat__error svg { flex: none; margin-top: 2px; }
+.pareto-app .pareto-chat__error p { margin: 0; overflow-wrap: anywhere; }
+.pareto-app .pareto-chat__error .pareto-chat__error-help {
+  color: var(--ws-muted); margin-top: 5px; font-size: 12px; line-height: 1.6;
+}
+/* The confirmed response is an unboxed document. Its tools retain evidence details. */
+.pareto-app .pareto-chat__assistant-content > .pareto-chat__results.search-panel,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__assistant-content > .pareto-chat__results.search-panel {
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  padding: 4px 0 20px; color: var(--ws-ink);
+}
+.pareto-app .pareto-chat__results-head { align-items: flex-start; gap: 12px 18px; }
+.pareto-app .pareto-chat__results-head h2 { color: var(--ws-ink); font-size: clamp(24px, 2.5vw, 31px); line-height: 1.2; }
+.pareto-app .pareto-chat__results > p { color: var(--ws-muted); font-size: 13px; line-height: 1.7; }
+.pareto-app .pareto-chat__results > details {
+  border-top: 1px solid var(--ws-edge); padding: 12px 0; color: var(--ws-text); font-size: 12px;
+}
+.pareto-app .pareto-chat__results > details > summary { cursor: pointer; font-weight: 600; }
+.pareto-app .pareto-chat__candidate-grid { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 12px; }
+.pareto-app .pareto-chat__candidate-grid .search-result,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__candidate-grid .search-result {
+  min-width: 0; padding: 19px 0; border: 0; border-top: 1px solid var(--ws-edge);
+  border-radius: 0; box-shadow: none; background: transparent; color: var(--ws-text);
+}
+.pareto-app .pareto-chat__candidate-head h3 { color: var(--ws-ink); font-size: 15px; }
+.pareto-app .pareto-chat__candidate-grid .search-result > p { color: var(--ws-text); }
+.pareto-app .pareto-chat__candidate-grid details { border-color: var(--ws-edge); }
+.pareto-app .pareto-chat__composer-dock .pareto-chat__composer,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer-dock .pareto-chat__composer {
+  border: 1px solid var(--ws-edge); border-radius: 23px;
+  box-shadow: 0 5px 26px #07152f0b; background: var(--ws-surface); padding: 14px 15px 12px;
+}
+.pareto-app .pareto-chat__composer-dock .pareto-chat__composer:focus-within {
+  border-color: var(--ws-control); box-shadow: 0 0 0 2px #467beb18, 0 5px 26px #07152f0b;
+}
+.pareto-app .pareto-chat__composer-dock .pareto-chat__composer-tools button,
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer-dock .pareto-chat__composer-tools button {
+  background: transparent; border: 0; color: var(--ws-muted); padding: 8px 11px; min-height: 37px;
+}
+.pareto-app .pareto-chat__composer-dock .pareto-chat__composer-tools button:hover:not(:disabled) {
+  color: var(--ws-ink); background: var(--ws-hover);
+}
+.pareto-app .pareto-chat__composer-dock .pareto-chat__send { border-radius: 14px; }
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__request p {
+  background: var(--ws-panel); color: var(--ws-ink);
+}
+html[data-pareto-effective-theme="dark"] .pareto-app .pareto-chat__composer-dock .pareto-chat__composer {
+  box-shadow: 0 12px 28px #00000036;
+}
+@media (max-width: 760px) {
+  .pareto-app .pareto-chat--active .pareto-chat__timeline { padding: 16px 10px 24px; gap: 22px; }
+  .pareto-app .pareto-chat__request { max-width: 87%; }
+  .pareto-app .pareto-chat__assistant-turn { grid-template-columns: 30px minmax(0,1fr); gap: 10px; }
+  .pareto-app .pareto-chat__assistant-icon .pareto-avatar--chat { width: 30px; height: 30px; }
+}
+@media (max-width: 560px) {
+  .pareto-app .pareto-chat__request p { padding: 10px 13px; font-size: 13px; }
+  .pareto-app .pareto-chat__assistant-content { gap: 13px; }
+  .pareto-app .pareto-chat__composer-dock .pareto-chat__composer { padding: 12px; border-radius: 20px; }
+  .pareto-app .pareto-chat__results-head { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pareto-app .pareto-chat__processing::before { animation: none; opacity: 1; }
+}
