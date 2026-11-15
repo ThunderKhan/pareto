@@ -52,6 +52,7 @@ model SearchSession {
   latestVersion        Int              @default(0)
   createdAt            DateTime         @default(now())
   revisions            SearchRevision[]
+  notifications        RecruiterNotification[]
 
   @@index([ownerId, createdAt])
 }
@@ -66,4 +67,58 @@ model SearchRevision {
   session          SearchSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@id([sessionId, version])
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  RECRUITER
+  VIEWER
+}
+
+enum RecruitmentNotificationKind {
+  SEARCH_CONFIRMED
+  SEARCH_REFINED
+}
+
+model RecruiterSettings {
+  userId          String    @id
+  jobTitle        String?
+  notifyConfirmed Boolean   @default(true)
+  notifyRefined   Boolean   @default(true)
+  updatedAt       DateTime  @updatedAt
+}
+
+model Organization {
+  id          String                @id @default(cuid())
+  name        String
+  ownerId     String                @unique
+  createdAt   DateTime              @default(now())
+  members     WorkspaceMembership[]
+}
+
+model WorkspaceMembership {
+  organizationId String
+  userId         String
+  role           WorkspaceRole @default(RECRUITER)
+  joinedAt       DateTime      @default(now())
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, userId])
+  @@index([userId])
+}
+
+model RecruiterNotification {
+  id        String                        @id @default(cuid())
+  userId    String
+  sessionId String
+  version   Int
+  kind      RecruitmentNotificationKind
+  title     String
+  createdAt DateTime                      @default(now())
+  readAt    DateTime?
+  session   SearchSession                 @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId, version])
+  @@index([userId, createdAt])
 }
