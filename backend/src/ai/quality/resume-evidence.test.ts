@@ -18,4 +18,31 @@ describe("resume evidence quote does not imply semantic truth", () => {
     expect(verifyResumeClaim({ field: "experienceMonths", value: 72, quote: "6 years experience", sourceText: "6 years experience" })).toBe("supported");
     expect(verifyResumeClaim({ field: "experienceMonths", value: 72, quote: "6 years", sourceText: "Project lasted 6 years" })).toBe("unknown");
   });
+  it("refuses desired job locations and aspirational qualifications as verified facts", () => {
+    expect(verifyResumeClaim({
+      field: "city", value: "Hyderabad", quote: "Hyderabad",
+      sourceText: "Preferred work location: Hyderabad",
+    })).toBe("unknown");
+    expect(verifyResumeClaim({
+      field: "city", value: "Hyderabad", quote: "Hyderabad",
+      sourceText: "Current location: Hyderabad",
+    })).toBe("supported");
+    expect(verifyResumeClaim({
+      field: "roleTitle", value: "Senior Java Developer",
+      quote: "Senior Java Developer", sourceText: "Seeking a Senior Java Developer role",
+    })).toBe("unknown");
+    expect(verifyResumeClaim({
+      field: "certification", value: "AWS Solutions Architect",
+      quote: "AWS Solutions Architect", sourceText: "Preparing for AWS Solutions Architect",
+    })).toBe("unknown");
+    expect(verifyResumeClaim({
+      field: "certification", value: "AWS Solutions Architect",
+      quote: "AWS Solutions Architect", sourceText: "AWS Solutions Architect certified in 2024",
+    })).toBe("supported");
+    expect(verifyResumeClaim({
+      field: "education", value: "B.Tech", quote: "B.Tech",
+      sourceText: "Planning to pursue B.Tech next year",
+    })).toBe("unknown");
+  });
+
 });
