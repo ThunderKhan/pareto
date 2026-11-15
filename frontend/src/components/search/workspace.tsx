@@ -146,7 +146,7 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     const dialog = draftDialogRef.current;
     dialog?.querySelector<HTMLElement>(".search-rule__fields select, .search-editor__add, .pareto-draft-close")?.focus();
     const keys = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); setDraft(undefined); return; }
+      if (event.key === "Escape") { event.preventDefault(); setDraft(undefined); setLastRequest(""); return; }
       if (event.key !== "Tab" || !dialog) return;
       const nodes = Array.from(dialog.querySelectorAll<HTMLElement>(
         'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -191,6 +191,13 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
   function openDraft(criteria: Rule[], warnings: string[] = [], options: Partial<Draft> = {}) {
     setReferenceOpen(false);
     setDraft({ criteria: criteria.map(rule => ({ ...rule })), warnings, requestId: crypto.randomUUID(), ...options });
+  }
+
+  function discardDraft() {
+    setDraft(undefined);
+    // Unconfirmed reference/interpretation requests should not leave an orphaned
+    // user turn implying that a candidate search was already run.
+    if (!results) setLastRequest("");
   }
 
   function toggleReference() {
@@ -426,14 +433,14 @@ export default function SearchWorkspace({ initialSession, initialReference }: {
     </div>
     {draft && <div className="pareto-draft-layer">
       <button type="button" tabIndex={-1} className="pareto-draft-backdrop"
-        aria-label="Dismiss criteria review" onClick={() => setDraft(undefined)}/>
+        aria-label="Dismiss criteria review" onClick={discardDraft}/>
       <section className="pareto-draft-dialog" ref={draftDialogRef} role="dialog"
         aria-modal="true" aria-labelledby="pareto-draft-title">
         <header className="pareto-draft-header">
           <div><p className="pareto-chat__caption">RECRUITER REVIEW REQUIRED</p>
             <h2 id="pareto-draft-title">Review draft criteria</h2></div>
           <button type="button" className="pareto-draft-close" onClick={() => setDraft(undefined)}
-            aria-label="Close criteria review"><X size={20} aria-hidden="true"/></button>
+            aria-label="Close criteria review" onClick={discardDraft}><X size={20} aria-hidden="true"/></button>
         </header>
         <form className="pareto-draft-form" onSubmit={confirm}>
           <div className="pareto-draft-scroll">
