@@ -115,6 +115,16 @@ pnpm test:e2e
 pnpm build
 ```
 
+**Optional live Gemini/Groq synthetic benchmark (not run by CI, no real resumes):**
+
+```bash
+# Only when you explicitly authorize billable provider calls with
+# configured credentials and actual Gemini/Groq model IDs:
+PARETO_VERIFY_LIVE_MODELS=1 pnpm --filter @pareto/backend ingest:evaluate:live
+```
+
+This runs at most six short **synthetic** resume cases per configured provider, scores normalized fields against a labelled gold record, and reports aggregate false claims, missing facts and precision/recall/F1. The bounded runner never writes candidates or calls Supabase and does not print raw provider responses. **It has not been executed against live provider credentials in this PR.** Production quality depends on representative validated datasets and human ground truth, not six synthetic examples.
+
 Tests must cover:
 - [ ] No unauthenticated metrics/profile/audit requests.
 - [ ] No cross-owner access, even with a known foreign document ID.
